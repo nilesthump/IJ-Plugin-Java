@@ -1,0 +1,688 @@
+{
+  "testedAt": "2026-10-18T13:04:42.9024430+08:00",
+  "source": "actual check-scope.ps1 + branch-scopes.json",
+  "scopeRuntime": "WindowsPowerShell5",
+  "runtimeVersion": "5.1.26100.8655",
+  "sourceHashes": {
+    "checkScope": "D22C3A3BA0F2EA6227ABF87272ED285C59BF943CF9B48EFDDBEFACE7766A02DD",
+    "policy": "E16870C7F21CBCD88F6C5EC38727F6097E96A3C97856D7D1ED256739AD4D57A2",
+    "configureGit": "AF25329E0075D79478D221040A5D61F36845F8176C2088A3C7642004DC6BE9DA"
+  },
+  "count": 96,
+  "failed": 0,
+  "tests": [
+    {
+      "name": "dev-manager staged src/main/java/edu/courseassist/editor/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-manager write scope: src/main/java/edu/courseassist/editor/matrix-1.txt. Record a request in your task; do not edit s\r\nhared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-man...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-manager write scope: src/main/java/edu/courseassist/editor/matrix-1.txt. Record a requ \r\n   est in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-manager staged src/test/java/edu/courseassist/editor/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-manager write scope: src/test/java/edu/courseassist/editor/matrix-2.txt. Record a request in your task; do not edit s\r\nhared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-man...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-manager write scope: src/test/java/edu/courseassist/editor/matrix-2.txt. Record a requ \r\n   est in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-manager staged src/main/java/edu/courseassist/pdf/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-manager write scope: src/main/java/edu/courseassist/pdf/matrix-3.txt. Record a request in your task; do not edit shar\r\ned files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-man...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-manager write scope: src/main/java/edu/courseassist/pdf/matrix-3.txt. Record a request \r\n    in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-manager staged src/test/java/edu/courseassist/pdf/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-manager write scope: src/test/java/edu/courseassist/pdf/matrix-4.txt. Record a request in your task; do not edit shar\r\ned files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-man...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-manager write scope: src/test/java/edu/courseassist/pdf/matrix-4.txt. Record a request \r\n    in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-manager staged src/test/resources/pdf/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-manager write scope: src/test/resources/pdf/matrix-5.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-man...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-manager write scope: src/test/resources/pdf/matrix-5.txt. Record a request in your tas \r\n   k; do not edit shared files."
+    },
+    {
+      "name": "dev-manager staged src/main/java/edu/courseassist/ui/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-manager write scope: src/main/java/edu/courseassist/ui/matrix-6.txt. Record a request in your task; do not edit share\r\nd files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-man...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-manager write scope: src/main/java/edu/courseassist/ui/matrix-6.txt. Record a request  \r\n   in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-manager staged src/test/java/edu/courseassist/ui/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-manager write scope: src/test/java/edu/courseassist/ui/matrix-7.txt. Record a request in your task; do not edit share\r\nd files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-man...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-manager write scope: src/test/java/edu/courseassist/ui/matrix-7.txt. Record a request  \r\n   in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-manager staged src/test/resources/ui/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-manager write scope: src/test/resources/ui/matrix-8.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-man...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-manager write scope: src/test/resources/ui/matrix-8.txt. Record a request in your task \r\n   ; do not edit shared files."
+    },
+    {
+      "name": "dev-manager staged spec/tasks/dev-a/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-manager write scope: spec/tasks/dev-a/matrix-9.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-man...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-manager write scope: spec/tasks/dev-a/matrix-9.txt. Record a request in your task; do  \r\n   not edit shared files."
+    },
+    {
+      "name": "dev-manager staged spec/tasks/dev-b/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-manager write scope: spec/tasks/dev-b/matrix-10.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-man...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-manager write scope: spec/tasks/dev-b/matrix-10.txt. Record a request in your task; do \r\n    not edit shared files."
+    },
+    {
+      "name": "dev-manager staged spec/tasks/dev-c/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-manager write scope: spec/tasks/dev-c/matrix-11.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-man...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-manager write scope: spec/tasks/dev-c/matrix-11.txt. Record a request in your task; do \r\n    not edit shared files."
+    },
+    {
+      "name": "dev-manager staged spec/tasks/dev-manager/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-manager (1 paths)."
+    },
+    {
+      "name": "dev-manager staged src/main/java/edu/courseassist/contract/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-manager (1 paths)."
+    },
+    {
+      "name": "dev-manager staged src/main/java/edu/courseassist/core/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-manager (1 paths)."
+    },
+    {
+      "name": "dev-manager staged src/testFixtures/java/edu/courseassist/fixtures/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-manager (1 paths)."
+    },
+    {
+      "name": "dev-manager staged .github/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-manager (1 paths)."
+    },
+    {
+      "name": "dev-manager staged scripts/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-manager (1 paths)."
+    },
+    {
+      "name": "dev-manager staged shared/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-manager (1 paths)."
+    },
+    {
+      "name": "dev-manager staged src/main/java/edu/courseassist/editor-other/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-manager (1 paths)."
+    },
+    {
+      "name": "dev-manager staged spec/tasks/dev-a-other/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-manager (1 paths)."
+    },
+    {
+      "name": "dev-a staged src/main/java/edu/courseassist/editor/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-a (1 paths)."
+    },
+    {
+      "name": "dev-a staged src/test/java/edu/courseassist/editor/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-a (1 paths)."
+    },
+    {
+      "name": "dev-a staged src/main/java/edu/courseassist/pdf/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: src/main/java/edu/courseassist/pdf/matrix-23.txt. Record a request in your task; do not edit shared fi\r\nles.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: src/main/java/edu/courseassist/pdf/matrix-23.txt. Record a request in y \r\n   our task; do not edit shared files."
+    },
+    {
+      "name": "dev-a staged src/test/java/edu/courseassist/pdf/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: src/test/java/edu/courseassist/pdf/matrix-24.txt. Record a request in your task; do not edit shared fi\r\nles.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: src/test/java/edu/courseassist/pdf/matrix-24.txt. Record a request in y \r\n   our task; do not edit shared files."
+    },
+    {
+      "name": "dev-a staged src/test/resources/pdf/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: src/test/resources/pdf/matrix-25.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: src/test/resources/pdf/matrix-25.txt. Record a request in your task; do \r\n    not edit shared files."
+    },
+    {
+      "name": "dev-a staged src/main/java/edu/courseassist/ui/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: src/main/java/edu/courseassist/ui/matrix-26.txt. Record a request in your task; do not edit shared fil\r\nes.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: src/main/java/edu/courseassist/ui/matrix-26.txt. Record a request in yo \r\n   ur task; do not edit shared files."
+    },
+    {
+      "name": "dev-a staged src/test/java/edu/courseassist/ui/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: src/test/java/edu/courseassist/ui/matrix-27.txt. Record a request in your task; do not edit shared fil\r\nes.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: src/test/java/edu/courseassist/ui/matrix-27.txt. Record a request in yo \r\n   ur task; do not edit shared files."
+    },
+    {
+      "name": "dev-a staged src/test/resources/ui/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: src/test/resources/ui/matrix-28.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: src/test/resources/ui/matrix-28.txt. Record a request in your task; do  \r\n   not edit shared files."
+    },
+    {
+      "name": "dev-a staged spec/tasks/dev-a/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-a (1 paths)."
+    },
+    {
+      "name": "dev-a staged spec/tasks/dev-b/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: spec/tasks/dev-b/matrix-30.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: spec/tasks/dev-b/matrix-30.txt. Record a request in your task; do not e \r\n   dit shared files."
+    },
+    {
+      "name": "dev-a staged spec/tasks/dev-c/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: spec/tasks/dev-c/matrix-31.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: spec/tasks/dev-c/matrix-31.txt. Record a request in your task; do not e \r\n   dit shared files."
+    },
+    {
+      "name": "dev-a staged spec/tasks/dev-manager/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: spec/tasks/dev-manager/matrix-32.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: spec/tasks/dev-manager/matrix-32.txt. Record a request in your task; do \r\n    not edit shared files."
+    },
+    {
+      "name": "dev-a staged src/main/java/edu/courseassist/contract/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: src/main/java/edu/courseassist/contract/matrix-33.txt. Record a request in your task; do not edit shar\r\ned files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: src/main/java/edu/courseassist/contract/matrix-33.txt. Record a request \r\n    in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-a staged src/main/java/edu/courseassist/core/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: src/main/java/edu/courseassist/core/matrix-34.txt. Record a request in your task; do not edit shared f\r\niles.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: src/main/java/edu/courseassist/core/matrix-34.txt. Record a request in  \r\n   your task; do not edit shared files."
+    },
+    {
+      "name": "dev-a staged src/testFixtures/java/edu/courseassist/fixtures/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: src/testFixtures/java/edu/courseassist/fixtures/matrix-35.txt. Record a request in your task; do not e\r\ndit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: src/testFixtures/java/edu/courseassist/fixtures/matrix-35.txt. Record a \r\n    request in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-a staged .github/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: .github/matrix-36.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: .github/matrix-36.txt. Record a request in your task; do not edit share \r\n   d files."
+    },
+    {
+      "name": "dev-a staged scripts/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: scripts/matrix-37.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: scripts/matrix-37.txt. Record a request in your task; do not edit share \r\n   d files."
+    },
+    {
+      "name": "dev-a staged shared/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: shared/matrix-38.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: shared/matrix-38.txt. Record a request in your task; do not edit shared \r\n    files."
+    },
+    {
+      "name": "dev-a staged src/main/java/edu/courseassist/editor-other/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: src/main/java/edu/courseassist/editor-other/matrix-39.txt. Record a request in your task; do not edit \r\nshared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: src/main/java/edu/courseassist/editor-other/matrix-39.txt. Record a req \r\n   uest in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-a staged spec/tasks/dev-a-other/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: spec/tasks/dev-a-other/matrix-40.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: spec/tasks/dev-a-other/matrix-40.txt. Record a request in your task; do \r\n    not edit shared files."
+    },
+    {
+      "name": "dev-b staged src/main/java/edu/courseassist/editor/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: src/main/java/edu/courseassist/editor/matrix-41.txt. Record a request in your task; do not edit shared\r\n files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: src/main/java/edu/courseassist/editor/matrix-41.txt. Record a request i \r\n   n your task; do not edit shared files."
+    },
+    {
+      "name": "dev-b staged src/test/java/edu/courseassist/editor/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: src/test/java/edu/courseassist/editor/matrix-42.txt. Record a request in your task; do not edit shared\r\n files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: src/test/java/edu/courseassist/editor/matrix-42.txt. Record a request i \r\n   n your task; do not edit shared files."
+    },
+    {
+      "name": "dev-b staged src/main/java/edu/courseassist/pdf/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-b (1 paths)."
+    },
+    {
+      "name": "dev-b staged src/test/java/edu/courseassist/pdf/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-b (1 paths)."
+    },
+    {
+      "name": "dev-b staged src/test/resources/pdf/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-b (1 paths)."
+    },
+    {
+      "name": "dev-b staged src/main/java/edu/courseassist/ui/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: src/main/java/edu/courseassist/ui/matrix-46.txt. Record a request in your task; do not edit shared fil\r\nes.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: src/main/java/edu/courseassist/ui/matrix-46.txt. Record a request in yo \r\n   ur task; do not edit shared files."
+    },
+    {
+      "name": "dev-b staged src/test/java/edu/courseassist/ui/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: src/test/java/edu/courseassist/ui/matrix-47.txt. Record a request in your task; do not edit shared fil\r\nes.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: src/test/java/edu/courseassist/ui/matrix-47.txt. Record a request in yo \r\n   ur task; do not edit shared files."
+    },
+    {
+      "name": "dev-b staged src/test/resources/ui/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: src/test/resources/ui/matrix-48.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: src/test/resources/ui/matrix-48.txt. Record a request in your task; do  \r\n   not edit shared files."
+    },
+    {
+      "name": "dev-b staged spec/tasks/dev-a/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: spec/tasks/dev-a/matrix-49.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: spec/tasks/dev-a/matrix-49.txt. Record a request in your task; do not e \r\n   dit shared files."
+    },
+    {
+      "name": "dev-b staged spec/tasks/dev-b/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-b (1 paths)."
+    },
+    {
+      "name": "dev-b staged spec/tasks/dev-c/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: spec/tasks/dev-c/matrix-51.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: spec/tasks/dev-c/matrix-51.txt. Record a request in your task; do not e \r\n   dit shared files."
+    },
+    {
+      "name": "dev-b staged spec/tasks/dev-manager/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: spec/tasks/dev-manager/matrix-52.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: spec/tasks/dev-manager/matrix-52.txt. Record a request in your task; do \r\n    not edit shared files."
+    },
+    {
+      "name": "dev-b staged src/main/java/edu/courseassist/contract/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: src/main/java/edu/courseassist/contract/matrix-53.txt. Record a request in your task; do not edit shar\r\ned files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: src/main/java/edu/courseassist/contract/matrix-53.txt. Record a request \r\n    in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-b staged src/main/java/edu/courseassist/core/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: src/main/java/edu/courseassist/core/matrix-54.txt. Record a request in your task; do not edit shared f\r\niles.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: src/main/java/edu/courseassist/core/matrix-54.txt. Record a request in  \r\n   your task; do not edit shared files."
+    },
+    {
+      "name": "dev-b staged src/testFixtures/java/edu/courseassist/fixtures/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: src/testFixtures/java/edu/courseassist/fixtures/matrix-55.txt. Record a request in your task; do not e\r\ndit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: src/testFixtures/java/edu/courseassist/fixtures/matrix-55.txt. Record a \r\n    request in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-b staged .github/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: .github/matrix-56.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: .github/matrix-56.txt. Record a request in your task; do not edit share \r\n   d files."
+    },
+    {
+      "name": "dev-b staged scripts/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: scripts/matrix-57.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: scripts/matrix-57.txt. Record a request in your task; do not edit share \r\n   d files."
+    },
+    {
+      "name": "dev-b staged shared/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: shared/matrix-58.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: shared/matrix-58.txt. Record a request in your task; do not edit shared \r\n    files."
+    },
+    {
+      "name": "dev-b staged src/main/java/edu/courseassist/editor-other/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: src/main/java/edu/courseassist/editor-other/matrix-59.txt. Record a request in your task; do not edit \r\nshared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: src/main/java/edu/courseassist/editor-other/matrix-59.txt. Record a req \r\n   uest in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-b staged spec/tasks/dev-a-other/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-b write scope: spec/tasks/dev-a-other/matrix-60.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-b w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-b write scope: spec/tasks/dev-a-other/matrix-60.txt. Record a request in your task; do \r\n    not edit shared files."
+    },
+    {
+      "name": "dev-c staged src/main/java/edu/courseassist/editor/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: src/main/java/edu/courseassist/editor/matrix-61.txt. Record a request in your task; do not edit shared\r\n files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: src/main/java/edu/courseassist/editor/matrix-61.txt. Record a request i \r\n   n your task; do not edit shared files."
+    },
+    {
+      "name": "dev-c staged src/test/java/edu/courseassist/editor/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: src/test/java/edu/courseassist/editor/matrix-62.txt. Record a request in your task; do not edit shared\r\n files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: src/test/java/edu/courseassist/editor/matrix-62.txt. Record a request i \r\n   n your task; do not edit shared files."
+    },
+    {
+      "name": "dev-c staged src/main/java/edu/courseassist/pdf/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: src/main/java/edu/courseassist/pdf/matrix-63.txt. Record a request in your task; do not edit shared fi\r\nles.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: src/main/java/edu/courseassist/pdf/matrix-63.txt. Record a request in y \r\n   our task; do not edit shared files."
+    },
+    {
+      "name": "dev-c staged src/test/java/edu/courseassist/pdf/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: src/test/java/edu/courseassist/pdf/matrix-64.txt. Record a request in your task; do not edit shared fi\r\nles.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: src/test/java/edu/courseassist/pdf/matrix-64.txt. Record a request in y \r\n   our task; do not edit shared files."
+    },
+    {
+      "name": "dev-c staged src/test/resources/pdf/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: src/test/resources/pdf/matrix-65.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: src/test/resources/pdf/matrix-65.txt. Record a request in your task; do \r\n    not edit shared files."
+    },
+    {
+      "name": "dev-c staged src/main/java/edu/courseassist/ui/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-c (1 paths)."
+    },
+    {
+      "name": "dev-c staged src/test/java/edu/courseassist/ui/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-c (1 paths)."
+    },
+    {
+      "name": "dev-c staged src/test/resources/ui/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-c (1 paths)."
+    },
+    {
+      "name": "dev-c staged spec/tasks/dev-a/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: spec/tasks/dev-a/matrix-69.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: spec/tasks/dev-a/matrix-69.txt. Record a request in your task; do not e \r\n   dit shared files."
+    },
+    {
+      "name": "dev-c staged spec/tasks/dev-b/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: spec/tasks/dev-b/matrix-70.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: spec/tasks/dev-b/matrix-70.txt. Record a request in your task; do not e \r\n   dit shared files."
+    },
+    {
+      "name": "dev-c staged spec/tasks/dev-c/",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-c (1 paths)."
+    },
+    {
+      "name": "dev-c staged spec/tasks/dev-manager/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: spec/tasks/dev-manager/matrix-72.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: spec/tasks/dev-manager/matrix-72.txt. Record a request in your task; do \r\n    not edit shared files."
+    },
+    {
+      "name": "dev-c staged src/main/java/edu/courseassist/contract/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: src/main/java/edu/courseassist/contract/matrix-73.txt. Record a request in your task; do not edit shar\r\ned files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: src/main/java/edu/courseassist/contract/matrix-73.txt. Record a request \r\n    in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-c staged src/main/java/edu/courseassist/core/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: src/main/java/edu/courseassist/core/matrix-74.txt. Record a request in your task; do not edit shared f\r\niles.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: src/main/java/edu/courseassist/core/matrix-74.txt. Record a request in  \r\n   your task; do not edit shared files."
+    },
+    {
+      "name": "dev-c staged src/testFixtures/java/edu/courseassist/fixtures/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: src/testFixtures/java/edu/courseassist/fixtures/matrix-75.txt. Record a request in your task; do not e\r\ndit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: src/testFixtures/java/edu/courseassist/fixtures/matrix-75.txt. Record a \r\n    request in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-c staged .github/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: .github/matrix-76.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: .github/matrix-76.txt. Record a request in your task; do not edit share \r\n   d files."
+    },
+    {
+      "name": "dev-c staged scripts/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: scripts/matrix-77.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: scripts/matrix-77.txt. Record a request in your task; do not edit share \r\n   d files."
+    },
+    {
+      "name": "dev-c staged shared/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: shared/matrix-78.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: shared/matrix-78.txt. Record a request in your task; do not edit shared \r\n    files."
+    },
+    {
+      "name": "dev-c staged src/main/java/edu/courseassist/editor-other/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: src/main/java/edu/courseassist/editor-other/matrix-79.txt. Record a request in your task; do not edit \r\nshared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: src/main/java/edu/courseassist/editor-other/matrix-79.txt. Record a req \r\n   uest in your task; do not edit shared files."
+    },
+    {
+      "name": "dev-c staged spec/tasks/dev-a-other/",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-c write scope: spec/tasks/dev-a-other/matrix-80.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-c w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-c write scope: spec/tasks/dev-a-other/matrix-80.txt. Record a request in your task; do \r\n    not edit shared files."
+    },
+    {
+      "name": "main rejected",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "main accepts reviewed PRs. Develop on the assigned existing dev branch.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:15 char:27\r\n+ ... q 'main') { throw 'main accepts reviewed PRs. Develop on the assigned ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (main accepts re...ing dev branch.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : main accepts reviewed PRs. Develop on the assigned existing dev branch."
+    },
+    {
+      "name": "detached without Branch rejected",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Detached HEAD: specify -Branch only for CI review, never commit here.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:10 char:32\r\n+ ... DE -ne 0) { throw 'Detached HEAD: specify -Branch only for CI review, ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Detached HEAD: ...er commit here.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Detached HEAD: specify -Branch only for CI review, never commit here."
+    },
+    {
+      "name": "invalid Branch rejected",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Forbidden branch: feature-extra\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\matrix\\scripts\\check-scope.ps1:14 char:40\r\n+ ... Branch -notin $policy.branches) { throw \"Forbidden branch: $Branch\" }\r\n+                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Forbidden branch: feature-extra:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Forbidden branch: feature-extra"
+    },
+    {
+      "name": "rename-allowed",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-a (2 paths)."
+    },
+    {
+      "name": "rename-out",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: shared/moved.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\rename-out\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: shared/moved.txt. Record a request in your task; do not edit shared fil \r\n   es."
+    },
+    {
+      "name": "rename-in",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: shared/original.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\rename-in\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: shared/original.txt. Record a request in your task; do not edit shared  \r\n   files."
+    },
+    {
+      "name": "three-dot excludes divergent main-only change",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-a (1 paths)."
+    },
+    {
+      "name": "PR merge HEAD explicit source branch passes",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-a (1 paths)."
+    },
+    {
+      "name": "unresolvable BaseRef rejected",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "git.exe : fatal: Needed a single revision\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\pr-merge-base\\scripts\\check-scope.ps1:19 char:5\r\n+     & git rev-parse --verify \"$BaseRef^{commit}\" *> $null\r\n+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (fatal: Needed a single revision:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError"
+    },
+    {
+      "name": "normal scope rejects shared file",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: shared/forbidden.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\policy-tamper\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: shared/forbidden.txt. Record a request in your task; do not edit shared \r\n    files."
+    },
+    {
+      "name": "working policy tamper bypasses local checker (known local trust limit)",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-a (1 paths)."
+    },
+    {
+      "name": "untrusted PR policy bypasses default checker",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Write scope passed for dev-a (2 paths)."
+    },
+    {
+      "name": "trusted policy/checker rejects tampered PR",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: .github/branch-scopes.json. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\trusted\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: .github/branch-scopes.json. Record a request in your task; do not edit  \r\n   shared files."
+    },
+    {
+      "name": "PS5 Configure-Git default RepositoryPath installs hooks",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "Repository-local hooks enabled; five fixed branches verified. No global Git settings changed.\r\nPull requests from every dev branch target main. Keep all five branches after merges."
+    },
+    {
+      "name": "PS5 real pre-commit accepts assigned file",
+      "expectedSuccess": true,
+      "passed": true,
+      "actualSuccess": true,
+      "output": "[dev-a 7c56d05] PS5 real pre-commit accepts assigned file\n 1 file changed, 1 insertion(+)\n create mode 100644 src/main/java/edu/courseassist/editor/ps5-hook-allowed.txt\nWrite scope passed for dev-a (1 paths)."
+    },
+    {
+      "name": "PS5 real pre-commit rejects shared file",
+      "expectedSuccess": false,
+      "passed": true,
+      "actualSuccess": false,
+      "output": "Outside dev-a write scope: shared/ps5-hook-forbidden.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\run-fb172b5b2eeb41bcb59ce737d659866b\\ps5-hooks\\scripts\\check-scope.ps1:32 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: shared/ps5-hook-forbidden.txt. Record a request in your task; do not ed \r\n   it shared files."
+    }
+  ],
+  "note": "Tamper tests expect local bypass to document its trust limit; explicit trusted-policy check must reject the same PR. All repositories are under the new tmp/bootstrap-review/run-* path; no product repository refs are changed."
+}
