@@ -15,6 +15,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1
 
 可选参数 `-LocalIdePath <绝对目录>` 选择本机 SDK；默认/CI下载本机对应的 IDEA 2026.2.3，build 262.10968.63。用户已更正为始终只验证本机版本，不再验证旧目标；本机升级时负责人同步版本与记录。`-GradleUserHome <绝对缓存目录>` 用于隔离构建缓存；`-Scope Repository` 不执行 Java/Gradle/PDF/IDE 验证；`-BaseRef` 与 `-Branch` 可增加差异范围检查。
 
+`-Scope All -IdeSmoke` 在标准 check/buildPlugin 之后，另启隔离 sandbox 中的本机对应 IDEA/JBR，执行测试插件提供的 headless 命令；结果必须同时满足进程退出 0 与 `build/reports/ide-smoke/result.json` 的 PASS。测试插件位于 `src/test/java/edu/courseassist/bootstrap/ide` / `scripts/ide-smoke/plugin.xml`，只在该验证运行中装入，不进入 F0 发布 ZIP。检查真实插件类加载、应用/项目服务归属与释放、后台任务、Swing Tool Window content、Java PSI 读操作、合成 H2/JVector，以及只访问 `127.0.0.1` 的 Spring AI 合成响应。它不证明人工可视交互、成员捕获算法、完整会话恢复/检索/ReAct、真实模型或课程网关能力。
+
 Wrapper 来自已安装官方 Gradle 的 wrapper 任务；初始化时隔离环境 HEAD 校验失败，生成曾使用 `--no-validate-url`，随后恢复 URL 校验并固定官方 ZIP SHA-256 `a17ddd85a26b6a7f5ddb71ff8b05fc5104c0202c6e64782429790c933686c806`（[官方校验文件](https://services.gradle.org/distributions/gradle-9.1.0-bin.zip.sha256)）。下载和实际 Wrapper 执行结果另看进度。构建失败不能静默切版本、仓库镜像或跳过 check 来报成功。
 
 ## CI 信任边界

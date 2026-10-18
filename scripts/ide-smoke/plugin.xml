@@ -1,0 +1,12 @@
+<idea-plugin>
+    <id>edu.courseassist.f0.runtime-smoke</id>
+    <name>F0 Runtime Smoke (test only)</name>
+    <version>1</version>
+    <vendor>F0 Team</vendor>
+    <idea-version since-build="262.10968.63" until-build="262.*"/>
+    <depends>edu.courseassist.f0</depends>
+    <depends>com.intellij.java</depends>
+    <extensions defaultExtensionNs="com.intellij">
+        <appStarter id="courseassist-f0-smoke" implementation="edu.courseassist.bootstrap.ide.RuntimeSmokeStarter"/>
+    </extensions>
+</idea-plugin>
