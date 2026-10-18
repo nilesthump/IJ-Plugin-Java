@@ -49,7 +49,7 @@ foreach ($branchName in @('dev-manager', 'dev-a', 'dev-b', 'dev-c')) {
     Invoke-TestGit "create fixed $branchName" $repoPath @('branch', $branchName) | Out-Null
 }
 New-Item -ItemType Directory -Path (Join-Path $repoPath '.githooks'), (Join-Path $repoPath 'scripts/git') -Force | Out-Null
-Copy-Item -LiteralPath (Join-Path $sourceRoot '.githooks/reference-transaction'), (Join-Path $sourceRoot '.githooks/pre-push'), (Join-Path $sourceRoot '.githooks/pre-commit') -Destination (Join-Path $repoPath '.githooks')
+Copy-Item -LiteralPath (Join-Path $sourceRoot '.githooks/reference-transaction'), (Join-Path $sourceRoot '.githooks/pre-push'), (Join-Path $sourceRoot '.githooks/pre-commit'), (Join-Path $sourceRoot '.githooks/pre-merge-commit') -Destination (Join-Path $repoPath '.githooks')
 Copy-Item -LiteralPath (Join-Path $sourceRoot 'scripts/git/Configure-Git.ps1') -Destination (Join-Path $repoPath 'scripts/git')
 # This fixture checks hook delegation only. The production scope validator is
 # validated separately against the repository's actual ownership mapping.
@@ -97,7 +97,7 @@ if (($localBranches -split '\r?\n').Count -ne 5) { throw 'Test checkout must ret
 # Exercise teammate clone setup: one initial local branch, five fixed tracking refs.
 Invoke-TestGit 'clone teammate branch' $testRoot @('clone', '--branch', 'dev-a', $barePath, $clonePath) | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $clonePath '.githooks'), (Join-Path $clonePath 'scripts/git') -Force | Out-Null
-Copy-Item -LiteralPath (Join-Path $sourceRoot '.githooks/reference-transaction'), (Join-Path $sourceRoot '.githooks/pre-push'), (Join-Path $sourceRoot '.githooks/pre-commit') -Destination (Join-Path $clonePath '.githooks')
+Copy-Item -LiteralPath (Join-Path $sourceRoot '.githooks/reference-transaction'), (Join-Path $sourceRoot '.githooks/pre-push'), (Join-Path $sourceRoot '.githooks/pre-commit'), (Join-Path $sourceRoot '.githooks/pre-merge-commit') -Destination (Join-Path $clonePath '.githooks')
 Copy-Item -LiteralPath (Join-Path $sourceRoot 'scripts/git/Configure-Git.ps1') -Destination (Join-Path $clonePath 'scripts/git')
 & (Join-Path $clonePath 'scripts/git/Configure-Git.ps1') -RepositoryPath $clonePath
 $cloneBranches = Invoke-TestGit 'clone setup retains fixed five only' $clonePath @('for-each-ref', '--format=%(refname:short)', 'refs/heads/')

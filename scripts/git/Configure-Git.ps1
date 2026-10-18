@@ -34,12 +34,12 @@ if ($unexpectedBranches.Count -gt 0) {
 
 # Install before creating missing fixed tracking refs; hooks permit these names.
 $hooksPath = (Join-Path $repoPath '.githooks').Replace('\', '/')
-foreach ($hookName in @('reference-transaction', 'pre-push', 'pre-commit')) {
+foreach ($hookName in @('reference-transaction', 'pre-push', 'pre-commit', 'pre-merge-commit')) {
     if (-not (Test-Path -LiteralPath (Join-Path $hooksPath $hookName) -PathType Leaf)) {
         throw "Missing repository hook: $hookName"
     }
 }
-Invoke-RepositoryGit -GitArguments @('config', '--local', 'core.hooksPath', $hooksPath) | Out-Null
+Invoke-RepositoryGit -GitArguments @('config', '--local', 'core.hooksPath', '.githooks') | Out-Null
 Invoke-RepositoryGit -GitArguments @('config', '--local', 'push.default', 'simple') | Out-Null
 
 foreach ($branchName in $allowedBranches) {

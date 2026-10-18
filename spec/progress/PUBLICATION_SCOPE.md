@@ -1,6 +1,6 @@
 # 本次公开推送范围
 
-目标：公开仓库 `https://github.com/nilesthump/IJ-Plugin-Java`。已推送经过下述排除检查的88份工程/方案/任务文件；原始资料未进入公开历史。
+目标：公开仓库 `https://github.com/nilesthump/IJ-Plugin-Java`。仅推送经过下述排除检查的工程/方案/任务文件；原始资料未进入公开历史。
 
 用户已选择仅公开工程、方案和任务。准备公开的内容为：
 
