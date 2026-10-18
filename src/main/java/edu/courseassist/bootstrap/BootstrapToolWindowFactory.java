@@ -13,6 +13,7 @@ import java.awt.BorderLayout;
 public final class BootstrapToolWindowFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(Project project, ToolWindow toolWindow) {
+        CourseAssistantProject.getInstance(project);
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(new JLabel("F0 开发基线：公共契约已提供，聊天与资料功能待各任务实现。"), BorderLayout.NORTH);
         Content content = ContentFactory.getInstance().createContent(panel, "开发入口", false);

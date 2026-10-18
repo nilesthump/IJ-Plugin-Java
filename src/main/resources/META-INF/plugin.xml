@@ -8,7 +8,13 @@
     ]]></description>
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
+    <extensionPoints>
+        <extensionPoint name="codeCapture" interface="edu.courseassist.contract.CodeCapturePort" dynamic="true"/>
+        <extensionPoint name="pdfReader" interface="edu.courseassist.contract.PdfReader" dynamic="true"/>
+    </extensionPoints>
     <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="edu.courseassist.bootstrap.CourseAssistantApplication"/>
+        <projectService serviceImplementation="edu.courseassist.bootstrap.CourseAssistantProject"/>
         <toolWindow id="Course Assistant" anchor="right"
                     factoryClass="edu.courseassist.bootstrap.BootstrapToolWindowFactory"/>
     </extensions>

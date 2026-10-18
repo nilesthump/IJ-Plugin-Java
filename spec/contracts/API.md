@@ -102,3 +102,20 @@
 - `FixtureSmoke.main`：可在无第三方依赖下执行的夹具检查，需 `-ea`，检查观察释放、事件交付、中断与耐久资格、物理空页和凭据脱敏。
 
 三个适配器成员可立即消费这些签名和状态；真实 manager 服务/IDE装配、持久化、网络、检索、压缩与目标兼容仍由后续任务完成。摘要模型、Token预算、失败数值没有在契约中擅自填默认。
+
+## 7. 第一组运行骨架接入
+
+`bootstrap.CourseAssistantApplication.getInstance()` 是同一 IDE 进程的应用服务；`bootstrap.CourseAssistantProject.getInstance(project)` 是项目服务。项目服务提供本次打开的 `projectInstanceId()`，不把这个值当耐久 `projectId`。应用拥有 H2 短事务入口、后台执行器、运行状态/epoch；项目关闭只撤销所属 TaskScope，应用释放时撤销全部项目 scope。TaskScope 撤销回包资格，不中断 JDBC，也不能替代后续业务事务中的项目/session/operation 条件校验。
+
+当前服务是资源与生命周期骨架，尚未实现 `SessionController` / `ApplicationController` 的业务处理或持久项目身份。UI 继续使用第 6 节的明确合成控制器；不得把空视图或合成控制器作为生产恢复结果。开停 `RuntimeGate` 是 manager 内部状态边界，配置/凭据校验、保存协调与公共事件接线留给第 4 组。
+
+已声明两个类型化 extension point，供负责人在成员实现就绪后集中注册：
+
+```xml
+<extensions defaultExtensionNs="edu.courseassist.f0">
+    <codeCapture implementation="成员提供的 CodeCapturePort 实现全名"/>
+    <pdfReader implementation="成员提供的 PdfReader 实现全名"/>
+</extensions>
+```
+
+核心经项目服务 `codeCapture()`、应用服务 `pdfReader()` 取得端口。未注册或重复注册会明确失败，不使用反射猜实现、不注入成功空对象；当前基线无成员实现，两个入口预期不可调用。`plugin.xml` 注册仍由负责人处理；成员只提供实际类名与构造需求。公共 DTO 和端口继续不依赖 IDEA/Swing/JDBC/SDK。
