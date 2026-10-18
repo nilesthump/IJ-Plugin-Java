@@ -12,7 +12,7 @@
 | CourseRetriever | 项目端口与适配：固定代次、调用 JVector、校验结果映射及分数，返回真实课程证据 |
 | 托管 PDF 目录 | 保存固定导入版本；历史引用不依赖图索引持续存在 |
 
-JVector 的官方 Maven 坐标为 `io.github.jbellis:jvector`；当前核查线为 4.0.1，不等于项目已锁版本。见 [官方仓库](https://github.com/datastax/jvector)、[发布构件](https://central.sonatype.com/artifact/io.github.jbellis/jvector/4.0.1)。原用户兼容目标 262.9437.185 与本机较新构建继续分开验证。
+JVector 的官方 Maven 坐标为 `io.github.jbellis:jvector`；初始化构建采用4.0.1，真实IDE/完整数据链仍待验证。见 [官方仓库](https://github.com/datastax/jvector)、[发布构件](https://central.sonatype.com/artifact/io.github.jbellis/jvector/4.0.1)。按用户最新更正，始终只验证本机当前IDEA版本，构建及CI与其一致。
 
 ## 2. MVP 优先提案：耐久向量＋内存派生图
 

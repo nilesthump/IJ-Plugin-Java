@@ -178,7 +178,7 @@ Tool Window 标签可用 ContentManager 管理，视图资源挂到对应 Conten
 
 官方说明 TextAttributesKey 与 EditorColorsScheme 映射，并提供高亮 HTML 示例路径，见 [语法与错误高亮](https://plugins.jetbrains.com/docs/intellij/syntax-highlighting-and-error-highlighting.html)。原生只读 EditorTextField / Editor viewer 是比较路线，见 [Editor Components](https://plugins.jetbrains.com/docs/intellij/editor-components.html)。当前优先减少历史代码块持有的编辑器实例，尚无性能结果证明最终选择。
 
-具体 API 需验证：[本机版本对应 HtmlSyntaxInfoUtil 源码](https://github.com/JetBrains/intellij-community/blob/idea/262.10968.63/platform/lang-impl/src/com/intellij/openapi/editor/richcopy/HtmlSyntaxInfoUtil.java)有需要 read lock 的入口、实验性 builder 与弃用方法；部分片段入口会创建 PSI、做 QuickDoc 预处理或规范化缩进/制表符。不能当作无需锁的纯字符串工具，处理结果不覆盖原始代码。优先验证受支持入口或直接用语言高亮 token/配色生成转义片段，原目标 262.9437.185 另行核查。
+具体 API 需验证：[本机版本对应 HtmlSyntaxInfoUtil 源码](https://github.com/JetBrains/intellij-community/blob/idea/262.10968.63/platform/lang-impl/src/com/intellij/openapi/editor/richcopy/HtmlSyntaxInfoUtil.java)有需要 read lock 的入口、实验性 builder 与弃用方法；部分片段入口会创建 PSI、做 QuickDoc 预处理或规范化缩进/制表符。不能当作无需锁的纯字符串工具，处理结果不覆盖原始代码。优先验证受支持入口或直接用语言高亮 token/配色生成转义片段；按用户更正始终仅验证本机当前版本，不另验旧build。
 
 本需求落实为 IDEA 配色的多色语法高亮；全项目符号解析、错误检查和变量语义着色不默认追加为 F0 功能。具体实现即便能提供额外颜色，也不等于完成项目语义验证。
 
