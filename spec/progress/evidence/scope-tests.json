@@ -1,6 +1,13 @@
 {
-  "testedAt": "2026-10-18T12:51:45.5136422+08:00",
+  "testedAt": "2026-10-18T12:58:57.0859041+08:00",
   "source": "actual check-scope.ps1 + branch-scopes.json",
+  "scopeRuntime": "InProcess",
+  "runtimeVersion": "7.6.5",
+  "sourceHashes": {
+    "checkScope": "D22C3A3BA0F2EA6227ABF87272ED285C59BF943CF9B48EFDDBEFACE7766A02DD",
+    "policy": "E16870C7F21CBCD88F6C5EC38727F6097E96A3C97856D7D1ED256739AD4D57A2",
+    "configureGit": "AF25329E0075D79478D221040A5D61F36845F8176C2088A3C7642004DC6BE9DA"
+  },
   "count": 93,
   "failed": 0,
   "tests": [
@@ -656,5 +663,5 @@
       "output": "Outside dev-a write scope: .github/branch-scopes.json. Record a request in your task; do not edit shared files."
     }
   ],
-  "note": "Tamper tests expect local bypass to document its trust limit; explicit trusted-policy check must reject the same PR."
+  "note": "Tamper tests expect local bypass to document its trust limit; explicit trusted-policy check must reject the same PR. All repositories are under the new tmp/bootstrap-review/run-* path; no product repository refs are changed."
 }

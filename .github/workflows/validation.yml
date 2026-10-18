@@ -1,50 +1,39 @@
 name: F0 validation
 on:
+  workflow_dispatch:
   push:
     branches: [main]
-  pull_request_target:
+  pull_request:
     branches: [main]
 permissions:
   contents: read
+concurrency:
+  group: validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   validation:
     name: validation
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          persist-credentials: false
-          ref: ${{ github.event.pull_request.base.sha || github.sha }}
-      - name: Preserve trusted scope policy
-        if: github.event_name == 'pull_request_target'
-        shell: pwsh
-        run: |
-          Copy-Item scripts/check-scope.ps1 "$env:RUNNER_TEMP/check-scope.ps1"
-          Copy-Item .github/branch-scopes.json "$env:RUNNER_TEMP/branch-scopes.json"
-      - name: Check out proposed merge
-        if: github.event_name == 'pull_request_target'
-        uses: actions/checkout@v4
-        with:
-          ref: refs/pull/${{ github.event.number }}/merge
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '25'
-      - name: Validate PR source and write scope
-        if: github.event_name == 'pull_request_target'
+      - name: Validate PR source
+        if: github.event_name == 'pull_request'
         shell: pwsh
         env:
           SOURCE_BRANCH: ${{ github.head_ref }}
           SOURCE_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
           EXPECTED_REPOSITORY: ${{ github.repository }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           if ($env:SOURCE_REPOSITORY -ne $env:EXPECTED_REPOSITORY) { throw 'Use an assigned branch in this repository.' }
           if ($env:SOURCE_BRANCH -notin @('dev-manager','dev-a','dev-b','dev-c')) { throw 'Use one of the four fixed development branches.' }
-          & "$env:RUNNER_TEMP/check-scope.ps1" -RepositoryPath $env:GITHUB_WORKSPACE -PolicyPath "$env:RUNNER_TEMP/branch-scopes.json" -BaseRef $env:PR_BASE_SHA -Branch $env:SOURCE_BRANCH
       - name: Shared validation contract
         shell: pwsh
         run: ./scripts/validate.ps1

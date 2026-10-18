@@ -18,12 +18,14 @@
 | 插件 ZIP | 已构建 `IJ-Plugin-Java-0.1.0-dev.zip`，82,503,738字节；未运行目标IDE/未验证客户端与真实依赖类加载，包体仍需负责人后续评估 |
 | 隔离Git行为 | [37次操作结果](evidence/git-policy-tests.json)全部通过；含引用创建/删除/改名、detached工作树、fetch、push及pre-commit调用边界 |
 | 独立范围检查 | [93场景结果](evidence/scope-tests.json)全部符合预期，退出0；覆盖4分支路径矩阵、rename两端、main/detached拒绝、merge-base和篡改规则被可信checker拒绝 |
+| Windows自带PowerShell | [96场景结果](evidence/scope-tests-windows-powershell.json)全部通过；包含默认参数安装hooks、真实pre-commit接受合法文件及明确拒绝越界文件 |
+| 从公开仓库新克隆dev-a | PASS，无原始附件/需求记录，PS5安装hooks、五分支补齐及Repository检查通过 |
 | Wrapper | 官方生成、JAR SHA-256与官方一致；ZIP固定官方SHA-256；实际下载/使用状态看CURRENT |
 
-独立只读检查由 `/root/bootstrap_review` 在 fresh context 执行；初始CI直接使用PR中的checker会被修改绕过，已修为主分支工作流保存可信checker/策略，再检查待合并差异。复核未发现尚未修复的P1/P2。隔离执行器一度无法启动，测试使用已授权环境重跑；没有把环境失败记成测试通过。
+独立只读检查由 `/root/bootstrap_review` 在 fresh context 执行；初始CI直接使用PR中的checker会被修改绕过，已拆为只读PR构建与仅从main读取策略/文件元数据的范围状态工作流。范围逻辑复核未发现尚未修复的P1/P2，远端接线待实际运行核验。隔离执行器一度无法启动，测试使用已授权环境重跑；没有把环境失败记成测试通过。
 
 ## 远程与运行边界
 
-公开仓库已创建为 `nilesthump/IJ-Plugin-Java`；远端保护最终状态、固定分支头及 CI 结果以 [CURRENT.md](CURRENT.md) 的完成记录为准。本地 hooks 需要各克隆执行安装，GitHub 规则只约束远程，不能阻止用户在未安装 hooks 的任意本地克隆创建分支。协作 agent 仍须遵守仓库固定分支规范。
+公开仓库已创建为 `nilesthump/IJ-Plugin-Java`；五分支已推送，服务端创建禁令/删除与强推保护/main PR门禁均active并读回。最终CI结果以 [CURRENT.md](CURRENT.md) 为准。本地 hooks 需要各克隆执行安装，GitHub 规则只约束远程，不能阻止用户在未安装 hooks 的任意本地克隆创建分支。协作 agent 仍须遵守固定分支规范；组员从同仓库固定分支推送需由负责人授予仓库写权限，未配置具体成员账号。
 
 仅本机 262.10968.63 的 IDE 运行、实际生成/嵌入、H2与JVector组合、完整业务流程及千页性能均待任务实施；不再增加旧版本验证任务。初始化不发送真实模型请求，也不承诺全部P0或产品验收通过。

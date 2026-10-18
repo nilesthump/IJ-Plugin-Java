@@ -1,0 +1,61 @@
+name: F0 scope
+on:
+  workflow_run:
+    workflows: [F0 validation]
+    types: [completed]
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+jobs:
+  scope:
+    name: scope-policy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            // This workflow and policy come from main. Never fetch/run PR code or artifacts here.
+            const fs = require('node:fs');
+            const policy = JSON.parse(fs.readFileSync('.github/branch-scopes.json', 'utf8'));
+            const run = context.payload.workflow_run;
+            if (run.event !== 'pull_request') return;
+            const processed = new Set();
+            for (const linked of run.pull_requests) {
+              const {data: pr} = await github.rest.pulls.get({...context.repo, pull_number: linked.number});
+              if (pr.state !== 'open' || pr.head.sha !== linked.head.sha) continue;
+              if (processed.has(pr.head.sha)) continue;
+              processed.add(pr.head.sha);
+              const errors = [];
+              // Commit statuses are shared by SHA. Aggregate every open PR with that SHA.
+              const open = await github.paginate(github.rest.pulls.list,
+                {...context.repo, state: 'open', base: 'main', per_page: 100});
+              for (const sibling of open.filter(item => item.head.sha === pr.head.sha)) {
+                const {data: target} = await github.rest.pulls.get({...context.repo, pull_number: sibling.number});
+                if (target.head.sha !== pr.head.sha) continue;
+                if (target.base.ref !== 'main' || target.head.repo?.id !== context.payload.repository.id ||
+                    !['dev-manager','dev-a','dev-b','dev-c'].includes(target.head.ref)) {
+                  errors.push(`PR ${target.number}: use an assigned branch of this repository.`);
+                }
+                const files = await github.paginate(github.rest.pulls.listFiles,
+                  {...context.repo, pull_number: target.number, per_page: 100});
+                if (files.length !== target.changed_files) errors.push(`PR ${target.number}: incomplete changed-file list.`);
+                const allowed = path => target.head.ref === 'dev-manager'
+                  ? !policy.managerExcluded.some(prefix => path.startsWith(prefix))
+                  : (policy.owners[target.head.ref] ?? []).some(prefix => path.startsWith(prefix));
+                for (const file of files) {
+                  for (const path of [file.filename, file.previous_filename].filter(Boolean)) {
+                    if (!allowed(path)) errors.push(`PR ${target.number}: outside ${target.head.ref} scope: ${path}`);
+                  }
+                }
+              }
+              await github.rest.repos.createCommitStatus({...context.repo, sha: pr.head.sha,
+                state: errors.length ? 'failure' : 'success', context: 'scope',
+                description: errors.length ? 'Write scope rejected; see F0 scope run.' : 'Trusted main policy accepted all changed paths.',
+                target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`});
+              if (errors.length) core.setFailed(errors.join('\n'));
+            }
