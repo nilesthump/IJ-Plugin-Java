@@ -1,0 +1,456 @@
+{
+  "testedAt": "2026-10-18T12:39:09.9204398+08:00",
+  "gitVersion": "git version 2.52.0.windows.1",
+  "testRoot": "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8",
+  "successful": true,
+  "operations": [
+    {
+      "name": "init checkout",
+      "arguments": [
+        "init",
+        "-b",
+        "main"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "Initialized empty Git repository in H:/IJ-Plugin-Java/tmp/bootstrap-git-tests/run-9f2f7e18f56344a79866b88e3844e8b8/checkout/.git/"
+    },
+    {
+      "name": "local identity name",
+      "arguments": [
+        "config",
+        "--local",
+        "user.name",
+        "Branch Policy Test"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": ""
+    },
+    {
+      "name": "local identity email",
+      "arguments": [
+        "config",
+        "--local",
+        "user.email",
+        "branch-policy-test@example.invalid"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": ""
+    },
+    {
+      "name": "stage fixture",
+      "arguments": [
+        "add",
+        "fixture.txt"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "warning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nwarning: in the working copy of 'fixture.txt', LF will be replaced by CRLF the next time Git touches it"
+    },
+    {
+      "name": "initial commit",
+      "arguments": [
+        "commit",
+        "-m",
+        "test fixture"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "[main (root-commit) f60e0be] test fixture\n 1 file changed, 1 insertion(+)\n create mode 100644 fixture.txt"
+    },
+    {
+      "name": "record initial commit",
+      "arguments": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "f60e0be4d0c8f92be38b69e574ea7a0c5efc301b"
+    },
+    {
+      "name": "create fixed dev-manager",
+      "arguments": [
+        "branch",
+        "dev-manager"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": ""
+    },
+    {
+      "name": "create fixed dev-a",
+      "arguments": [
+        "branch",
+        "dev-a"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": ""
+    },
+    {
+      "name": "create fixed dev-b",
+      "arguments": [
+        "branch",
+        "dev-b"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": ""
+    },
+    {
+      "name": "create fixed dev-c",
+      "arguments": [
+        "branch",
+        "dev-c"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": ""
+    },
+    {
+      "name": "pre-commit delegates main rejection",
+      "arguments": [
+        "commit",
+        "--allow-empty",
+        "-m",
+        "must be rejected on main"
+      ],
+      "expectedSuccess": false,
+      "exitCode": 1,
+      "passed": true,
+      "output": ""
+    },
+    {
+      "name": "create extra branch rejected",
+      "arguments": [
+        "branch",
+        "feature-extra"
+      ],
+      "expectedSuccess": false,
+      "exitCode": 128,
+      "passed": true,
+      "output": "Branch policy: only main, dev-manager, dev-a, dev-b and dev-c are allowed: refs/heads/feature-extra\nfatal: ref updates aborted by hook"
+    },
+    {
+      "name": "create extra via switch rejected",
+      "arguments": [
+        "switch",
+        "-c",
+        "feature-switch"
+      ],
+      "expectedSuccess": false,
+      "exitCode": 128,
+      "passed": true,
+      "output": "Branch policy: only main, dev-manager, dev-a, dev-b and dev-c are allowed: refs/heads/feature-switch\nfatal: ref updates aborted by hook"
+    },
+    {
+      "name": "create extra via update-ref rejected",
+      "arguments": [
+        "update-ref",
+        "refs/heads/feature-direct",
+        "HEAD"
+      ],
+      "expectedSuccess": false,
+      "exitCode": 128,
+      "passed": true,
+      "output": "Branch policy: only main, dev-manager, dev-a, dev-b and dev-c are allowed: refs/heads/feature-direct\nfatal: ref updates aborted by hook"
+    },
+    {
+      "name": "delete fixed branch rejected",
+      "arguments": [
+        "branch",
+        "-D",
+        "dev-a"
+      ],
+      "expectedSuccess": false,
+      "exitCode": 128,
+      "passed": true,
+      "output": "Branch policy: fixed branch cannot be deleted or renamed: refs/heads/dev-a\nfatal: ref updates aborted by hook"
+    },
+    {
+      "name": "rename fixed branch rejected",
+      "arguments": [
+        "branch",
+        "-m",
+        "dev-a",
+        "feature-renamed"
+      ],
+      "expectedSuccess": false,
+      "exitCode": 128,
+      "passed": true,
+      "output": "Branch policy: fixed branch cannot be deleted or renamed: refs/heads/dev-a\nfatal: ref updates aborted by hook"
+    },
+    {
+      "name": "detach HEAD allowed",
+      "arguments": [
+        "switch",
+        "--detach",
+        "HEAD"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "warning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nwarning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nHEAD is now at f60e0be test fixture"
+    },
+    {
+      "name": "reattach fixed branch allowed",
+      "arguments": [
+        "switch",
+        "dev-manager"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "warning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nwarning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nSwitched to branch 'dev-manager'"
+    },
+    {
+      "name": "stage out-of-scope fixture",
+      "arguments": [
+        "add",
+        "outside-scope.txt"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "warning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nwarning: in the working copy of 'outside-scope.txt', LF will be replaced by CRLF the next time Git touches it"
+    },
+    {
+      "name": "pre-commit forwards scope failure",
+      "arguments": [
+        "commit",
+        "-m",
+        "must be rejected by scope fixture"
+      ],
+      "expectedSuccess": false,
+      "exitCode": 1,
+      "passed": true,
+      "output": "warning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied"
+    },
+    {
+      "name": "unstage scope fixture",
+      "arguments": [
+        "restore",
+        "--staged",
+        "outside-scope.txt"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": ""
+    },
+    {
+      "name": "detached worktree allowed",
+      "arguments": [
+        "worktree",
+        "add",
+        "--detach",
+        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\detached-worktree",
+        "HEAD"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "HEAD is now at f60e0be test fixture\nPreparing worktree (detached HEAD f60e0be)\nwarning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied"
+    },
+    {
+      "name": "remote tracking update allowed",
+      "arguments": [
+        "update-ref",
+        "refs/remotes/test/feature-upstream",
+        "HEAD"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": ""
+    },
+    {
+      "name": "init bare test remote",
+      "arguments": [
+        "init",
+        "--bare",
+        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "Initialized empty Git repository in H:/IJ-Plugin-Java/tmp/bootstrap-git-tests/run-9f2f7e18f56344a79866b88e3844e8b8/remote.git/"
+    },
+    {
+      "name": "attach test remote",
+      "arguments": [
+        "remote",
+        "add",
+        "origin",
+        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": ""
+    },
+    {
+      "name": "push fixed branches allowed",
+      "arguments": [
+        "push",
+        "origin",
+        "--all"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "To H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git\n * [new branch]      dev-a -> dev-a\n * [new branch]      dev-b -> dev-b\n * [new branch]      dev-c -> dev-c\n * [new branch]      dev-manager -> dev-manager\n * [new branch]      main -> main"
+    },
+    {
+      "name": "push additional remote branch rejected",
+      "arguments": [
+        "push",
+        "origin",
+        "HEAD:refs/heads/feature-push"
+      ],
+      "expectedSuccess": false,
+      "exitCode": 1,
+      "passed": true,
+      "output": "Branch policy: pushing an additional branch is forbidden: refs/heads/feature-push\nerror: failed to push some refs to 'H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git'"
+    },
+    {
+      "name": "push fixed deletion rejected",
+      "arguments": [
+        "push",
+        "origin",
+        "--delete",
+        "dev-a"
+      ],
+      "expectedSuccess": false,
+      "exitCode": 1,
+      "passed": true,
+      "output": "Branch policy: deleting a fixed remote branch is forbidden: refs/heads/dev-a\nerror: failed to push some refs to 'H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git'"
+    },
+    {
+      "name": "test remote branch for tracking only",
+      "arguments": [
+        "update-ref",
+        "refs/heads/external-only",
+        "f60e0be4d0c8f92be38b69e574ea7a0c5efc301b"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": ""
+    },
+    {
+      "name": "fetch foreign remote tracking branch allowed",
+      "arguments": [
+        "fetch",
+        "origin"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "From H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote\n * [new branch]      external-only -> origin/external-only"
+    },
+    {
+      "name": "stage second fixture",
+      "arguments": [
+        "add",
+        "fixture.txt"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "warning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nwarning: in the working copy of 'fixture.txt', LF will be replaced by CRLF the next time Git touches it"
+    },
+    {
+      "name": "fixed branch commit allowed",
+      "arguments": [
+        "commit",
+        "-m",
+        "test second commit"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "[dev-manager 19b9517] test second commit\n 1 file changed, 1 insertion(+), 1 deletion(-)\nwarning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nwarning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied"
+    },
+    {
+      "name": "fast forward push allowed",
+      "arguments": [
+        "push",
+        "origin",
+        "dev-manager"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "To H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git\n   f60e0be..19b9517  dev-manager -> dev-manager"
+    },
+    {
+      "name": "forced rewind push rejected",
+      "arguments": [
+        "push",
+        "--force",
+        "origin",
+        "f60e0be4d0c8f92be38b69e574ea7a0c5efc301b:refs/heads/dev-manager"
+      ],
+      "expectedSuccess": false,
+      "exitCode": 1,
+      "passed": true,
+      "output": "Branch policy: non-fast-forward updates are forbidden: refs/heads/dev-manager\nerror: failed to push some refs to 'H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git'"
+    },
+    {
+      "name": "verify local branch set",
+      "arguments": [
+        "for-each-ref",
+        "--format=%(refname:short)",
+        "refs/heads/"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "dev-a\ndev-b\ndev-c\ndev-manager\nmain"
+    },
+    {
+      "name": "clone teammate branch",
+      "arguments": [
+        "clone",
+        "--branch",
+        "dev-a",
+        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git",
+        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\clone"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "Cloning into 'H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\clone'...\ndone.\nwarning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied"
+    },
+    {
+      "name": "clone setup retains fixed five only",
+      "arguments": [
+        "for-each-ref",
+        "--format=%(refname:short)",
+        "refs/heads/"
+      ],
+      "expectedSuccess": true,
+      "exitCode": 0,
+      "passed": true,
+      "output": "dev-a\ndev-b\ndev-c\ndev-manager\nmain"
+    }
+  ],
+  "limits": [
+    "Only local Git hooks and a local bare remote were tested; GitHub enforcement requires separate API verification.",
+    "The pre-commit uses an isolated scope fixture to test delegation and exit propagation; production path scope rules require separate validation."
+  ]
+}

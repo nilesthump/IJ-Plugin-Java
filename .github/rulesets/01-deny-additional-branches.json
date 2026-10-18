@@ -1,0 +1,13 @@
+{
+  "name": "Only the five fixed branches may exist",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "include": ["~ALL"],
+      "exclude": ["refs/heads/main", "refs/heads/dev-manager", "refs/heads/dev-a", "refs/heads/dev-b", "refs/heads/dev-c"]
+    }
+  },
+  "rules": [{"type": "creation"}]
+}

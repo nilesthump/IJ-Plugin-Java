@@ -1,0 +1,100 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij.platform' version '2.19.0'
+}
+
+group = 'edu.courseassist'
+version = providers.gradleProperty('pluginVersion').get()
+
+repositories {
+    mavenCentral()
+    intellijPlatform { defaultRepositories() }
+}
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+// Local fixtures are a source set, not a published self-dependency variant.
+sourceSets {
+    testFixtures {
+        java.srcDir 'src/testFixtures/java'
+        compileClasspath = sourceSets.main.output
+        runtimeClasspath = output + sourceSets.main.output
+    }
+    test {
+        compileClasspath += sourceSets.testFixtures.output
+        runtimeClasspath += sourceSets.testFixtures.output
+    }
+}
+
+dependencies {
+    intellijPlatform {
+        def localIde = providers.gradleProperty('localIdePath')
+        if (localIde.isPresent()) {
+            local(localIde.get())
+        } else {
+            intellijIdea(providers.gradleProperty('platformVersion').get())
+        }
+        bundledPlugin('com.intellij.java')
+    }
+
+    // Version constraints only: no Spring Boot launcher, starter or server.
+    implementation platform('org.springframework.boot:spring-boot-dependencies:4.1.1')
+    implementation platform('org.springframework.ai:spring-ai-bom:2.0.1')
+    implementation 'org.springframework.ai:spring-ai-deepseek'
+    implementation 'org.springframework.ai:spring-ai-openai'
+    implementation 'com.h2database:h2:2.4.240'
+    implementation 'io.github.jbellis:jvector:4.0.1'
+    implementation 'org.apache.pdfbox:pdfbox:3.0.5'
+    implementation 'org.commonmark:commonmark:0.30.1'
+    implementation 'org.commonmark:commonmark-ext-gfm-tables:0.30.1'
+
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// IntelliJ supplies these libraries. Do not duplicate the IDE's Kotlin runtime.
+configurations.configureEach {
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    systemProperty 'java.awt.headless', 'true'
+}
+
+tasks.register('fixtureSmoke', JavaExec) {
+    dependsOn tasks.named('testFixturesClasses')
+    classpath = sourceSets.testFixtures.runtimeClasspath
+    mainClass = 'edu.courseassist.fixtures.FixtureSmoke'
+    enableAssertions = true
+}
+tasks.named('check') { dependsOn tasks.named('fixtureSmoke') }
+
+intellijPlatform {
+    pluginConfiguration {
+        id = 'edu.courseassist.f0'
+        name = 'Course Assistant F0'
+        version = project.version.toString()
+        ideaVersion {
+            sinceBuild = '262.10968.63'
+            untilBuild = '262.*'
+        }
+        vendor { name = 'F0 Team' }
+    }
+    buildSearchableOptions = false
+}
+
+tasks.named('wrapper') {
+    gradleVersion = '9.1.0'
+    distributionType = Wrapper.DistributionType.BIN
+}

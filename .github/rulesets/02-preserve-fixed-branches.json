@@ -1,0 +1,13 @@
+{
+  "name": "Keep fixed branches and their history",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main", "refs/heads/dev-manager", "refs/heads/dev-a", "refs/heads/dev-b", "refs/heads/dev-c"],
+      "exclude": []
+    }
+  },
+  "rules": [{"type": "deletion"}, {"type": "non_fast_forward"}]
+}

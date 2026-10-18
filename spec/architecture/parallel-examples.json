@@ -1,0 +1,803 @@
+{
+  "formatVersion": 1,
+  "purpose": "synthetic-contract-examples-only",
+  "selectionCaptures": [
+    {
+      "captureId": "capture-001",
+      "sourceProjectInstanceId": "project-instance-a",
+      "fileRef": "src/main/java/example/CountDemo.java",
+      "selectedText": "int count = 1;",
+      "languageId": "java",
+      "range": {
+        "unit": "utf16-line-column",
+        "base": 1,
+        "endExclusive": true,
+        "start": {
+          "line": 12,
+          "column": 9
+        },
+        "end": {
+          "line": 12,
+          "column": 23
+        }
+      },
+      "editorVersionRef": "synthetic-editor-a-v1",
+      "automaticContexts": [
+        {
+          "kind": "method",
+          "status": "captured",
+          "editorVersionRef": "synthetic-editor-a-v1",
+          "text": "    void count() {\n        int count = 1;\n        total += count;\n    }",
+          "sourceRange": {
+            "start": {
+              "line": 11,
+              "column": 1
+            },
+            "end": {
+              "line": 14,
+              "column": 6
+            }
+          }
+        },
+        {
+          "kind": "class-structure",
+          "status": "captured",
+          "editorVersionRef": "synthetic-editor-a-v1",
+          "text": "class CountDemo {\n    private int total;\n}",
+          "representation": "class-declaration-and-fields-extract",
+          "omitsOtherMethodBodies": true,
+          "sourceSpans": [
+            {
+              "start": {
+                "line": 9,
+                "column": 1
+              },
+              "end": {
+                "line": 9,
+                "column": 18
+              }
+            },
+            {
+              "start": {
+                "line": 10,
+                "column": 1
+              },
+              "end": {
+                "line": 10,
+                "column": 23
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "captureId": "capture-002",
+      "sourceProjectInstanceId": "project-instance-a",
+      "fileRef": "src/main/java/example/CountDemo.java",
+      "selectedText": "int count = 1;",
+      "languageId": "java",
+      "range": {
+        "unit": "utf16-line-column",
+        "base": 1,
+        "endExclusive": true,
+        "start": {
+          "line": 12,
+          "column": 9
+        },
+        "end": {
+          "line": 12,
+          "column": 23
+        }
+      },
+      "editorVersionRef": "synthetic-editor-a-v1",
+      "automaticContexts": [
+        {
+          "kind": "method",
+          "status": "captured",
+          "editorVersionRef": "synthetic-editor-a-v1",
+          "text": "    void count() {\n        int count = 1;\n        total += count;\n    }",
+          "sourceRange": {
+            "start": {
+              "line": 11,
+              "column": 1
+            },
+            "end": {
+              "line": 14,
+              "column": 6
+            }
+          }
+        },
+        {
+          "kind": "class-structure",
+          "status": "captured",
+          "editorVersionRef": "synthetic-editor-a-v1",
+          "text": "class CountDemo {\n    private int total;\n}",
+          "representation": "class-declaration-and-fields-extract",
+          "omitsOtherMethodBodies": true,
+          "sourceSpans": [
+            {
+              "start": {
+                "line": 9,
+                "column": 1
+              },
+              "end": {
+                "line": 9,
+                "column": 18
+              }
+            },
+            {
+              "start": {
+                "line": 10,
+                "column": 1
+              },
+              "end": {
+                "line": 10,
+                "column": 23
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "selectionDeliveries": [
+    {
+      "captureId": "capture-001",
+      "expectedNewSelectionPartCount": 1,
+      "expectedNewAutomaticContextPartCount": 2
+    },
+    {
+      "captureId": "capture-001",
+      "expectedNewSelectionPartCount": 0,
+      "expectedNewAutomaticContextPartCount": 0
+    },
+    {
+      "captureId": "capture-002",
+      "expectedNewSelectionPartCount": 1,
+      "expectedNewAutomaticContextPartCount": 2
+    }
+  ],
+  "pdfReadResult": {
+    "documentId": "synthetic-course-document",
+    "sourceVersionId": "synthetic-source-v1",
+    "displayName": "样例课程.pdf",
+    "physicalPageCount": 3,
+    "pages": [
+      {
+        "physicalPage": 1,
+        "state": "text",
+        "text": "Synthetic course material: Java classes."
+      },
+      {
+        "physicalPage": 2,
+        "state": "no-text",
+        "text": ""
+      },
+      {
+        "physicalPage": 3,
+        "state": "text",
+        "text": "Synthetic course material: Java interfaces."
+      }
+    ],
+    "note": "Expected output only; no corresponding PDF bytes or content hash are supplied."
+  },
+  "projectView": {
+    "projectInstanceId": "project-instance-a",
+    "sessionList": [
+      {
+        "sessionId": "session-a",
+        "title": "会话 A",
+        "operationStatus": "running"
+      },
+      {
+        "sessionId": "session-b",
+        "title": "会话 B",
+        "operationStatus": "idle"
+      },
+      {
+        "sessionId": "session-c",
+        "title": "已关闭标签的会话 C",
+        "operationStatus": "running"
+      }
+    ],
+    "openSessionIds": [
+      "session-a",
+      "session-b"
+    ],
+    "activeSessionId": "session-a",
+    "currentSessionView": {
+      "sessionId": "session-a",
+      "activeOperation": {
+        "kind": "answer-request",
+        "operationId": "request-a1",
+        "stage": "generating"
+      },
+      "canSend": false,
+      "messages": [
+        {
+          "messageId": "message-a0",
+          "turnId": "turn-a0",
+          "requestId": "request-a0",
+          "role": "user",
+          "parts": [
+            {
+              "partId": "text-a0",
+              "type": "text",
+              "text": "请解释 Java 接口的用途。"
+            }
+          ]
+        },
+        {
+          "messageId": "answer-a0",
+          "turnId": "turn-a0",
+          "requestId": "request-a0",
+          "role": "assistant",
+          "parts": [
+            {
+              "partId": "answer-text-a0",
+              "type": "text",
+              "text": "接口可用来声明一组实现约定。此处为合成展示文本。"
+            }
+          ],
+          "completionStatus": "complete",
+          "answerMode": "general",
+          "retrievalStatus": "no-match",
+          "courseEvidence": [],
+          "basisLabel": "无相关资料；本回答未引用具体课程资料"
+        },
+        {
+          "messageId": "message-a1",
+          "role": "user",
+          "parts": [
+            {
+              "partId": "text-a1",
+              "type": "text",
+              "text": "请解释这段代码。"
+            },
+            {
+              "partId": "code-a1",
+              "type": "code-selection",
+              "snapshotId": "snapshot-a1",
+              "codeText": "int count = 1;",
+              "languageId": "java",
+              "fileRef": "src/main/java/example/CountDemo.java",
+              "captureId": "capture-001",
+              "editorVersionRef": "synthetic-editor-a-v1",
+              "sourceRange": {
+                "unit": "utf16-line-column",
+                "base": 1,
+                "endExclusive": true,
+                "start": {
+                  "line": 12,
+                  "column": 9
+                },
+                "end": {
+                  "line": 12,
+                  "column": 23
+                }
+              }
+            },
+            {
+              "partId": "context-method-a1",
+              "type": "code-context",
+              "contextKind": "method",
+              "snapshotId": "snapshot-method-a1",
+              "captureId": "capture-001",
+              "editorVersionRef": "synthetic-editor-a-v1",
+              "codeText": "    void count() {\n        int count = 1;\n        total += count;\n    }",
+              "languageId": "java",
+              "fileRef": "src/main/java/example/CountDemo.java"
+            },
+            {
+              "partId": "context-class-a1",
+              "type": "code-context",
+              "contextKind": "class-structure",
+              "snapshotId": "snapshot-class-a1",
+              "captureId": "capture-001",
+              "editorVersionRef": "synthetic-editor-a-v1",
+              "codeText": "class CountDemo {\n    private int total;\n}",
+              "languageId": "java",
+              "fileRef": "src/main/java/example/CountDemo.java",
+              "representation": "class-declaration-and-fields-extract",
+              "omitsOtherMethodBodies": true
+            }
+          ],
+          "turnId": "turn-a1",
+          "requestId": "request-a1"
+        }
+      ],
+      "draft": {
+        "draftId": "draft-a",
+        "revision": 2,
+        "parts": [
+          {
+            "partId": "draft-text-a2",
+            "type": "text",
+            "text": "待当前任务完成后再发送这个问题。"
+          }
+        ],
+        "saveState": "saved",
+        "pendingCaptureCount": 0
+      },
+      "stateRevision": 1,
+      "lifecycleStatus": "available",
+      "actionAvailability": {
+        "canSend": false,
+        "canEditDraft": true,
+        "canManualCompact": false,
+        "canStop": true,
+        "canDelete": true
+      },
+      "activeAnswerBasis": {
+        "requestId": "request-a1",
+        "turnId": "turn-a1",
+        "answerMode": "general",
+        "retrievalStatus": "failed",
+        "courseEvidence": [],
+        "basisLabel": "课程检索失败，当前回答未使用课程证据"
+      },
+      "notices": [
+        {
+          "noticeId": "notice-a-retrieval",
+          "operationId": "request-a1",
+          "category": "retrieval-failed",
+          "text": "课程检索失败，当前回答未使用课程证据"
+        }
+      ]
+    },
+    "stateRevision": 1,
+    "notices": [
+      {
+        "noticeId": "notice-c-retrieval",
+        "sessionId": "session-c",
+        "operationId": "request-c1",
+        "category": "retrieval-failed",
+        "text": "会话 C：课程检索失败，将继续通识回答。",
+        "openExistingSessionAllowed": true
+      }
+    ]
+  },
+  "eventExamples": [
+    {
+      "eventId": "event-submit-busy",
+      "projectInstanceId": "project-instance-a",
+      "sessionId": "session-a",
+      "kind": "SubmitDraft",
+      "payload": {
+        "draftId": "draft-a",
+        "expectedDraftRevision": 2
+      },
+      "expected": {
+        "accepted": false,
+        "reason": "session-busy",
+        "draftUnchanged": true,
+        "newUserMessages": 0,
+        "queued": false
+      }
+    },
+    {
+      "eventId": "event-close",
+      "projectInstanceId": "project-instance-a",
+      "sessionId": "session-a",
+      "kind": "CloseSessionTab",
+      "expected": {
+        "sessionStillListed": true,
+        "taskContinues": true,
+        "deleteRecords": false
+      }
+    },
+    {
+      "eventId": "event-reopen",
+      "projectInstanceId": "project-instance-a",
+      "sessionId": "session-c",
+      "kind": "OpenSessionTab",
+      "expected": {
+        "bindExistingSession": true,
+        "newModelRequests": 0
+      }
+    },
+    {
+      "eventId": "event-delete",
+      "projectInstanceId": "project-instance-a",
+      "sessionId": "session-c",
+      "kind": "DeleteSession",
+      "expected": {
+        "sessionStillListed": false,
+        "ownedRecordsRemaining": 0,
+        "lateWritesAllowed": false,
+        "sharedCourseDataPreserved": true
+      }
+    }
+  ],
+  "retrievalFailureCase": {
+    "policy": "actual-use",
+    "sessionId": "session-a",
+    "requestId": "request-a1",
+    "retrievalStatus": "failed",
+    "operationStatusWhileDegrading": "running",
+    "answerMode": "general",
+    "courseEvidence": [],
+    "notice": "课程检索失败，当前回答未使用课程证据",
+    "submittedMessageId": "message-a1",
+    "newUserMessages": 0,
+    "sameFaultInDevelopment": "expose-original-error"
+  },
+  "scenarioInterpretation": "Independent synthetic contract cases, not a runnable service or sequential UI script.",
+  "generalAnswerCases": [
+    {
+      "caseId": "general-1",
+      "message": {
+        "messageId": "general-answer-1",
+        "turnId": "general-turn-1",
+        "requestId": "general-request-1",
+        "role": "assistant",
+        "parts": [
+          {
+            "partId": "general-part-1",
+            "type": "text",
+            "text": "合成通识回答展示文本。"
+          }
+        ],
+        "completionStatus": "complete",
+        "answerMode": "general",
+        "retrievalStatus": "no-match",
+        "courseEvidence": [],
+        "basisLabel": "无相关资料；本回答未引用具体课程资料"
+      }
+    },
+    {
+      "caseId": "general-2",
+      "message": {
+        "messageId": "general-answer-2",
+        "turnId": "general-turn-2",
+        "requestId": "general-request-2",
+        "role": "assistant",
+        "parts": [
+          {
+            "partId": "general-part-2",
+            "type": "text",
+            "text": "合成通识回答展示文本。"
+          }
+        ],
+        "completionStatus": "complete",
+        "answerMode": "general",
+        "retrievalStatus": "not-indexed",
+        "courseEvidence": [],
+        "basisLabel": "未建课程库；本回答未引用具体课程资料"
+      }
+    },
+    {
+      "caseId": "general-3",
+      "message": {
+        "messageId": "general-answer-3",
+        "turnId": "general-turn-3",
+        "requestId": "general-request-3",
+        "role": "assistant",
+        "parts": [
+          {
+            "partId": "general-part-3",
+            "type": "text",
+            "text": "合成通识回答展示文本。"
+          }
+        ],
+        "completionStatus": "complete",
+        "answerMode": "general",
+        "retrievalStatus": "failed",
+        "courseEvidence": [],
+        "basisLabel": "课程检索失败，当前回答未使用课程证据"
+      }
+    }
+  ],
+  "eventResultReasons": [
+    "session-busy",
+    "stale-draft-revision",
+    "operation-terminal",
+    "session-deleted",
+    "save-failed"
+  ],
+  "contextCaptureEdgeCases": [
+    {
+      "condition": "selection-spans-methods",
+      "expected": "explicit-boundary-status-not-first-method-only",
+      "originalSelectionPreserved": true,
+      "canSubmitAsCompleteContext": false
+    },
+    {
+      "condition": "no-enclosing-method",
+      "expected": "method-absent-not-empty-method",
+      "originalSelectionPreserved": true
+    },
+    {
+      "condition": "editor-version-changed-before-capture",
+      "expected": "stale-context-not-mixed-version",
+      "originalSelectionPreserved": true,
+      "canSubmitAsCompleteContext": false
+    }
+  ],
+  "captureRoutingCase": {
+    "captureId": "capture-001",
+    "projectInstanceId": "project-instance-a",
+    "targetSessionIdAtStart": "session-a",
+    "activeSessionIdWhenBackgroundCaptureCompletes": "session-b",
+    "expectedDraftTarget": "session-a",
+    "deletedTargetAllowsWrite": false
+  },
+  "capturePendingCase": {
+    "pendingCaptureCount": 1,
+    "canEditDraft": true,
+    "canSubmitAsCompleteContext": false,
+    "onCaptureFailure": "preserve-draft-and-offer-recapture-not-silent-partial-send"
+  },
+  "draftCaptureInteractionCases": [
+    {
+      "caseId": "complete-preserves-new-text",
+      "captureId": "capture-001",
+      "readOnlyCode": true,
+      "before": {
+        "draftRevision": 4,
+        "text": "问题初稿",
+        "captureStatus": "pending"
+      },
+      "events": [
+        {
+          "type": "UpdateDraftText",
+          "expectedDraftRevision": 4,
+          "text": "补充后的问题"
+        },
+        {
+          "type": "CaptureCompleted",
+          "ticketStartDraftRevision": 4
+        }
+      ],
+      "expected": {
+        "text": "补充后的问题",
+        "captureStatus": "ready",
+        "rejectBecauseStartRevisionChanged": false,
+        "replaceWholeDraft": false
+      }
+    },
+    {
+      "caseId": "removed-pending-capture-does-not-return",
+      "captureId": "capture-001",
+      "readOnlyCode": true,
+      "before": {
+        "draftRevision": 7,
+        "text": "保留的问题",
+        "captureStatus": "pending"
+      },
+      "events": [
+        {
+          "type": "RemoveDraftCapture",
+          "expectedDraftRevision": 7,
+          "captureId": "capture-001"
+        },
+        {
+          "type": "CaptureCompleted",
+          "captureId": "capture-001"
+        }
+      ],
+      "expected": {
+        "text": "保留的问题",
+        "capturePresent": false,
+        "ticketValid": false,
+        "lateCompletionResult": "ignored-obsolete-capture",
+        "pendingCaptureBlocksSubmit": false
+      }
+    },
+    {
+      "caseId": "remove-ready-group-then-recapture",
+      "readOnlyCode": true,
+      "before": {
+        "draftCaptureIds": [
+          "capture-001",
+          "capture-002"
+        ]
+      },
+      "events": [
+        {
+          "type": "RemoveDraftCapture",
+          "captureId": "capture-001",
+          "groupScope": [
+            "code-selection",
+            "method",
+            "class-structure"
+          ]
+        },
+        {
+          "type": "NewSelectionAction",
+          "captureId": "capture-003",
+          "sameSelectedTextAs": "capture-001"
+        }
+      ],
+      "expected": {
+        "draftCaptureIds": [
+          "capture-002",
+          "capture-003"
+        ],
+        "submittedHistoryChanged": false,
+        "oldSnapshotOverwritten": false
+      }
+    },
+    {
+      "caseId": "submit-and-remove-race",
+      "startingDraftRevision": 10,
+      "captureId": "capture-002",
+      "orders": [
+        {
+          "first": "SubmitDraft",
+          "second": "RemoveDraftCapture",
+          "bothExpectedDraftRevision": 10,
+          "expectedSecondResult": "stale-draft-revision",
+          "archivedCaptureKept": true
+        },
+        {
+          "first": "RemoveDraftCapture",
+          "second": "SubmitDraft",
+          "bothExpectedDraftRevision": 10,
+          "expectedSecondResult": "stale-draft-revision",
+          "userMessageCreated": false
+        }
+      ]
+    }
+  ],
+  "markdownRenderingCase": {
+    "caseId": "markdown-and-idea-colors",
+    "textPart": {
+      "partId": "markdown-part-1",
+      "type": "text",
+      "format": "markdown",
+      "text": "## 示例\n\n- 使用 `count`：\n\n  ```java\n  // 示例\n  int count = 1;\n  String label = \"total\";\n  ```\n\n| 项目 | 说明 |\n| --- | --- |\n| count | 计数 |"
+    },
+    "typedCodePart": {
+      "partId": "typed-highlight-part",
+      "type": "code-selection",
+      "snapshotId": "synthetic-highlight-snapshot",
+      "languageId": "java",
+      "codeText": "String fence = \"```\";",
+      "readOnly": true
+    },
+    "expected": {
+      "textFormat": "markdown",
+      "nestedListPreserved": true,
+      "tablePreserved": true,
+      "codeHighlightProvider": "intellij",
+      "codeColorScheme": "current-editor-scheme",
+      "sameHighlighterForTypedAndMarkdown": true,
+      "typedCodeReparsedAsMarkdown": false,
+      "rawArchiveReplacedByHtml": false,
+      "llmReceivesHtml": false,
+      "unknownLanguage": "plain-code-normal-state",
+      "themeChange": "invalidate-render-cache"
+    },
+    "verificationScope": "synthetic-expectations-only-not-an-actual-render-or-screenshot"
+  },
+  "streamingCases": [
+    {
+      "caseId": "single-attempt-progress",
+      "attemptId": "attempt-stream-1",
+      "sessionId": "session-a",
+      "deltas": [
+        {
+          "seq": 1,
+          "text": "## 示例\n\n```ja"
+        },
+        {
+          "seq": 2,
+          "text": "va\nint count"
+        },
+        {
+          "seq": 3,
+          "text": " = 1;\n"
+        },
+        {
+          "seq": 4,
+          "text": "```\n"
+        }
+      ],
+      "modelEnded": {
+        "lastBodySeq": 4,
+        "finishReason": "stop",
+        "usageState": "unavailable",
+        "usage": null
+      },
+      "expected": {
+        "networkSubscriptionCount": 1,
+        "accumulatedMarkdown": "## 示例\n\n```java\nint count = 1;\n```\n",
+        "doneBeforeFinalCommit": false,
+        "rawMarkdownMutatedByRenderer": false
+      }
+    },
+    {
+      "caseId": "eof-without-finish",
+      "hasPartialBody": true,
+      "transportComplete": true,
+      "observedValidFinishReason": false,
+      "expected": {
+        "completeAnswer": false,
+        "partialBodyRetained": true,
+        "autoResend": false,
+        "usageDefaultedToZero": false
+      }
+    },
+    {
+      "caseId": "close-and-reopen-stream",
+      "closedViewInstanceId": "view-old",
+      "newViewInstanceId": "view-new",
+      "expected": {
+        "modelContinues": true,
+        "newNetworkSubscription": false,
+        "oldViewCallbackApplied": false,
+        "reopenUsesCoreCumulativeSnapshot": true
+      }
+    },
+    {
+      "caseId": "prefix-and-terminal-render",
+      "attemptId": "attempt-stream-1",
+      "latestReceivedRevision": 5,
+      "lastAppliedRevision": 3,
+      "results": [
+        {
+          "revision": 4,
+          "epoch": 1,
+          "activeEpoch": 1,
+          "appendPrefixVerified": true,
+          "expectedApply": true
+        },
+        {
+          "revision": 5,
+          "epoch": 1,
+          "activeEpochAfterTerminal": 2,
+          "expectedApply": false
+        }
+      ],
+      "expected": {
+        "terminalUsesExactLatestSnapshot": true,
+        "htmlWritesBusinessStatus": false
+      }
+    }
+  ],
+  "jvectorGenerationCase": {
+    "caseId": "generation-bound-ordinal-map",
+    "library": "JVector",
+    "databaseProductStatus": "H2-proposal",
+    "oldGeneration": {
+      "generationId": "gen-a",
+      "ordinalToChunk": {
+        "0": "chunk-a",
+        "1": "chunk-b"
+      }
+    },
+    "newGeneration": {
+      "generationId": "gen-b",
+      "ordinalToChunk": {
+        "0": "chunk-c",
+        "1": "chunk-a"
+      }
+    },
+    "inFlightQuery": {
+      "queryId": "query-old",
+      "fixedGenerationId": "gen-a",
+      "returnedOrdinal": 0,
+      "expectedChunkId": "chunk-a"
+    },
+    "restoring": {
+      "durableGenerationExists": true,
+      "sharedBuildFutureCount": 1,
+      "waitingSessionIds": [
+        "session-a",
+        "session-b"
+      ],
+      "cancelWaitFor": "session-a",
+      "expectedSharedBuildCanceled": false,
+      "expectedStateLabel": "课程索引恢复中",
+      "notIndexed": false
+    },
+    "expected": {
+      "searcherPerQuery": true,
+      "automaticFullScanFallback": false,
+      "annEqualsExactTopKClaim": false,
+      "realJVectorRunRepresentedHere": false
+    }
+  }
+}

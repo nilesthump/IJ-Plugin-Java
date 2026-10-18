@@ -1,0 +1,27 @@
+#!/bin/sh
+# Validate only local branch refs; fetch/HEAD/worktree metadata are out of scope.
+[ "$1" = prepared ] || exit 0
+
+is_zero() {
+    case "$1" in
+        ''|*[!0]*) return 1 ;;
+        *) return 0 ;;
+    esac
+}
+
+while read -r old_value new_value ref_name
+do
+    case "$ref_name" in
+        refs/heads/main|refs/heads/dev-manager|refs/heads/dev-a|refs/heads/dev-b|refs/heads/dev-c)
+            if is_zero "$new_value"; then
+                printf '%s\n' "Branch policy: fixed branch cannot be deleted or renamed: $ref_name" >&2
+                exit 1
+            fi
+            ;;
+        refs/heads/*)
+            printf '%s\n' "Branch policy: only main, dev-manager, dev-a, dev-b and dev-c are allowed: $ref_name" >&2
+            exit 1
+            ;;
+    esac
+done
+exit 0

@@ -1,0 +1,15 @@
+<idea-plugin>
+    <id>edu.courseassist.f0</id>
+    <name>Course Assistant F0</name>
+    <vendor>F0 Team</vendor>
+    <description><![CDATA[
+        F0 course assistant development baseline. Course RAG, session persistence,
+        model integration and final UI are assigned work; this bootstrap is not a finished assistant.
+    ]]></description>
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Course Assistant" anchor="right"
+                    factoryClass="edu.courseassist.bootstrap.BootstrapToolWindowFactory"/>
+    </extensions>
+</idea-plugin>

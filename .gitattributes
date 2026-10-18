@@ -1,0 +1,18 @@
+* text=auto
+*.md text eol=lf
+*.json text eol=lf
+*.java text eol=lf
+*.gradle text eol=lf
+*.properties text eol=lf
+*.yml text eol=lf
+*.ps1 text eol=lf
+*.sh text eol=lf
+.githooks/* text eol=lf
+gradlew text eol=lf
+gradlew.bat text eol=crlf
+*.jar binary
+*.pdf binary
+*.png binary
+# Architecture sources carry byte-level provenance hashes; preserve their original bytes.
+spec/architecture/** -text
+Claude_Code_*.txt -text
