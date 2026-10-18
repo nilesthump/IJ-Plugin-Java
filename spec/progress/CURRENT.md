@@ -8,7 +8,7 @@
 
 - 固定分支：main、dev-manager、dev-a、dev-b、dev-c；四个 dev 各自 PR 到 main，manager 独立。负责人工作区 `H:/IJ-Plugin-Java` 最终保持 dev-manager，成员独立克隆。
 - 单 Gradle Groovy 工程，Java 25；公共接口已落为源码，合成夹具不调用网络。Spring AI/H2/JVector/PDFBox/commonmark 是初始化依赖组合，不代表真实运行已验证。
-- 三个成员任务保持 READY / NOT_STARTED；负责人第 1 组公共骨架已实施，整体 IN_PROGRESS。实际范围和验证以 [负责人状态](../tasks/dev-manager/STATUS.md) 为准，其余四组尚未实现。各自记录更新仅在自己的任务目录，公共进度归负责人。
+- 三个成员任务保持 READY / NOT_STARTED；负责人第 1 组公共骨架已实施且本地验证通过。本组交付记录随 [PR #3](https://github.com/nilesthump/IJ-Plugin-Java/pull/3) 的 validation/scope 通过并合入 main 后生效，满足后第一组 DONE；此前仍为待集成。整体 IN_PROGRESS，其余四组尚未实现。实际范围见 [负责人状态](../tasks/dev-manager/STATUS.md)。各自记录更新仅在自己的任务目录，公共进度归负责人。
 - 正式架构状态仍见 WORKING.json，不伪造候选/冻结版本。
 
 ## 初始化验证状态

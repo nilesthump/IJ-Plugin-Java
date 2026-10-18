@@ -68,6 +68,7 @@ configurations.configureEach {
     exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
     exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
     exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-reflect'
     // The IDE owns the logging facade and its provider; duplicate APIs split service identity.
     exclude group: 'org.slf4j', module: 'slf4j-api'
 }

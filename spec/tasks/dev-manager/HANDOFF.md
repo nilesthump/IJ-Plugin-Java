@@ -21,16 +21,16 @@
 
 | 检查 / 场景 | 准确命令或操作 | 退出码 / 实际结果 | 原始记录位置 | 尚不能证明 |
 | --- | --- | --- | --- | --- |
-| 统一 All 入口 | STATUS 中准确命令 | 0 / PASS，9 项 JUnit、FixtureSmoke、check/buildPlugin | tmp/manager-task1/final-validation.log；build/test-results/test | 完整业务功能 |
+| 统一 All 入口 | STATUS 中准确命令 | 0 / PASS，9 项 JUnit、FixtureSmoke、check/buildPlugin | tmp/manager-task1/final-validation-reflect.log；build/test-results/test | 完整业务功能 |
 | 真实 IDEA 骨架 | 同一命令增加 -IdeSmoke | 0 / PASS；IU-262.10968.63、JBR25.0.4 | [运行报告](evidence/work-group-1-runtime.json) | headless；无可视交互或真实 API |
-| 发布 ZIP | .NET ZipArchive 枚举条目 | PASS，82,652,477 bytes；测试插件/重复 Kotlin/SLF4J API 均无 | build/distributions/IJ-Plugin-Java-0.1.0-dev.zip | 最终产品安装、课程/模型能力与业务恢复 |
+| 发布 ZIP | .NET ZipArchive 枚举条目 | PASS，79,474,195 bytes / 60 entries；测试插件/重复 Kotlin stdlib、reflect/SLF4J API 均无 | build/distributions/IJ-Plugin-Java-0.1.0-dev.zip | 最终产品安装、课程/模型能力与业务恢复 |
 
 未执行的写 NOT_RUN，失败附原因，不能用 fixture 代替真实能力结论。证据不得含 key、凭据 ref、私有课程/学生数据或完整秘密命令 dump。
 
 ## 继续动作
 
-- 当前状态：第 1 组实现与本地 All/IDE 验证完成，PR 门禁待完成；准确结果及已修复失败见 STATUS。
+- 当前状态：第 1 组实现与本地 All/IDE 验证完成；本交付记录在 PR #3 的 validation/scope 通过并合入 main 后生效，满足后第 1 组 DONE。不得提前声明门禁成功；准确结果及已修复失败见 STATUS。
 - 下一条可执行动作：第 1 组交付后，第 2 组先实现固定托管副本与 blob/sourceVersion 身份边界；仍在已有 dev-manager。
 - 成员接入：待成员提供实际适配器类名后由负责人注册；当前无未处理依赖请求。
-- PR：目标 main，来源 dev-manager，合并保留分支；创建/合入结果随后补录。
+- PR：[PR #3](https://github.com/nilesthump/IJ-Plugin-Java/pull/3)，目标 main，来源 dev-manager；代码首提交 `11f7c9e`，后续提交去重 kotlin-reflect 并更新本记录；检查/合入以该 PR 实际状态为准，保留分支。
 - 本任务 [STATUS.md](STATUS.md) 已同步，整体保持 IN_PROGRESS。
