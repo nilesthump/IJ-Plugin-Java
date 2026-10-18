@@ -1,0 +1,144 @@
+{
+  "testedAt": "2026-10-18T13:19:17.6915087+08:00",
+  "runtime": "WindowsPowerShell5",
+  "runtimeVersion": "5.1.26100.8655",
+  "hookRuntimeResolved": "/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe",
+  "sourceHashes": {
+    "preMerge": "ADA076FABC22E60350947F68ACF0A71E0497B72556A7B16793B42A304206D647",
+    "checkScope": "D0CAB267B958D20688A922B3013FBF5C94FBD51002BED0E4CA73C46A2349D47B",
+    "configureGit": "77129806649673C7E02224438C5AC01A169DB5E5CE94F50B7C4636CB40828EAA"
+  },
+  "count": 16,
+  "failed": 0,
+  "tests": [
+    {
+      "name": "member-main configure hooks using default root",
+      "expectedSuccess": true,
+      "actualSuccess": true,
+      "passed": true,
+      "exitCode": 0,
+      "output": "Repository-local hooks enabled; five fixed branches verified. No global Git settings changed.\r\nPull requests from every dev branch target main. Keep all five branches after merges."
+    },
+    {
+      "name": "member-main own commit passes real pre-commit",
+      "expectedSuccess": true,
+      "actualSuccess": true,
+      "passed": true,
+      "exitCode": 0,
+      "output": "[dev-a aca7ba4] independent assigned work\n 1 file changed, 1 insertion(+)\n create mode 100644 src/main/java/edu/courseassist/editor/own.txt\nWrite scope passed for dev-a (1 paths)."
+    },
+    {
+      "name": "member automatic three-way merge inherits shared main change",
+      "expectedSuccess": true,
+      "actualSuccess": true,
+      "passed": true,
+      "exitCode": 0,
+      "output": "Merge made by the 'ort' strategy.\n shared/upstream.txt | 1 +\n 1 file changed, 1 insertion(+)\n create mode 100644 shared/upstream.txt\nWrite scope passed for dev-a (1 paths)."
+    },
+    {
+      "name": "member-extra-shared configure hooks using default root",
+      "expectedSuccess": true,
+      "actualSuccess": true,
+      "passed": true,
+      "exitCode": 0,
+      "output": "Repository-local hooks enabled; five fixed branches verified. No global Git settings changed.\r\nPull requests from every dev branch target main. Keep all five branches after merges."
+    },
+    {
+      "name": "member-extra-shared own commit passes real pre-commit",
+      "expectedSuccess": true,
+      "actualSuccess": true,
+      "passed": true,
+      "exitCode": 0,
+      "output": "[dev-a ae6103b] independent assigned work\n 1 file changed, 1 insertion(+)\n create mode 100644 src/main/java/edu/courseassist/editor/own.txt\nWrite scope passed for dev-a (1 paths)."
+    },
+    {
+      "name": "stage a genuine three-way main merge without commit",
+      "expectedSuccess": true,
+      "actualSuccess": true,
+      "passed": true,
+      "exitCode": 0,
+      "output": "Automatic merge went well; stopped before committing as requested"
+    },
+    {
+      "name": "main-inherited shared change passes explicit staged check",
+      "expectedSuccess": true,
+      "actualSuccess": true,
+      "passed": true,
+      "exitCode": 0,
+      "output": "Write scope passed for dev-a (1 paths)."
+    },
+    {
+      "name": "member extra shared edit fails explicit staged check",
+      "expectedSuccess": false,
+      "actualSuccess": false,
+      "passed": true,
+      "exitCode": 1,
+      "output": "Outside dev-a write scope: shared/upstream.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\merge-e4b050b181554a4292a0827178a1bab3\\member-extra-shared\\checkout\\scripts\\check-scope\r\n.ps1:48 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: shared/upstream.txt. Record a request in your task; do not edit shared  \r\n   files."
+    },
+    {
+      "name": "member extra shared edit fails real merge commit",
+      "expectedSuccess": false,
+      "actualSuccess": false,
+      "passed": true,
+      "exitCode": 1,
+      "output": "Outside dev-a write scope: shared/upstream.txt. Record a request in your task; do not edit shared files.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\merge-e4b050b181554a4292a0827178a1bab3\\member-extra-shared\\checkout\\scripts\\check-scope\r\n.ps1:48 char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: shared/upstream.txt. Record a request in your task; do not edit shared  \r\n   files."
+    },
+    {
+      "name": "manager-main configure hooks using default root",
+      "expectedSuccess": true,
+      "actualSuccess": true,
+      "passed": true,
+      "exitCode": 0,
+      "output": "Repository-local hooks enabled; five fixed branches verified. No global Git settings changed.\r\nPull requests from every dev branch target main. Keep all five branches after merges."
+    },
+    {
+      "name": "manager-main own commit passes real pre-commit",
+      "expectedSuccess": true,
+      "actualSuccess": true,
+      "passed": true,
+      "exitCode": 0,
+      "output": "[dev-manager 498f419] independent assigned work\n 1 file changed, 1 insertion(+)\n create mode 100644 src/main/java/edu/courseassist/core/own.txt\nWrite scope passed for dev-manager (1 paths)."
+    },
+    {
+      "name": "manager automatic merge inherits member PDF change",
+      "expectedSuccess": true,
+      "actualSuccess": true,
+      "passed": true,
+      "exitCode": 0,
+      "output": "Merge made by the 'ort' strategy.\n src/main/java/edu/courseassist/pdf/upstream.txt | 1 +\n 1 file changed, 1 insertion(+)\n create mode 100644 src/main/java/edu/courseassist/pdf/upstream.txt\nWrite scope passed for dev-manager (1 paths)."
+    },
+    {
+      "name": "wrong-source configure hooks using default root",
+      "expectedSuccess": true,
+      "actualSuccess": true,
+      "passed": true,
+      "exitCode": 0,
+      "output": "Repository-local hooks enabled; five fixed branches verified. No global Git settings changed.\r\nPull requests from every dev branch target main. Keep all five branches after merges."
+    },
+    {
+      "name": "wrong-source own commit passes real pre-commit",
+      "expectedSuccess": true,
+      "actualSuccess": true,
+      "passed": true,
+      "exitCode": 0,
+      "output": "[dev-a 00aa64a] independent assigned work\n 1 file changed, 1 insertion(+)\n create mode 100644 src/main/java/edu/courseassist/editor/own.txt\nWrite scope passed for dev-a (1 paths)."
+    },
+    {
+      "name": "automatic merge from another development branch with foreign PDF content is rejected",
+      "expectedSuccess": false,
+      "actualSuccess": false,
+      "passed": true,
+      "exitCode": 1,
+      "output": "Outside dev-a write scope: src/main/java/edu/courseassist/pdf/not-main.txt. Record a request in your task; do not edit shared fil\r\nes.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\merge-e4b050b181554a4292a0827178a1bab3\\wrong-source\\checkout\\scripts\\check-scope.ps1:48\r\n char:21\r\n+ ... $outside) { throw \"Outside $Branch write scope: $path. Record a reque ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Outside dev-a w...t shared files.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Outside dev-a write scope: src/main/java/edu/courseassist/pdf/not-main.txt. Record a request in yo \r\n   ur task; do not edit shared files.\r\n \r\nNot committing merge; use 'git commit' to complete the merge."
+    },
+    {
+      "name": "wrong-source MERGE_HEAD fails explicit staged check",
+      "expectedSuccess": false,
+      "actualSuccess": false,
+      "passed": true,
+      "exitCode": 1,
+      "output": "Only merge the fetched origin/main into an assigned development branch.\r\nAt H:\\IJ-Plugin-Java\\tmp\\bootstrap-review\\merge-e4b050b181554a4292a0827178a1bab3\\wrong-source\\checkout\\scripts\\check-scope.ps1:27\r\n char:17\r\n+ ...             throw 'Only merge the fetched origin/main into an assigne ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Only merge the ...lopment branch.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Only merge the fetched origin/main into an assigned development branch."
+    }
+  ],
+  "limits": "All refs/remotes are isolated local fixtures. Publisher commits simulate already-reviewed upstream integration. This does not prove remote GitHub branch protection."
+}

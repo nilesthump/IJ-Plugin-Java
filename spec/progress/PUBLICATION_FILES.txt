@@ -1,5 +1,6 @@
 .gitattributes
 .githooks/pre-commit
+.githooks/pre-merge-commit
 .githooks/pre-push
 .githooks/reference-transaction
 .github/branch-scopes.json
@@ -7,6 +8,7 @@
 .github/rulesets/01-deny-additional-branches.json
 .github/rulesets/02-preserve-fixed-branches.json
 .github/rulesets/03-main-pr-and-validation.json
+.github/workflows/scope.yml
 .github/workflows/validation.yml
 .gitignore
 AGENTS.md
@@ -49,7 +51,10 @@ spec/progress/INITIALIZATION.md
 spec/progress/PUBLICATION_FILES.txt
 spec/progress/PUBLICATION_SCOPE.md
 spec/progress/evidence/git-policy-tests.json
+spec/progress/evidence/merge-tests-ps5.json
+spec/progress/evidence/merge-tests-ps7.json
 spec/progress/evidence/public-history-audit.json
+spec/progress/evidence/scope-tests-windows-powershell.json
 spec/progress/evidence/scope-tests.json
 spec/tasks/README.md
 spec/tasks/dev-a/DEPENDENCY_REQUEST.md

@@ -4,7 +4,7 @@
 
 | 分支 | 使用人/用途 | 合入方式 |
 | --- | --- | --- |
-| `main` | 已集成基线 | 通过 PR，`validation` 通过后合入 |
+| `main` | 已集成基线 | 通过 PR，`validation` 与 `scope` 通过后合入 |
 | `dev-manager` | 负责人；公共契约、构建、核心编排和集成 | `dev-manager` → `main` |
 | `dev-a` | 成员 A；任务包定义的范围 | `dev-a` → `main` |
 | `dev-b` | 成员 B；任务包定义的范围 | `dev-b` → `main` |
@@ -29,6 +29,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/git/Configure-Git.ps
 - `.githooks/reference-transaction` 在 `prepared` 阶段拒绝非白名单 `refs/heads/*` 的写入，以及五个固定分支的删除。改名需要删除原引用，因此也被拒绝。
 - `.githooks/pre-push` 拒绝推送额外分支名、删除固定远端分支和非快进更新。旧远端提交本地未知时要求先获取远端状态。
 - `.githooks/pre-commit` 调用 `scripts/check-scope.ps1 -Staged`，按共享分支范围检查已暂存内容；`main` 不接受本地开发提交。初始仓库首提交须在启用钩子前完成。该钩子优先使用 Windows PowerShell，找不到时使用 `pwsh`，缺少校验器或运行环境则明确失败。
+- `.githooks/pre-merge-commit` 对自动合并运行相同范围检查，比较候选树与已获取的 `origin/main`，不把主线继承文件算作成员修改；手动完成的合并校验单一MERGE_HEAD来自origin/main。额外改动公共文件仍拒绝。只从origin/main同步，不用合并其他dev分支绕过PR。
 - 远程跟踪引用、`HEAD`、标签和 detached 工作树不属于分支白名单检查范围；普通获取远端与 detached 检查操作正常工作。
 
 Git 的参考事务钩子可在 `prepared` 阶段以非零退出中止引用更新；推送前钩子可拒绝整次推送。参见 [Git hooks 官方说明](https://git-scm.com/docs/githooks)。本地钩子需要每个克隆启用，具有本机配置写权限的人可以关闭它们，因此服务器规则才是远程仓库的强制边界。
@@ -39,7 +40,7 @@ Git 的参考事务钩子可在 `prepared` 阶段以非零退出中止引用更�
 
 1. `01-deny-additional-branches.json`：对所有分支应用创建限制，排除五个允许名称；无绕过主体。
 2. `02-preserve-fixed-branches.json`：五个固定分支禁止删除和非快进更新；无绕过主体。
-3. `03-main-pr-and-validation.json`：`main` 必须经过 PR，要求 `validation` 状态通过及讨论已解决；无管理员直推绕过。初始不强制独立人员审批，不要求尚未建立的团队/CODEOWNERS 身份。
+3. `03-main-pr-and-validation.json`：`main` 必须经过 PR，要求 `validation` 与 `scope` 状态通过及讨论已解决；无管理员直推绕过。初始不强制独立人员审批，不要求尚未建立的团队/CODEOWNERS 身份。
 
 四个开发分支允许其使用人普通推送，不要求向开发分支提 PR。所有开发 PR 目标均为 `main`，CI 同时校验来源为固定开发分支。规则禁止额外远端分支名称，并不限制只读获取或建立远程跟踪引用。
 

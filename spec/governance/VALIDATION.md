@@ -21,7 +21,7 @@ Wrapper 来自已安装官方 Gradle 的 wrapper 任务；初始化时隔离环�
 
 GitHub 构建 context 为 `validation`，main push、普通 `pull_request` 与手动 `workflow_dispatch` 执行同一入口；开发分支只推送时不重复构建。PR只接受同仓库四个固定dev分支并直接目标main。构建job只读，不持有机密或写凭据。
 
-独立 `F0 scope` 工作流从main处理 `workflow_run` 完成事件，只读取PR文件元数据、main上的策略，并发布 `scope` 状态；不检出或执行PR代码、不读其artifact。校验来源/目标、最新head、全部文件数与重命名前后路径。这样成员修改自己PR中的检查器不会给范围检查放行。scope工作流首次进入main后，负责人将其加入main的必需状态；当前生效状态看CURRENT。
+独立 `F0 scope` 工作流从main处理 `workflow_run` 完成事件，只读取PR文件元数据、main上的策略，并发布 `scope` 状态；不检出或执行PR代码、不读其artifact。校验来源/目标、最新head、全部文件数与重命名前后路径；同SHA的多个开放PR保守聚合。这样正常协作下成员修改自己PR中的检查器不会给范围检查放行。main现要求validation与scope；当前完成证据看CURRENT。
 
 构建checkout不保留凭据，不传secrets、不使用共享可写缓存；scope只额外持有发布状态所需权限。不能给执行PR代码的job加入写权限或机密环境。公开fork PR不接受。管理员也按main的PR/CI规则操作；初始建库提交是一次性引导，不作为日常直推先例。
 

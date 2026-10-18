@@ -1,7 +1,7 @@
 {
-  "testedAt": "2026-10-18T12:39:09.9204398+08:00",
+  "testedAt": "2026-10-18T13:20:52.3617275+08:00",
   "gitVersion": "git version 2.52.0.windows.1",
-  "testRoot": "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8",
+  "testRoot": "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-398f6e9b9ba94ac6bee5de7473ebc9d1",
   "successful": true,
   "operations": [
     {
@@ -14,7 +14,7 @@
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "Initialized empty Git repository in H:/IJ-Plugin-Java/tmp/bootstrap-git-tests/run-9f2f7e18f56344a79866b88e3844e8b8/checkout/.git/"
+      "output": "Initialized empty Git repository in H:/IJ-Plugin-Java/tmp/bootstrap-git-tests/run-398f6e9b9ba94ac6bee5de7473ebc9d1/checkout/.git/"
     },
     {
       "name": "local identity name",
@@ -51,7 +51,7 @@
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "warning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nwarning: in the working copy of 'fixture.txt', LF will be replaced by CRLF the next time Git touches it"
+      "output": "warning: in the working copy of 'fixture.txt', LF will be replaced by CRLF the next time Git touches it"
     },
     {
       "name": "initial commit",
@@ -63,7 +63,7 @@
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "[main (root-commit) f60e0be] test fixture\n 1 file changed, 1 insertion(+)\n create mode 100644 fixture.txt"
+      "output": "[main (root-commit) 11ef38a] test fixture\n 1 file changed, 1 insertion(+)\n create mode 100644 fixture.txt"
     },
     {
       "name": "record initial commit",
@@ -74,7 +74,7 @@
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "f60e0be4d0c8f92be38b69e574ea7a0c5efc301b"
+      "output": "11ef38a9bdd6064a52e18ecb922a989680186a81"
     },
     {
       "name": "create fixed dev-manager",
@@ -203,7 +203,7 @@
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "warning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nwarning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nHEAD is now at f60e0be test fixture"
+      "output": "HEAD is now at 11ef38a test fixture"
     },
     {
       "name": "reattach fixed branch allowed",
@@ -214,7 +214,7 @@
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "warning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nwarning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nSwitched to branch 'dev-manager'"
+      "output": "Switched to branch 'dev-manager'"
     },
     {
       "name": "stage out-of-scope fixture",
@@ -225,7 +225,7 @@
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "warning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nwarning: in the working copy of 'outside-scope.txt', LF will be replaced by CRLF the next time Git touches it"
+      "output": "warning: in the working copy of 'outside-scope.txt', LF will be replaced by CRLF the next time Git touches it"
     },
     {
       "name": "pre-commit forwards scope failure",
@@ -237,7 +237,7 @@
       "expectedSuccess": false,
       "exitCode": 1,
       "passed": true,
-      "output": "warning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied"
+      "output": ""
     },
     {
       "name": "unstage scope fixture",
@@ -257,13 +257,13 @@
         "worktree",
         "add",
         "--detach",
-        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\detached-worktree",
+        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-398f6e9b9ba94ac6bee5de7473ebc9d1\\detached-worktree",
         "HEAD"
       ],
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "HEAD is now at f60e0be test fixture\nPreparing worktree (detached HEAD f60e0be)\nwarning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied"
+      "output": "HEAD is now at 11ef38a test fixture\nPreparing worktree (detached HEAD 11ef38a)"
     },
     {
       "name": "remote tracking update allowed",
@@ -282,12 +282,12 @@
       "arguments": [
         "init",
         "--bare",
-        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git"
+        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-398f6e9b9ba94ac6bee5de7473ebc9d1\\remote.git"
       ],
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "Initialized empty Git repository in H:/IJ-Plugin-Java/tmp/bootstrap-git-tests/run-9f2f7e18f56344a79866b88e3844e8b8/remote.git/"
+      "output": "Initialized empty Git repository in H:/IJ-Plugin-Java/tmp/bootstrap-git-tests/run-398f6e9b9ba94ac6bee5de7473ebc9d1/remote.git/"
     },
     {
       "name": "attach test remote",
@@ -295,7 +295,7 @@
         "remote",
         "add",
         "origin",
-        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git"
+        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-398f6e9b9ba94ac6bee5de7473ebc9d1\\remote.git"
       ],
       "expectedSuccess": true,
       "exitCode": 0,
@@ -312,7 +312,7 @@
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "To H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git\n * [new branch]      dev-a -> dev-a\n * [new branch]      dev-b -> dev-b\n * [new branch]      dev-c -> dev-c\n * [new branch]      dev-manager -> dev-manager\n * [new branch]      main -> main"
+      "output": "To H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-398f6e9b9ba94ac6bee5de7473ebc9d1\\remote.git\n * [new branch]      dev-a -> dev-a\n * [new branch]      dev-b -> dev-b\n * [new branch]      dev-c -> dev-c\n * [new branch]      dev-manager -> dev-manager\n * [new branch]      main -> main"
     },
     {
       "name": "push additional remote branch rejected",
@@ -324,7 +324,7 @@
       "expectedSuccess": false,
       "exitCode": 1,
       "passed": true,
-      "output": "Branch policy: pushing an additional branch is forbidden: refs/heads/feature-push\nerror: failed to push some refs to 'H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git'"
+      "output": "Branch policy: pushing an additional branch is forbidden: refs/heads/feature-push\nerror: failed to push some refs to 'H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-398f6e9b9ba94ac6bee5de7473ebc9d1\\remote.git'"
     },
     {
       "name": "push fixed deletion rejected",
@@ -337,14 +337,14 @@
       "expectedSuccess": false,
       "exitCode": 1,
       "passed": true,
-      "output": "Branch policy: deleting a fixed remote branch is forbidden: refs/heads/dev-a\nerror: failed to push some refs to 'H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git'"
+      "output": "Branch policy: deleting a fixed remote branch is forbidden: refs/heads/dev-a\nerror: failed to push some refs to 'H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-398f6e9b9ba94ac6bee5de7473ebc9d1\\remote.git'"
     },
     {
       "name": "test remote branch for tracking only",
       "arguments": [
         "update-ref",
         "refs/heads/external-only",
-        "f60e0be4d0c8f92be38b69e574ea7a0c5efc301b"
+        "11ef38a9bdd6064a52e18ecb922a989680186a81"
       ],
       "expectedSuccess": true,
       "exitCode": 0,
@@ -360,7 +360,7 @@
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "From H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote\n * [new branch]      external-only -> origin/external-only"
+      "output": "From H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-398f6e9b9ba94ac6bee5de7473ebc9d1\\remote\n * [new branch]      external-only -> origin/external-only"
     },
     {
       "name": "stage second fixture",
@@ -371,7 +371,7 @@
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "warning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nwarning: in the working copy of 'fixture.txt', LF will be replaced by CRLF the next time Git touches it"
+      "output": "warning: in the working copy of 'fixture.txt', LF will be replaced by CRLF the next time Git touches it"
     },
     {
       "name": "fixed branch commit allowed",
@@ -383,7 +383,7 @@
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "[dev-manager 19b9517] test second commit\n 1 file changed, 1 insertion(+), 1 deletion(-)\nwarning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied\nwarning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied"
+      "output": "[dev-manager 1f0a2c8] test second commit\n 1 file changed, 1 insertion(+), 1 deletion(-)"
     },
     {
       "name": "fast forward push allowed",
@@ -395,7 +395,7 @@
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "To H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git\n   f60e0be..19b9517  dev-manager -> dev-manager"
+      "output": "To H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-398f6e9b9ba94ac6bee5de7473ebc9d1\\remote.git\n   11ef38a..1f0a2c8  dev-manager -> dev-manager"
     },
     {
       "name": "forced rewind push rejected",
@@ -403,12 +403,12 @@
         "push",
         "--force",
         "origin",
-        "f60e0be4d0c8f92be38b69e574ea7a0c5efc301b:refs/heads/dev-manager"
+        "11ef38a9bdd6064a52e18ecb922a989680186a81:refs/heads/dev-manager"
       ],
       "expectedSuccess": false,
       "exitCode": 1,
       "passed": true,
-      "output": "Branch policy: non-fast-forward updates are forbidden: refs/heads/dev-manager\nerror: failed to push some refs to 'H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git'"
+      "output": "Branch policy: non-fast-forward updates are forbidden: refs/heads/dev-manager\nerror: failed to push some refs to 'H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-398f6e9b9ba94ac6bee5de7473ebc9d1\\remote.git'"
     },
     {
       "name": "verify local branch set",
@@ -428,13 +428,13 @@
         "clone",
         "--branch",
         "dev-a",
-        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\remote.git",
-        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\clone"
+        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-398f6e9b9ba94ac6bee5de7473ebc9d1\\remote.git",
+        "H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-398f6e9b9ba94ac6bee5de7473ebc9d1\\clone"
       ],
       "expectedSuccess": true,
       "exitCode": 0,
       "passed": true,
-      "output": "Cloning into 'H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-9f2f7e18f56344a79866b88e3844e8b8\\clone'...\ndone.\nwarning: unable to access 'C:\\Users\\21441/.config/git/ignore': Permission denied"
+      "output": "Cloning into 'H:\\IJ-Plugin-Java\\tmp\\bootstrap-git-tests\\run-398f6e9b9ba94ac6bee5de7473ebc9d1\\clone'...\ndone."
     },
     {
       "name": "clone setup retains fixed five only",

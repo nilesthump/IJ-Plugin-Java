@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$Staged, [string]$BaseRef, [string]$Branch,
+param([switch]$Staged, [switch]$MergeCommit, [string]$BaseRef, [string]$Branch,
       [string]$RepositoryPath, [string]$PolicyPath)
 $ErrorActionPreference = 'Stop'
 if (-not $RepositoryPath) { $RepositoryPath = Split-Path -Parent $PSScriptRoot }
@@ -14,7 +14,23 @@ $policy = Get-Content -LiteralPath $PolicyPath -Raw -Encoding UTF8 | ConvertFrom
 if ($Branch -notin $policy.branches) { throw "Forbidden branch: $Branch" }
 if ($Branch -eq 'main') { throw 'main accepts reviewed PRs. Develop on the assigned existing dev branch.' }
 if ($Staged) {
-    $changed = @(& git -c core.quotePath=false diff --cached --name-only --no-renames --diff-filter=ACDMRTUXB)
+    $comparison = @()
+    $mergeHeadPath = (& git rev-parse --git-path MERGE_HEAD)
+    if ($LASTEXITCODE -ne 0) { throw 'Could not locate merge state.' }
+    $hasMergeHead = Test-Path -LiteralPath $mergeHeadPath
+    if ($MergeCommit -or $hasMergeHead) {
+        $mainHead = (& git rev-parse --verify refs/remotes/origin/main)
+        if ($LASTEXITCODE -ne 0) { throw 'Fetch origin/main before synchronizing the assigned branch.' }
+        if ($hasMergeHead) {
+            $mergeHeads = @(Get-Content -LiteralPath $mergeHeadPath)
+            if ($mergeHeads.Count -ne 1 -or $mergeHeads[0] -ne $mainHead) {
+                throw 'Only merge the fetched origin/main into an assigned development branch.'
+            }
+        }
+        # Main's inherited files are not this member's edits; extra resolutions still are.
+        $comparison = @($mainHead)
+    }
+    $changed = @(& git -c core.quotePath=false diff --cached --name-only --no-renames --diff-filter=ACDMRTUXB @comparison)
 } elseif ($BaseRef) {
     & git rev-parse --verify "$BaseRef^{commit}" *> $null
     if ($LASTEXITCODE -ne 0) { throw "Cannot resolve base: $BaseRef" }
