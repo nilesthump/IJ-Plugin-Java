@@ -1,5 +1,7 @@
 # F0 资料、会话与恢复设计讨论
 
+第四组实施回填（2026-10-18）：真实 H2 session/project 根、原始typed代码/草稿/标签、提交去重、同事务attempt与活跃槽、终态释放、DELETING/DELETE_FAILED全清、项目目录身份/明确关联及存储阻塞恢复已接线。协调方先本地保存冻结前缀再关闭H2；JVM hook有15s上限，强杀仅恢复最后提交。具体表/参数/证据与未执行边界见 [WORK_GROUP_4](../tasks/dev-manager/WORK_GROUP_4.md) 和 [API第10节](../contracts/API.md#10-第四组真实控制器与本地恢复)。以下历史提案保留，不把实现回填当正式冻结或真实API/可视UI验收。
+
 更新：2026-10-16（Asia/Shanghai）。状态：讨论稿，未生成正式候选或冻结版本。权威状态为 `WORKING.json`；上下文压缩详见 `SESSION_CONTEXT.md`。
 
 ## 1. 已确认的边界

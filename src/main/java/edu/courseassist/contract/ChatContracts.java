@@ -30,7 +30,7 @@ public final class ChatContracts {
     public enum AnswerMode { COURSE_GROUNDED, GENERAL, NOT_YET_KNOWN }
     public enum RetrievalStatus { NOT_STARTED, RESTORING, EVIDENCE_FOUND, NO_MATCH, NO_INDEX, FAILED }
     public enum ContextEligibility { INELIGIBLE, ELIGIBLE_DURABLE_SUCCESS }
-    public enum SessionAction { EDIT_DRAFT, REMOVE_CAPTURE, SUBMIT, STOP, RETRY, COMPACT, CLOSE_TAB, DELETE }
+    public enum SessionAction { EDIT_DRAFT, REMOVE_CAPTURE, SUBMIT, STOP, RETRY, COMPACT, CLOSE_TAB, DELETE, RECOVER }
 
     public sealed interface MessagePart permits TextPart, CodePart { String partId(); }
 
@@ -209,7 +209,7 @@ public final class ChatContracts {
 
     public sealed interface ViewEvent permits CreateSession, SelectSession, UpdateDraftText, SubmitDraft,
             CloseSessionTab, OpenSessionTab, DeleteSession, RemoveDraftCapture, StopOperation, RetryAttempt,
-            ManualCompact, ReorderTabs, OpenCitation { EventMeta meta(); }
+            ManualCompact, ReorderTabs, OpenCitation, RecoverSession { EventMeta meta(); }
 
     private static void target(EventMeta meta) {
         if (Objects.requireNonNull(meta, "meta").sessionId().isEmpty()) {
@@ -228,6 +228,8 @@ public final class ChatContracts {
     public record CloseSessionTab(EventMeta meta) implements ViewEvent { public CloseSessionTab { target(meta); } }
     public record DeleteSession(EventMeta meta) implements ViewEvent { public DeleteSession { target(meta); } }
     public record ManualCompact(EventMeta meta) implements ViewEvent { public ManualCompact { target(meta); } }
+    /** Retry local storage coordination only; never resends a model request. */
+    public record RecoverSession(EventMeta meta) implements ViewEvent { public RecoverSession { target(meta); } }
 
     public record UpdateDraftText(EventMeta meta, String draftId, long expectedDraftRevision, String text) implements ViewEvent {
         public UpdateDraftText { target(meta); requireId(draftId, "draftId"); requireRevision(expectedDraftRevision); Objects.requireNonNull(text, "text"); }

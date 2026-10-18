@@ -1,6 +1,6 @@
 # 负责人：公共骨架、核心与主线验收：交接模板
 
-本页保留前两组历史交接，最新交接见后续“第三组交接”。第四、第五组及整体产品未完成。历史 PDF 工作补充保持原文，属于本轮开始前已有改动。
+本页保留历史交接，最新为第四组交接。第四组在本交付PR门禁/main合入核验后DONE；第五组与整体产品未完成。历史PDF工作补充属于本轮开工前已有改动。
 
 ## 身份与读取
 
@@ -65,3 +65,14 @@
 ### 第三组收尾：终止查询许可（2026-10-18）
 
 在 PR #5 完成基础交付后，收尾复核将查询许可收紧为仅 Decision.RUNNING，避免取消转入终态保存时、lease 尚未释放的排队查询重新获得嵌入资格。可控执行器/延迟终态保存回归验证旧查询的嵌入与模型调用均为 0，两路独立增量检查均闭合。最新统一 All + IdeSmoke 退出 0，共 52 项 JUnit（本组新增 21 项）；原始日志 `tmp/manager-task3/terminal-fence-validation.log`。最终证据见原 work-group-3-validation.json / runtime.json / review.md。该修复和完成记录经 [PR #6](https://github.com/nilesthump/IJ-Plugin-Java/pull/6) 最新 head 的 validation/scope 并合入 main 后生效；未扩展至第四组，历史 51 项记录属于 PR #5 的真实交付批次。
+
+## 第四组交接（2026-10-18）
+
+- dev-manager；开工 HEAD/main `8a68daa35e6d3229c9255227da3b0988ba7cf160`。前三组及PR #6收尾已集成。已有方案/PDF改动保留，未创建分支/改变成员HEAD，未改editor/pdf/ui或成员任务。
+- 真实核心接入及候选参数见 [WORK_GROUP_4](WORK_GROUP_4.md) / API第10节，验证见 [STATUS](STATUS.md)。先等待应用controllers和项目openSessions绑定完成，再提供公共SessionController/SelectionSink。未知身份要求明确选择；副本不继承，显式关联空目标且检查绑定版本/占用。UI与实际适配器仍由成员交付。
+- 所有session私有写入在H2短事务里检查根和operation。新Submit/Retry/Manual先检查归属/实例/LIVE，再按commandId返回既有operation，只有新请求检查busy、blocked、revision和epoch；提交不跨网络，终态与活跃槽释放共同提交。捕获只补齐原票据组；首次INSERT也检查撤销。不要使用upsert复活或以当前标签重路由迟到结果。
+- ContextPlanner只摘要较早完整终止前缀，ReactContext资格统一过滤；旧摘要加新增前缀，完整fingerprint与POLICY/父checkpoint复验。候选与激活分开，operation.revoked和runtimeEpoch通过事务裁决停止/激活竞争。未完成生成只供档案显示，不进入下一模型、摘要或协议。
+- 停用/项目关闭/应用退出先失效旧工作，再保存冻结前缀并协调槽，不等远端物理取消。保存失败保留原始渲染和阻塞，OFF/ON不解除；RecoverSession只重试本地存储。关闭失败保留旧实例/overlay，新开先正确保存原尾部才换实例。JVM退出hook有15s上限；人工退出/强杀仍未单独验证。
+- Delete先持久栅栏再清全部私有H2/内存和布局；没有私有旁存。无根预留票据也清理，迟到回调不得新建诊断。失败保留DELETE_FAILED，继续Delete才能报告完整成功；共享PDF/向量保留。
+- 最终 All + IdeSmoke 退出0，确切JUnit计数与报告见 evidence/work-group-4-validation.json / runtime.json。两路独立检查0遗留；原始失败日志与修复说明未覆盖。真实API、语义质量、成员可视联调及规模仍NOT_RUN，无付费调用。
+- 本PR validation/scope和main合入核验满足后第四组DONE，整体IN_PROGRESS、第五组NOT_STARTED。本轮完成后停在第四组；下一位先核对本轮PR/delivery与origin/main，再按用户要求启动第五组或成员集成，不重做已有场景。开工前方案/PDF仍独立留在工作区。

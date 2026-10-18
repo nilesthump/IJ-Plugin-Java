@@ -8,7 +8,7 @@
 
 - 固定分支：main、dev-manager、dev-a、dev-b、dev-c；四个 dev 各自 PR 到 main，manager 独立。负责人工作区 `H:/IJ-Plugin-Java` 最终保持 dev-manager，成员独立克隆。
 - 单 Gradle Groovy 工程，Java 25；公共接口已落为源码，合成夹具不调用网络。Spring AI/H2/JVector/PDFBox/commonmark 是初始化依赖组合，不代表真实运行已验证。
-- 三个成员任务保持 READY / NOT_STARTED。负责人第 1–3 组已分别通过 PR #3 / #4 / #5 门禁并合入 main；第三组已核验完成。第 4–5 组未开始，整体 IN_PROGRESS，详见 [负责人状态](../tasks/dev-manager/STATUS.md)。公共进度归负责人，成员各自维护本任务目录。
+- 三个成员任务保持READY / NOT_STARTED。负责人第1–3组及PR #6收尾已合入main；第四组已实现/已验证，本交付PR门禁与main合入核验后DONE；第五组NOT_STARTED，整体IN_PROGRESS。详见[负责人状态](../tasks/dev-manager/STATUS.md)。公共进度归负责人。
 - 正式架构状态仍见 WORKING.json，不伪造候选/冻结版本。
 
 ## 初始化验证状态
@@ -52,3 +52,11 @@
 ### 第三组收尾：终止查询许可（2026-10-18）
 
 在 PR #5 完成基础交付后，收尾复核将查询许可收紧为仅 Decision.RUNNING，避免取消转入终态保存时、lease 尚未释放的排队查询重新获得嵌入资格。可控执行器/延迟终态保存回归验证旧查询的嵌入与模型调用均为 0，两路独立增量检查均闭合。最新统一 All + IdeSmoke 退出 0，共 52 项 JUnit（本组新增 21 项）；原始日志 `tmp/manager-task3/terminal-fence-validation.log`。最终证据见原 work-group-3-validation.json / runtime.json / review.md。该修复和完成记录经 [PR #6](https://github.com/nilesthump/IJ-Plugin-Java/pull/6) 最新 head 的 validation/scope 并合入 main 后生效；未扩展至第四组，历史 51 项记录属于 PR #5 的真实交付批次。
+
+## 负责人第四组：会话、提交、恢复、压缩与删除（2026-10-18）
+
+在PR #6 main基线 `8a68daa` 上完成真实H2项目/session根、原始typed代码/草稿/标签、原子提交去重和单槽生命周期、捕获撤销、手动/自动摘要及checkpoint资格、根删除全清/继续清理、目录身份移动/复制隔离与显式关联、PasswordSafe/全应用epoch和未保存阻塞恢复。行为与候选参数见 [第四组记录](../tasks/dev-manager/WORK_GROUP_4.md)，准确命令/测试/独立检查见 [负责人状态](../tasks/dev-manager/STATUS.md) 与 evidence/work-group-4-*。
+
+最终统一All + IdeSmoke退出0，实际JUnit计数见验证汇总；FixtureSmoke/插件打包、本机IU-262.10968.63/JBR25.0.4的真实服务/H2恢复/硬删除和Windows同卷目录移动/复制通过。两路独立检查未闭合均0，实施失败保留后已修复重验。没有真实付费请求；真实平台/摘要语义/tokenizer、成员可视联调、人工PDF页定位/退出与规模仍NOT_RUN，架构未冻结。
+
+本记录仅在本交付PR最新head的validation/scope通过、合入main并fetch核验后作为第四组DONE；满足前为已实现/已验证待集成。第五组NOT_STARTED、整体IN_PROGRESS，不扩展第五组。固定dev-manager保留，开工前方案/PDF差异未纳入本组交付。

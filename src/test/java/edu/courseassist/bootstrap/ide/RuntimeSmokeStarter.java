@@ -45,9 +45,11 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
                     "background-work","Swing-ToolWindow-content-release","Java-PSI-read",
                     "H2-commit-reopen","JVector-build-query","SpringAI-local-chat-stream-embedding-no-retry",
                     "corpus-managed-PDF-H2-generation-physical-page","corpus-local-vector-recovery-fixed-attempt",
-                    "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation"],
+                    "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation",
+                    "production-session-roots-dedup-typed-code-draft-tabs-restore-hard-delete",
+                    "native-directory-identity-same-volume-move-copy-isolation"],
                     "limitations":["headless IDE command; no visual interaction", "synthetic loopback HTTP only",
-                    "synthetic corpus ports; no real PDF parser, full session controller or real provider validation"]}
+                    "synthetic model/corpus ports; no real PDF parser, visual UI or real provider validation"]}
                     """.formatted(Instant.now(), ApplicationInfo.getInstance().getBuild().asString(),
                     System.getProperty("java.runtime.version")));
             exitCode = 0;
@@ -61,6 +63,7 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
     }
 
     private static void run(Path scratch) throws Exception {
+        Files.createDirectories(scratch.resolve("project-a"));Files.createDirectories(scratch.resolve("project-b"));
         var descriptor = PluginManagerCore.getPlugin(PluginId.getId("edu.courseassist.f0"));
         require(descriptor != null && descriptor.isEnabled(), "Production plugin loaded");
         require(org.springframework.ai.deepseek.DeepSeekChatModel.class.getClassLoader() == descriptor.getPluginClassLoader(),
@@ -112,6 +115,17 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
             require(!application.tasks().isClosed(), "Project disposal preserves app resources");
             DependencyChecks.run(scratch.resolve("database"));
             ReactRuntimeChecks.run(scratch.resolve("react"));
+            SessionRuntimeChecks.run(scratch.resolve("sessions"));
+            // Exercise the real lazy application/project service wiring as well as isolated roots.
+            b.get().openSessions(true).get(15,TimeUnit.SECONDS);
+            var controller=b.get().sessionController().get(15,TimeUnit.SECONDS);
+            var manager=application.controllers().get(15,TimeUnit.SECONDS).sessions();
+            var create=new edu.courseassist.contract.ChatContracts.CreateSession(new edu.courseassist.contract.ChatContracts.EventMeta(
+                    java.util.UUID.randomUUID().toString(),b.get().projectInstanceId(),java.util.Optional.empty()),"service-wiring");
+            require(controller.dispatch(create).toCompletableFuture().get(15,TimeUnit.SECONDS).outcome()==edu.courseassist.contract.CommonContracts.Outcome.APPLIED,"Real project controller dispatch");
+            String session=manager.snapshot(b.get().projectInstanceId()).activeSessionId().orElseThrow();
+            controller.dispatch(new edu.courseassist.contract.ChatContracts.DeleteSession(new edu.courseassist.contract.ChatContracts.EventMeta(
+                    java.util.UUID.randomUUID().toString(),b.get().projectInstanceId(),java.util.Optional.of(session)))).toCompletableFuture().get(15,TimeUnit.SECONDS);
         } finally {
             ApplicationManager.getApplication().invokeAndWait(() -> {
                 WriteAction.run(() -> {
@@ -121,6 +135,7 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
         }
         // Explicitly verify the service's disposal boundary before normal IDE shutdown repeats it.
         application.dispose();
+        application.shutdownCompletion().get(20,TimeUnit.SECONDS);
         require(application.tasks().isClosed(), "Application tasks disposed");
         try { application.storage().transaction(connection -> "late").join(); throw new IllegalStateException("Storage accepted late work"); }
         catch (java.util.concurrent.CompletionException expected) {

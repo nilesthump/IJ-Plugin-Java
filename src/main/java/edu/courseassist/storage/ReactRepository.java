@@ -12,10 +12,15 @@ import tools.jackson.databind.json.JsonMapper;
 public final class ReactRepository implements Journal {
     public enum Access { CREATE, LIVE_WRITE, COORDINATOR_TERMINAL, READ, DELETE }
     @FunctionalInterface public interface Guard { void check(Connection connection, Identity identity, Access access) throws Exception; }
+    @FunctionalInterface public interface AfterSave { void saved(Connection connection, Snapshot snapshot) throws Exception; }
     private final H2Store store;
     private final Guard guard;
+    private final AfterSave afterSave;
     private final JsonMapper json = JsonMapper.builder().build();
-    public ReactRepository(H2Store store, Guard guard) { this.store = Objects.requireNonNull(store); this.guard = Objects.requireNonNull(guard); }
+    public ReactRepository(H2Store store, Guard guard) { this(store, guard, (c, s) -> {}); }
+    public ReactRepository(H2Store store, Guard guard, AfterSave afterSave) {
+        this.store = Objects.requireNonNull(store); this.guard = Objects.requireNonNull(guard); this.afterSave = Objects.requireNonNull(afterSave);
+    }
     public void initialize() {
         store.transaction(c -> {
             try (var s = c.createStatement()) {
@@ -33,12 +38,18 @@ public final class ReactRepository implements Journal {
         if (snapshot.revision() != 0 || snapshot.status() != AttemptStatus.RUNNING || !snapshot.branches().isEmpty()) throw new IllegalArgumentException("Expected new attempt");
         store.transaction(c -> {
             guard.check(c, snapshot.identity(), Access.CREATE);
-            try (var s = c.prepareStatement("INSERT INTO ca_react_attempt VALUES(?,?,?,?,?,?)")) {
-                s.setString(1, snapshot.identity().attemptId()); s.setString(2, snapshot.identity().projectId()); s.setString(3, snapshot.identity().sessionId());
-                s.setLong(4, 0); s.setBoolean(5, false); s.setString(6, json.writeValueAsString(snapshot)); s.executeUpdate();
-            }
+            // Session submit may already have inserted this exact empty attempt atomically.
+            var existing = read(c, snapshot.identity());
+            if (existing.isPresent()) { if (!existing.get().equals(snapshot)) throw new SQLException("Attempt already started"); }
+            else insert(c, snapshot);
             return null;
         }).join();
+    }
+    void insert(Connection c, Snapshot snapshot) throws SQLException {
+        try (var s = c.prepareStatement("INSERT INTO ca_react_attempt VALUES(?,?,?,?,?,?)")) {
+            s.setString(1, snapshot.identity().attemptId()); s.setString(2, snapshot.identity().projectId()); s.setString(3, snapshot.identity().sessionId());
+            s.setLong(4, snapshot.revision()); s.setBoolean(5, snapshot.status()!=AttemptStatus.RUNNING); s.setString(6, json.writeValueAsString(snapshot)); s.executeUpdate();
+        }
     }
     @Override public void save(Snapshot snapshot, boolean coordinator) {
         if (!snapshot.saved() || (coordinator && (snapshot.status() == AttemptStatus.RUNNING || snapshot.status() == AttemptStatus.SUCCEEDED)))
@@ -54,6 +65,7 @@ public final class ReactRepository implements Journal {
                 s.setString(4, snapshot.identity().attemptId()); s.setLong(5, old.revision());
                 if (s.executeUpdate() != 1) throw new SQLException("Attempt commit lost ownership");
             }
+            afterSave.saved(c, snapshot);
             return null;
         }).join();
     }
@@ -84,7 +96,7 @@ public final class ReactRepository implements Journal {
             return null;
         }).join();
     }
-    private Optional<Snapshot> read(Connection c, Identity identity) throws SQLException {
+    Optional<Snapshot> read(Connection c, Identity identity) throws SQLException {
         try (var s = c.prepareStatement("SELECT payload FROM ca_react_attempt WHERE id=? AND project_id=? AND session_id=?")) {
             s.setString(1, identity.attemptId()); s.setString(2, identity.projectId()); s.setString(3, identity.sessionId());
             try (var r = s.executeQuery()) {

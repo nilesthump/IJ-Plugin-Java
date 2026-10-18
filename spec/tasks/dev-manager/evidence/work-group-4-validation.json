@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-18",
+  "baseline": "8a68daa35e6d3229c9255227da3b0988ba7cf160",
+  "branch": "dev-manager",
+  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:\\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\\IJ-Plugin-Java\\tmp\\gradle-user-home'",
+  "exitCode": 0,
+  "junit": {
+    "tests": 76,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "newTests": 24
+  },
+  "fixtureSmoke": "PASS",
+  "check": "PASS",
+  "buildPlugin": "PASS",
+  "ideSmoke": "PASS",
+  "ideBuild": "IU-262.10968.63",
+  "javaRuntime": "25.0.4+1-b508.27",
+  "package": {
+    "bytes": 79723466,
+    "entries": 60,
+    "testClassLeak": false,
+    "duplicateIdeRuntime": false
+  },
+  "independentReview": {
+    "standardsOpen": 0,
+    "specOpen": 0
+  },
+  "rawLog": "tmp/manager-task4/final-validation-credential.log",
+  "failureHistory": [
+    "baseline All exit 0",
+    "Initial compile: private helper hash and provider package imports; corrected",
+    "Initial targeted: wrapped transaction rejections surfaced exceptionally; corrected",
+    "Cancellation dependent-future assertions corrected to match actual semantics",
+    "First All passed, IdeSmoke failed because Windows BasicFileAttributes.fileKey was null; explicit native directory identity added",
+    "Independent standards/spec findings corrected and directly regressed",
+    "Second and third All+IdeSmoke passed; final credential read failure zeroing fixed and regressed",
+    "Final All+IdeSmoke exit 0 after credential fix"
+  ],
+  "limitations": [
+    "Synthetic loopback model/embedding responses and synthetic PDF/capture ports",
+    "No paid or real provider requests; no real tokenizer/context/summary semantic quality evidence",
+    "No member visual UI/PDF/editor integration or manual PDF page-jump validation",
+    "No manual normal IDE exit/forced kill, cross-machine migration or real course scale evidence",
+    "Finite limits and byte-bound budget are explicit MVP candidates, not verified provider capacities"
+  ]
+}

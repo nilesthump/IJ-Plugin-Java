@@ -90,6 +90,7 @@ public final class CourseLibrary implements AutoCloseable {
                 synchronized (gate) {
                     job.check(); reservation = repository.reserve(job.id, name, blob, base, target, settings);
                     job.sources = Set.of(reservation.source().versionId());
+                    job.registered = reservation.duplicate().isEmpty();
                 }
             }
             Source source = reservation.source();
@@ -97,7 +98,7 @@ public final class CourseLibrary implements AutoCloseable {
                 files.verify(repository.blob(source.versionId()));
                 return reservation.duplicate().get();
             }
-            job.registered = true; job.sources = Set.of(source.versionId()); job.check();
+            job.sources = Set.of(source.versionId()); job.check();
             List<Derived> members = members(base, job);
             // Ordinary single-document operations may not silently mix or re-embed other materials.
             for (Derived d : members) if (!d.settings().derivationKey().equals(settings.derivationKey()))
@@ -364,6 +365,14 @@ public final class CourseLibrary implements AutoCloseable {
             boolean deliver;
             synchronized (gate) { deliver = !committed && claimResult(); if (deliver) cancelled = true; }
             if (deliver) result.completeExceptionally(new CancellationException("Corpus operation cancelled"));
+        }
+        /** Application stop's local durable boundary. Remote embedding may still physically be
+         * returning, but publication is revoked before this save and can never resume on a new epoch. */
+        public void cancelAndRecord() {
+            cancel();
+            synchronized(gate) {
+                if(cancelled && registered && !committed) repository.fail(id,"CANCELLED");
+            }
         }
         @Override public void close() { cancel(); }
     }
