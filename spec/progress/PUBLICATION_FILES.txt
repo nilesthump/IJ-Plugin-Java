@@ -139,3 +139,4 @@ src/test/java/edu/courseassist/bootstrap/ide/ReactRuntimeChecks.java
 src/test/java/edu/courseassist/bootstrap/ide/ReactTestEnvironment.java
 src/test/java/edu/courseassist/core/react/ReactEngineTest.java
 src/test/java/edu/courseassist/model/SpringAiCourseModelTest.java
+spec/tasks/dev-manager/evidence/work-group-3-delivery.json
