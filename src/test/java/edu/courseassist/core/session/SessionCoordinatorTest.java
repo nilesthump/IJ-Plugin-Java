@@ -1,0 +1,141 @@
+package edu.courseassist.core.session;
+
+import edu.courseassist.bootstrap.ide.SessionTestEnvironment;
+import edu.courseassist.contract.*;
+import edu.courseassist.contract.ChatContracts.*;
+import edu.courseassist.contract.CaptureContracts.*;
+import edu.courseassist.contract.ApplicationContracts.*;
+import edu.courseassist.contract.CommonContracts.*;
+import edu.courseassist.core.react.*;
+import edu.courseassist.core.react.ReactData.*;
+import edu.courseassist.core.session.SessionData.*;
+import edu.courseassist.storage.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import static org.junit.jupiter.api.Assertions.*;
+import static edu.courseassist.bootstrap.ide.SessionTestEnvironment.*;
+
+class SessionCoordinatorTest {
+    @TempDir Path root;
+    @Test void dedupPrecedesBusyAndRevisionAndNewDraftSurvives() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();e.open("a","a",false);String session=e.create("a");e.text("a",session,"original");
+            AtomicReference<Listener> listener=new AtomicReference<>();e.model.set((r,l)->{listener.set(l);return ()->{};});
+            SubmitDraft event=e.submitEvent("a",session);CommandResult first=e.dispatch(event);await(()->listener.get()!=null);
+            e.text("a",session,"next draft");CommandResult duplicate=e.dispatch(event);
+            assertEquals(first.operationId(),duplicate.operationId());assertEquals(1,e.requests.size());
+            assertEquals(Rejection.BUSY,e.dispatch(e.submitEvent("a",session)).rejection().orElseThrow());
+            assertEquals(1,e.view("a",session).turns().size());assertEquals("next draft",e.view("a",session).draft().text());
+            finish(listener.get(),"answer");e.idle("a",session);
+            assertEquals("next draft",e.view("a",session).draft().text());assertEquals(ContextEligibility.ELIGIBLE_DURABLE_SUCCESS,e.view("a",session).turns().getFirst().attempts().getFirst().contextEligibility());
+            assertEquals(Rejection.STALE_REVISION,e.dispatch(new SubmitDraft(e.meta("a",session),event.draftId(),event.expectedDraftRevision())).rejection().orElseThrow());
+        }
+    }
+    @Test void captureUsesOriginalTargetAndMergesOnlyItsGroup() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();CompletableFuture<CapturedCodeGroup> captured=new CompletableFuture<>();AtomicInteger calls=new AtomicInteger();
+            e.sessions.open(new Location("C:/a","a"),"a",()->start->{calls.incrementAndGet();return captured;},false).toCompletableFuture().get();
+            String a=e.create("a");SelectionStart start=selection("capture","a");CaptureTicket ticket=e.sessions.beginCapture(start);
+            await(()->calls.get()==1);String b=e.create("a");e.text("a",a,"edited during capture");captured.complete(group(start));
+            e.sessions.captureCompletion("capture").toCompletableFuture().get(10,TimeUnit.SECONDS);e.sessions.refreshAll().toCompletableFuture().get();
+            assertEquals(a,ticket.targetSessionId());assertEquals(CaptureState.READY,e.view("a",a).draft().captures().getFirst().state());
+            assertEquals("edited during capture",e.view("a",a).draft().text());assertTrue(e.view("a",b).draft().captures().isEmpty());
+            e.submit("a",a);e.idle("a",a);var turn=e.view("a",a).turns().getFirst();assertEquals(4,turn.userMessage().parts().size());
+            assertTrue(e.requests.getFirst().messages().stream().anyMatch(m->m.content().contains("CLASS_STRUCTURE")));
+        }
+    }
+    @Test void removedCaptureCannotReturnOrBlockRemainingDraft() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();CompletableFuture<CapturedCodeGroup> result=new CompletableFuture<>();
+            e.sessions.open(new Location("C:/a","a"),"a",()->s->result,false).toCompletableFuture().get();String s=e.create("a");
+            SelectionStart start=selection("c","a");e.sessions.beginCapture(start);await(()->!e.view("a",s).draft().captures().isEmpty());
+            assertEquals(Rejection.CAPTURE_NOT_READY,e.dispatch(e.submitEvent("a",s)).rejection().orElseThrow());
+            var d=e.view("a",s).draft();e.dispatch(new RemoveDraftCapture(e.meta("a",s),d.draftId(),d.revision(),"c"));
+            result.complete(group(start));e.text("a",s,"only this");e.submit("a",s);e.idle("a",s);
+            assertTrue(e.view("a",s).draft().captures().isEmpty());assertEquals(1,e.view("a",s).turns().getFirst().userMessage().parts().size());
+        }
+    }
+    @Test void closeTabKeepsOneSubscriptionAndDeleteClearsAllPrivateRows() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();var binding=e.open("a","a",false);String s=e.create("a");String other=e.create("a");e.text("a",s,"question");
+            AtomicReference<Listener> listener=new AtomicReference<>();e.model.set((r,l)->{listener.set(l);return ()->{};});e.submit("a",s);await(()->listener.get()!=null);
+            listener.get().frame(new Body("partial sentinel"));e.dispatch(new CloseSessionTab(e.meta("a",s)));e.dispatch(new OpenSessionTab(e.meta("a",s)));
+            assertEquals(1,e.requests.size());assertTrue(e.view("a",s).activeOperation().isPresent());
+            var identity=e.repository.history(binding.projectId(),"a",s).getFirst().attempts().getFirst().identity();
+            e.dispatch(new DeleteSession(e.meta("a",s)));finish(listener.get(),"late sentinel");
+            e.sessions.refreshAll().toCompletableFuture().get();assertEquals(1,e.sessions.snapshot("a").sessions().size());assertEquals(other,e.sessions.snapshot("a").sessions().getFirst().sessionId());
+            assertThrows(CancellationException.class,()->e.repository.react().load(identity));
+            long privateRows=e.store.transaction(c->{long count=0;for(String table:List.of("ca_session","ca_command","ca_checkpoint","ca_react_attempt"))try(var q=c.createStatement();var r=q.executeQuery("SELECT COUNT(*) FROM "+table+" WHERE "+(table.equals("ca_session")?"id":"session_id")+"='"+s+"'")){r.next();count+=r.getLong(1);}return count;}).join();
+            assertEquals(0,privateRows);assertTrue(e.courses.snapshot().join().materials().isEmpty());
+        }
+    }
+    @Test void interruptedOutputRemainsVisibleButRetryAndNextInputExcludeIt() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();e.open("a","a",false);String s=e.create("a");e.text("a",s,"original user");
+            AtomicReference<Listener> listener=new AtomicReference<>();e.model.set((r,l)->{listener.set(l);return ()->{};});e.submit("a",s);await(()->listener.get()!=null);
+            listener.get().frame(new Body("INTERRUPTED_SENTINEL"));await(()->e.view("a",s).turns().getFirst().attempts().getFirst().branches().stream().anyMatch(b->b.steps().stream().anyMatch(st->st.markdown().contains("INTERRUPTED_SENTINEL"))));
+            String op=e.view("a",s).activeOperation().orElseThrow().operationId();e.dispatch(new StopOperation(e.meta("a",s),op));e.idle("a",s);
+            var turn=e.view("a",s).turns().getFirst();e.model.set((r,l)->{finish(l,"new success");return ()->{};});
+            e.dispatch(new RetryAttempt(e.meta("a",s),turn.turnId(),turn.attempts().getFirst().attemptId()));e.idle("a",s);
+            assertEquals(1,e.view("a",s).turns().size());assertEquals(2,e.view("a",s).turns().getFirst().attempts().size());
+            assertFalse(ReactContext.json(e.requests.getLast()).contains("INTERRUPTED_SENTINEL"));
+            assertTrue(e.view("a",s).turns().getFirst().attempts().getFirst().branches().getFirst().steps().getFirst().markdown().contains("INTERRUPTED_SENTINEL"));
+        }
+    }
+    @Test void projectsAreIsolatedAndMovePreservesCopyDoesNotInherit() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();var a=e.open("a","directory-identity",false);String s=e.create("a");e.text("a",s,"private");
+            var b=e.open("b","copy-identity",true);assertNotEquals(a.projectId(),b.projectId());assertTrue(e.sessions.snapshot("b").sessions().isEmpty());
+            var stolen=new UpdateDraftText(e.meta("b",s),e.view("a",s).draft().draftId(),0,"stolen");assertEquals(Rejection.SESSION_DELETED,e.dispatch(stolen).rejection().orElseThrow());
+            e.sessions.closeProject("a").toCompletableFuture().get();
+            var moved=e.sessions.open(new Location("C:/moved","directory-identity"),"a2",()->start->CompletableFuture.completedFuture(group(start)),false).toCompletableFuture().get();
+            assertEquals(a.projectId(),moved.projectId());assertEquals("private",e.view("a2",s).draft().text());
+            assertEquals(Rejection.PROJECT_CLOSED,e.dispatch(new CloseSessionTab(e.meta("a",s))).rejection().orElseThrow());
+        }
+    }
+    @Test void explicitAssociationRequiresEmptyUnoccupiedTargetAndExactBindingRevision() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            var a=e.open("a","a",false);String s=e.create("a");e.sessions.closeProject("a").toCompletableFuture().get();
+            var source=e.repository.binding(a.projectId());var target=e.open("b","b",true);
+            var moved=e.sessions.associate("b",a.projectId(),source.revision(),target.revision()).toCompletableFuture().get();
+            assertEquals(source.projectId(),moved.projectId());assertEquals(s,e.sessions.snapshot("b").sessions().getFirst().sessionId());
+            assertEquals(1,e.repository.bindings().size());
+        }
+    }
+    @Test void restartRestoresOriginalCodeDraftTabsAndInterruptsWithoutNetwork() throws Exception {
+        String project,session,draft;
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();project=e.open("a","a",false).projectId();session=e.create("a");e.text("a",session,"pending raw ```\n");
+            e.sessions.beginCapture(selection("code","a"));e.sessions.captureCompletion("code").toCompletableFuture().get();e.sessions.refreshAll().toCompletableFuture().get();draft=e.view("a",session).draft().draftId();
+        }
+        try(var e=new SessionTestEnvironment(root)) {
+            assertEquals(WorkState.OFF,e.app.snapshot().workState());assertTrue(e.requests.isEmpty());var reopened=e.open("a2","a",false);
+            assertEquals(project,reopened.projectId());assertEquals(session,e.sessions.snapshot("a2").activeSessionId().orElseThrow());
+            assertEquals(draft,e.view("a2",session).draft().draftId());assertEquals("pending raw ```\n",e.view("a2",session).draft().text());
+            assertEquals("int x = 1;",e.view("a2",session).draft().captures().getFirst().captured().orElseThrow().start().selectedText());
+        }
+    }
+    @Test void appOffGatesNetworkAndConfigChangesRequireOff() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.open("a","a",false);String s=e.create("a");e.text("a",s,"question");assertEquals(Rejection.PLUGIN_OFF,e.dispatch(e.submitEvent("a",s)).rejection().orElseThrow());
+            e.configureAndEnable();var config=e.app.snapshot();var profile=config.generationProfile().orElseThrow().profile();
+            assertEquals(Rejection.CONFIG_REQUIRES_OFF,e.app.dispatch(new UpdateProviderConfig(e.appMeta(),config.configRevision(),new ProviderConfiguration(profile,profile),Optional.empty())).toCompletableFuture().get().rejection().orElseThrow());
+            AtomicReference<Listener> listener=new AtomicReference<>();e.model.set((r,l)->{listener.set(l);return ()->{};});e.submit("a",s);await(()->listener.get()!=null);listener.get().frame(new Body("before disable"));
+            e.app.dispatch(new DisablePlugin(e.appMeta())).toCompletableFuture().get(10,TimeUnit.SECONDS);assertEquals(WorkState.OFF,e.app.snapshot().workState());
+            finish(listener.get(),"late after disable");e.sessions.refreshAll().toCompletableFuture().get();assertTrue(e.view("a",s).activeOperation().isEmpty());
+            assertNotEquals(AttemptStatus.SUCCEEDED,e.view("a",s).turns().getFirst().attempts().getFirst().status());
+        }
+    }
+    @Test void stopBeforeWorkerStartsStillReleasesSlotWithoutNetworkOrUnsavedFailure() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();e.open("a","a",false);String s=e.create("a");e.text("a",s,"question");e.pauseGeneration.set(true);e.submit("a",s);
+            String operation=e.view("a",s).activeOperation().orElseThrow().operationId();
+            assertEquals(Outcome.APPLIED,e.dispatch(new StopOperation(e.meta("a",s),operation)).outcome());e.resumeGeneration();e.idle("a",s);
+            assertTrue(e.requests.isEmpty());assertFalse(e.view("a",s).writesBlocked());assertEquals(AttemptStatus.INTERRUPTED,e.view("a",s).turns().getFirst().attempts().getFirst().status());
+        }
+    }
+}

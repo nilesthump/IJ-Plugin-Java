@@ -141,3 +141,17 @@ manager 内部 `core.react.ReactEngine` 接受冻结 Identity/Input、同 sessio
 `storage.ReactRepository` 需先初始化共享 corpus schema，并提供必需的事务内 Guard；CREATE/LIVE_WRITE/COORDINATOR_TERMINAL/READ/DELETE 均复验目标。运行失效的 guard 应抛 CancellationException，IO/SQL 保存失败则保留原错并阻塞依赖该提交的发送。正文/证据/状态与共享来源保留同事务保存；interrupt 不启动网络；session 删除入口清该组档案/来源引用且不清共享资料。本轮没有生产 no-op guard 或完整 session 控制器。
 
 后续请求、检索改写、摘要/checkpoint 必须共用 ReactContext.history 的耐久最终分支资格规则和 POLICY，不接受未经来源资格校验的旧摘要/cache；第四组负责压缩/根生命周期接线。实现、候选测试参数与明确未验证范围见 [第三组记录](../tasks/dev-manager/WORK_GROUP_3.md)。
+
+## 10. 第四组真实控制器与本地恢复
+
+应用服务 `controllers()` 异步初始化 ApplicationCoordinator / SessionCoordinator 与真实 H2 根；必须观察初始化 future 的异常，不能把失败替换为空恢复视图。项目服务 `openSessions(asNew)` 在后台读取 real path 和可验证目录身份，`sessionController()` 返回公共 SessionController；`selectionSink()` 只有项目绑定初始化成功后可用，beginCapture 本身不等磁盘或网络。UI/成员适配器不直接读写 H2。
+
+稳定项目身份与本次 instance 分开：确切目录或可靠同卷移动可恢复原记录；未知定位保持 IdentityUncertain，显式选择新归属，或对空目标通过协调入口关联旧归属（两端版本/占用共同校验）。复制不按项目 UUID/名称/源码继承。Windows 使用 IDEA 已有 JNA 查询目录 FILE_ID_INFO 与创建时间；句柄关闭，失败显式传播，不回退为仅路径匹配。跨机器和无法取得可靠文件身份的自动识别仍不承诺。
+
+新增兼容事件 `RecoverSession(EventMeta)`，对应可用动作 RECOVER：仅重试原 session 本地未保存草稿/冻结终止快照的存储协调，不发送模型、检索或工具。活跃运行任务拒绝恢复；删除中仍只能继续 DeleteSession。存储失败会立即发布 FAILED/阻塞状态，OFF→ON 不解除阻塞。正常停止、项目关闭及应用关闭按旧 operation 有条件保存累计终止快照；应用 shutdownCompletion 表示本地收尾，JVM 退出 hook 最多等待15s，不把超时说成已保存。强杀只能恢复最后完整提交。
+
+SubmitDraft/RetryAttempt/ManualCompact 的去重在 busy、revision 和未保存阻塞检查之前、项目/instance/LIVE检查之后；重复仅返回原 operation。新提交与用户正文/typed代码、初始attempt、草稿消费及活跃槽共同提交。终态正文/来源与槽释放同事务；停止标志与 checkpoint 激活通过同一 H2 写入顺序裁决。closeTab/observe.close 不取消业务。
+
+摘要复用配置的生成模型，独立无工具请求。自动规划已包含本轮真实输入证据与tools；旧checkpoint复用要检查POLICY/完整来源资格指纹。持续整理使用有效旧摘要加新增完整前缀，旧摘要不升级成课程事实；激活再次检查根、instance、operation撤销、runtimeEpoch、父指针与前缀。原始档案不删除。公开参数与实际/未执行边界见 [第四组记录](../tasks/dev-manager/WORK_GROUP_4.md)。
+
+ApplicationCoordinator 与 CredentialUpdateSink 共用 OFF 门槛；stage复制短期字符值，单次ref两分钟失效，拒绝/消费/关闭均清理。PasswordSafe 是唯一生产凭据持久入口；H2只存非秘密profiles。ConfiguredRuntimeFactory 构造不发连通请求，不选默认alias；当前为显式 DeepSeek风格SSE/OpenAI嵌入兼容路线，真实平台能力未验证。资料任务返回operationId，可在负责人任务边界查询原cause；普通view仅有简短提示。引用命令先校验该session实际citation，再打开固定托管版本及物理页定位。

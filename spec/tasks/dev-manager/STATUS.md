@@ -1,7 +1,7 @@
 # 负责人：公共骨架、核心与主线验收：状态
 
 - 任务定义：`IN_PROGRESS`。
-- 功能实现：第 1–3 组 `DONE`（PR #3 / #4 / #5 已通过门禁并合入 main，第三组已核验）；第 4–5 组 `NOT_STARTED`，整体尚未完成。
+- 功能实现：第1–3组DONE（PR #3–#6已集成）；第四组IMPLEMENTED / VERIFIED，本交付PR门禁与main合入核验后DONE；第五组NOT_STARTED，整体IN_PROGRESS。
 - 当前分支：`dev-manager`；PR 目标：`main`，合并保留来源分支。
 - 记录日期：2026-10-18。
 - 开工 HEAD / 公共 main 基线：`36452814d58dfda228511bd17556dfa5df69094a`；已 fetch 并核实无 main 增量。
@@ -72,3 +72,12 @@ IDE sandbox 默认禁用 Ultimate 标记，日志仍有其依赖插件与安装�
 ### 第三组收尾：终止查询许可（2026-10-18）
 
 在 PR #5 完成基础交付后，收尾复核将查询许可收紧为仅 Decision.RUNNING，避免取消转入终态保存时、lease 尚未释放的排队查询重新获得嵌入资格。可控执行器/延迟终态保存回归验证旧查询的嵌入与模型调用均为 0，两路独立增量检查均闭合。最新统一 All + IdeSmoke 退出 0，共 52 项 JUnit（本组新增 21 项）；原始日志 `tmp/manager-task3/terminal-fence-validation.log`。最终证据见原 work-group-3-validation.json / runtime.json / review.md。该修复和完成记录经 [PR #6](https://github.com/nilesthump/IJ-Plugin-Java/pull/6) 最新 head 的 validation/scope 并合入 main 后生效；未扩展至第四组，历史 51 项记录属于 PR #5 的真实交付批次。
+
+## 第四组交付：会话、提交、恢复、压缩与删除（2026-10-18）
+
+- 本轮 `IMPLEMENTED / VERIFIED`；本交付 PR 最新 head 的 validation/scope、独立检查、main 合入并 fetch 核验共同满足后，第四组 `DONE`。第五组 `NOT_STARTED`，整体保持 `IN_PROGRESS`。前三组/第三组收尾均已合入，开工 HEAD 与 origin/main 为 `8a68daa35e6d3229c9255227da3b0988ba7cf160`（PR #6）；当前已有 dev-manager / .githooks，无新分支、未改成员范围。
+- 行为与参数：[WORK_GROUP_4.md](WORK_GROUP_4.md)。真实H2项目/session根、原始typed代码/草稿/布局、原子提交与去重、捕获初始化票据、单槽生成/手动自动摘要、checkpoint资格/激活、删除全清/继续清理、项目目录身份与显式关联、PasswordSafe/应用epoch、保存失败阻塞/本地恢复和本地退出协调均已接线。未注册成员端口明确失败，不用夹具充当产品。
+- 最终统一入口：`powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\IJ-Plugin-Java\tmp\gradle-user-home'`，退出0。JUnit计数见 [验证汇总](evidence/work-group-4-validation.json)；FixtureSmoke、check/buildPlugin、真实本机 IU-262.10968.63 / JBR25.0.4 的服务接线、H2恢复/typed代码/去重/硬删除与Windows目录移动/复制通过。[运行报告](evidence/work-group-4-runtime.json)。
+- 两路独立review（Standards/Spec）已闭合，未闭合均0；原始问题、修复及复查边界见 [检查记录](evidence/work-group-4-review.md)。开工All通过；实施编译/拒绝包装/取消断言失败与首轮IDE fileKey为空失败均保留日志；修正后完整重验，最终日志 `tmp/manager-task4/final-validation-credential.log`。没有付费服务请求。
+- `NOT_RUN`：真实课程/生成/嵌入服务、真实摘要语义质量/tokenizer/服务窗口和额度、成员编辑器/PDF/可视UI联调与人工PDF跳页、人工正常IDE退出/强杀、实际课程规模和跨机器迁移。保守字节预算与有限参数仅为实施候选，不冒充真实平台已验证。架构未冻结。
+- 开工前方案/PDF差异保持原样并排除本组提交；STATUS/HANDOFF/CURRENT只暂存本组增量。远端PR、head、validation/scope与merge commit以本轮delivery证据/PR实际记录为准。合并保留dev-manager，主工作区继续该分支；本轮不开展第五组。

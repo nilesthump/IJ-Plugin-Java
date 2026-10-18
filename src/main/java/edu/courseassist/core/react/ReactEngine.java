@@ -14,6 +14,8 @@ import static edu.courseassist.core.react.ReactData.*;
  * The caller creates/owns the session operation before start, supplies its epoch/lifetime fence,
  * and wires the journal's transactional guard. Views never subscribe to the provider. */
 public final class ReactEngine {
+    /** Called once before the first model step, with actual evidence/tools included for budgeting. */
+    @FunctionalInterface public interface HistoryPlanner { List<Message> plan(List<HistoryTurn> earlier, Request complete); }
     private final Model model;
     private final Journal journal;
     private final Executor executor;
@@ -25,7 +27,12 @@ public final class ReactEngine {
     /** The supplied tools already pin the corpus at attempt creation; start never repins it. */
     public Job start(Identity identity, Input input, List<HistoryTurn> history, CourseTools tools,
                      Limits limits, ErrorPolicy policy, BooleanSupplier permitted, Consumer<Snapshot> observer) {
-        Job job = new Job(identity, input, List.copyOf(history), tools, limits, policy, permitted, observer);
+        return start(identity,input,history,tools,limits,policy,permitted,observer,
+                (earlier, request) -> ReactContext.history(identity.projectId(),identity.sessionId(),earlier));
+    }
+    public Job start(Identity identity, Input input, List<HistoryTurn> history, CourseTools tools,
+                     Limits limits, ErrorPolicy policy, BooleanSupplier permitted, Consumer<Snapshot> observer, HistoryPlanner planner) {
+        Job job = new Job(identity, input, List.copyOf(history), tools, limits, policy, permitted, observer, planner);
         try { executor.execute(job::run); }
         catch (RuntimeException failure) { tools.close(); job.completion.completeExceptionally(failure); }
         return job;
@@ -39,6 +46,7 @@ public final class ReactEngine {
         private final ErrorPolicy policy;
         private final BooleanSupplier permitted;
         private final Consumer<Snapshot> observer;
+        private final HistoryPlanner planner;
         private enum Decision { RUNNING, CANCELED, FINISHING, TERMINAL }
         private final AtomicReference<Decision> decision = new AtomicReference<>(Decision.RUNNING);
         private final AtomicReference<Cancel> subscription = new AtomicReference<>();
@@ -56,10 +64,11 @@ public final class ReactEngine {
         private List<Citation> citations = List.of();
         private final Set<String> callIds = new HashSet<>();
         private Job(Identity identity, Input input, List<HistoryTurn> history, CourseTools tools, Limits limits,
-                    ErrorPolicy policy, BooleanSupplier permitted, Consumer<Snapshot> observer) {
+                    ErrorPolicy policy, BooleanSupplier permitted, Consumer<Snapshot> observer, HistoryPlanner planner) {
             this.identity = Objects.requireNonNull(identity); this.input = Objects.requireNonNull(input); this.history = history;
             this.tools = Objects.requireNonNull(tools); this.limits = Objects.requireNonNull(limits); this.policy = Objects.requireNonNull(policy);
             this.permitted = Objects.requireNonNull(permitted); this.observer = Objects.requireNonNull(observer);
+            this.planner = Objects.requireNonNull(planner);
             snapshot = freeze(false);
         }
         public CompletableFuture<Snapshot> completion() { return completion.copy(); }
@@ -101,6 +110,8 @@ public final class ReactEngine {
                                 : initial.isEmpty() ? "无相关资料，使用模型基础知识" : "基于本轮固定课程资料");
                 branches.add(branch); addEvidence(branch, initial);
                 boolean allowTools = hasMaterials && !generalFallback;
+                base = List.copyOf(planner.plan(earlier, request(base,branch,allowTools)));
+                ReactContext.validateProtocol(base); check();
                 while (true) {
                     check();
                     if (++stepCount > limits.maxSteps()) throw new Limited("Model step limit");
@@ -332,12 +343,12 @@ public final class ReactEngine {
             arguments.append(delta.arguments());
         }
     }
-    static Throwable unwrap(Throwable failure) {
+    public static Throwable unwrap(Throwable failure) {
         while ((failure instanceof CompletionException || failure instanceof ExecutionException) && failure.getCause() != null) failure = failure.getCause();
         return failure;
     }
-    static boolean isCancellation(Throwable failure) { return failure instanceof CancellationException || failure instanceof ProcessCanceledException; }
-    static RuntimeException propagate(Throwable failure) {
+    public static boolean isCancellation(Throwable failure) { return failure instanceof CancellationException || failure instanceof ProcessCanceledException; }
+    public static RuntimeException propagate(Throwable failure) {
         if (failure instanceof Error error) throw error;
         return failure instanceof RuntimeException runtime ? runtime : new CompletionException(failure);
     }
