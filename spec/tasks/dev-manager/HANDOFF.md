@@ -43,3 +43,7 @@
 - 最终 All + IdeSmoke 退出 0，31 项 JUnit、FixtureSmoke、ZIP、本机 IU-262.10968.63 / JBR25.0.4 通过。原日志 tmp/manager-task2/delivery-validation.log，公开 evidence/work-group-2-runtime.json、work-group-2-validation.json；独立 Standards/Spec 修复记录见 work-group-2-review.md。
 - 未实现/未执行：生产 ApplicationController 配置/凭据/epoch 与 UI 业务装配、乙解析器注册/真实 PDF 联调、真实网关与真实规模；前者属后续组或成员，绝不注入成功空适配器。Spring AI 桥接仅对进程内合成 HTTP 验证，不选择真实 alias/维度，也不自动联网测试。
 - 交付条件仍为本次 PR validation/scope、独立检查、main 合入并核验；满足后第二组 DONE，整体仍 IN_PROGRESS。保留固定来源分支，主工作区仍 dev-manager；下一项为第三组但本轮不开始。实际 PR/提交/合入信息附后。
+
+### 第二组 PR 与继续位置
+
+第二组 [PR #4](https://github.com/nilesthump/IJ-Plugin-Java/pull/4) 已创建，目标 main，来源 dev-manager；代码提交 `8b41abae4b11e24459d9903778e967b3d55d4d47`。实际门禁和合入以 PR 最新 head 为准；规则满足后合入并核验，保留开发分支。后续 agent 先核对该 PR 状态及 origin/main，勿重做已通过场景；第三组另行实施。开工前 PDF/方案差异仍独立留在工作区。

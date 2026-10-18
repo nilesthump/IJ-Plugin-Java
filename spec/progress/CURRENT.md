@@ -36,3 +36,5 @@
 第 1 组已由 PR #3 合入 main（50f50f8）。本轮第 2 组 manager 核心已实现并通过本地完整验证：托管副本/MD5、独立来源版本、页内分块、嵌入空间、H2 耐久 float32/映射/指纹、JVector 代次与共享恢复、CAS 发布、固定 attempt/历史引用和显式清理。31 项 JUnit、FixtureSmoke、插件 ZIP 与本机 IDEA headless 核心场景通过，两路独立检查发现的问题已修复。行为、准确命令和证据见 [负责人状态](../tasks/dev-manager/STATUS.md) / [第二组范围](../tasks/dev-manager/WORK_GROUP_2.md)。
 
 本节随本交付 PR 的 validation/scope 通过并合入 main 后生效，满足后第 2 组 DONE；此前为待集成。整体仍 IN_PROGRESS，第 3–5 组未开始。真实乙 PDF/服务联调、生产界面/配置/会话/ReAct 与真实课程规模仍有明确未执行边界，不据合成验证宣称完整 F0 或架构冻结。开工前方案/PDF改动保留且不纳入本组提交。
+
+第二组交付入口：[PR #4](https://github.com/nilesthump/IJ-Plugin-Java/pull/4)，实现提交 `8b41aba`；只有最新 head 的 validation/scope 与 main 合入核验共同满足后，上述第二组 DONE 条件生效。合并保留固定来源分支。

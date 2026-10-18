@@ -50,3 +50,7 @@ IDE sandbox 默认禁用 Ultimate 标记，日志仍有其依赖插件与安装�
 - 真实 API、真实乙 PDF 解析联调、可视 UI、实际课程规模/召回/内存/时延仍 `NOT_RUN`；headless IDE 与合成分页/向量及 loopback HTTP 不替代这些证明。没有付费调用，未加入生产模型/分块/阈值默认值。
 - 前置方案/PDF改动保持原样且不纳入本次提交。共享 API/COURSE_LIBRARY/JVECTOR 的本次实施回填独立提交；根讨论 WORKING/原附件保持本地，架构未冻结。
 - 当前无遗留核心检查问题；完成本次 main 门禁后停止在第二组，不实施第三组。PR URL、head、远端门禁与合入核验另附交付补充。
+
+### 第二组交付 PR
+
+[PR #4](https://github.com/nilesthump/IJ-Plugin-Java/pull/4)：dev-manager → main，实现提交 `8b41abae4b11e24459d9903778e967b3d55d4d47`。后续记录提交不改业务代码；门禁必须按 PR 最新 head 检查。独立 Standards/Spec 已闭合，本地 All + IdeSmoke 和范围检查通过。只有最新 head 的 validation/scope 通过且 PR 合入 main 后，第二组完成条件才全部满足；GitHub 实际检查/merge commit 为远端证据，保留 dev-manager。
