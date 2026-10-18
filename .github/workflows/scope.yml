@@ -24,23 +24,33 @@ jobs:
             const policy = JSON.parse(fs.readFileSync('.github/branch-scopes.json', 'utf8'));
             const run = context.payload.workflow_run;
             if (run.event !== 'pull_request') return;
+            const processed = new Set();
             for (const linked of run.pull_requests) {
               const {data: pr} = await github.rest.pulls.get({...context.repo, pull_number: linked.number});
               if (pr.state !== 'open' || pr.head.sha !== linked.head.sha) continue;
+              if (processed.has(pr.head.sha)) continue;
+              processed.add(pr.head.sha);
               const errors = [];
-              if (pr.base.ref !== 'main' || pr.head.repo?.id !== context.payload.repository.id ||
-                  !['dev-manager','dev-a','dev-b','dev-c'].includes(pr.head.ref)) {
-                errors.push('Use an assigned branch of this repository and target main.');
-              }
-              const files = await github.paginate(github.rest.pulls.listFiles,
-                {...context.repo, pull_number: pr.number, per_page: 100});
-              if (files.length !== pr.changed_files) errors.push('Incomplete changed-file list.');
-              const allowed = path => pr.head.ref === 'dev-manager'
-                ? !policy.managerExcluded.some(prefix => path.startsWith(prefix))
-                : (policy.owners[pr.head.ref] ?? []).some(prefix => path.startsWith(prefix));
-              for (const file of files) {
-                for (const path of [file.filename, file.previous_filename].filter(Boolean)) {
-                  if (!allowed(path)) errors.push(`Outside ${pr.head.ref} scope: ${path}`);
+              // Commit statuses are shared by SHA. Aggregate every open PR with that SHA.
+              const open = await github.paginate(github.rest.pulls.list,
+                {...context.repo, state: 'open', base: 'main', per_page: 100});
+              for (const sibling of open.filter(item => item.head.sha === pr.head.sha)) {
+                const {data: target} = await github.rest.pulls.get({...context.repo, pull_number: sibling.number});
+                if (target.head.sha !== pr.head.sha) continue;
+                if (target.base.ref !== 'main' || target.head.repo?.id !== context.payload.repository.id ||
+                    !['dev-manager','dev-a','dev-b','dev-c'].includes(target.head.ref)) {
+                  errors.push(`PR ${target.number}: use an assigned branch of this repository.`);
+                }
+                const files = await github.paginate(github.rest.pulls.listFiles,
+                  {...context.repo, pull_number: target.number, per_page: 100});
+                if (files.length !== target.changed_files) errors.push(`PR ${target.number}: incomplete changed-file list.`);
+                const allowed = path => target.head.ref === 'dev-manager'
+                  ? !policy.managerExcluded.some(prefix => path.startsWith(prefix))
+                  : (policy.owners[target.head.ref] ?? []).some(prefix => path.startsWith(prefix));
+                for (const file of files) {
+                  for (const path of [file.filename, file.previous_filename].filter(Boolean)) {
+                    if (!allowed(path)) errors.push(`PR ${target.number}: outside ${target.head.ref} scope: ${path}`);
+                  }
                 }
               }
               await github.rest.repos.createCommitStatus({...context.repo, sha: pr.head.sha,
