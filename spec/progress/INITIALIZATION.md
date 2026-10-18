@@ -18,6 +18,8 @@
 | 插件 ZIP | 已构建 `IJ-Plugin-Java-0.1.0-dev.zip`，82,503,738字节；未运行目标IDE/未验证客户端与真实依赖类加载，包体仍需负责人后续评估 |
 | 隔离Git行为 | [37次操作结果](evidence/git-policy-tests.json)全部通过；含引用创建/删除/改名、detached工作树、fetch、push及pre-commit调用边界 |
 | 独立范围检查 | [93场景结果](evidence/scope-tests.json)全部符合预期，退出0；覆盖4分支路径矩阵、rename两端、main/detached拒绝、merge-base和篡改规则被可信checker拒绝 |
+| Windows自带PowerShell | [96场景结果](evidence/scope-tests-windows-powershell.json)全部通过；包含默认参数安装hooks、真实pre-commit接受合法文件及明确拒绝越界文件 |
+| 从公开仓库新克隆dev-a | PASS，无原始附件/需求记录，PS5安装hooks、五分支补齐及Repository检查通过 |
 | Wrapper | 官方生成、JAR SHA-256与官方一致；ZIP固定官方SHA-256；实际下载/使用状态看CURRENT |
 
 独立只读检查由 `/root/bootstrap_review` 在 fresh context 执行；初始CI直接使用PR中的checker会被修改绕过，已拆为只读PR构建与仅从main读取策略/文件元数据的范围状态工作流。范围逻辑复核未发现尚未修复的P1/P2，远端接线待实际运行核验。隔离执行器一度无法启动，测试使用已授权环境重跑；没有把环境失败记成测试通过。
