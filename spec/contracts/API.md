@@ -119,3 +119,13 @@
 ```
 
 核心经项目服务 `codeCapture()`、应用服务 `pdfReader()` 取得端口。未注册或重复注册会明确失败，不使用反射猜实现、不注入成功空对象；当前基线无成员实现，两个入口预期不可调用。`plugin.xml` 注册仍由负责人处理；成员只提供实际类名与构造需求。公共 DTO 和端口继续不依赖 IDEA/Swing/JDBC/SDK。
+
+## 8. 第二组资料核心接入
+
+应用服务新增惰性 `courses()`，返回 manager 内部 `core.corpus.CourseLibrary`。先后台 `initialize()`；`snapshot()` 显示库/资料/作业状态；importPdf/replacePdf/remove/reindex 返回可取消 Job，结果与后台收尾分别通过 completion/settled 观察。所选资料和库基准从动作开始固定的 MaterialTarget/CorpusBase 传入；晚到结果不能改成当前界面选中项。
+
+每个 attempt 初始化后只调用一次 `openAttempt()` 并持有 Lease 至任务终止；lease 的 search/read 固定原代次，无库也固定，不重新读取活动库。搜索传入准确空间匹配的 CourseEmbeddings、显式 SearchSettings 和冻结 epoch 的资格检查；错误原因为异常，正常无命中为空列表。一个等待者取消不取消全应用图恢复。lease 需 close，不能缓存裸 GenerationHandle 或把 ordinal 跨代次使用。
+
+原始 H2 向量、托管 PDF 及 sourceVersion 不依赖当前索引生存。未来回答提交方需在 lease 释放前为实际来源调用 retainSources(owner, sourceIds)，删除私有记录时 releaseReferences(owner)；这只是共享来源保留入口，尚不是回答/证据/状态共同提交或 session 删除实现。历史引用通过固定 sourceVersionId 查询 sourcePath。清理先 previewCleanup，再显式 cleanup，并在事务内重新检查引用/活动/占用；文件删除失败保留可继续的 blob 身份。
+
+公共 UI/PDF DTO 签名未改；成员无需导入 manager 内部 corpus 类型。生产 ApplicationController 的事件/状态装配、凭据与运行 epoch 配置仍待第 4 组；本组不注册替代成员解析器，不给合成控制器增加假成功。实现、参数及真实验证边界见 [第二组记录](../tasks/dev-manager/WORK_GROUP_2.md)。

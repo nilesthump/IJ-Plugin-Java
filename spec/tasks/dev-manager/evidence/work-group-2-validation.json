@@ -1,0 +1,65 @@
+{
+  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:\\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\\IJ-Plugin-Java\\tmp\\gradle-user-home'",
+  "limitations": [
+    "synthetic PDF/embedding ports",
+    "only loopback HTTP",
+    "no real provider or real-scale retrieval evidence",
+    "headless local IDE only"
+  ],
+  "exitCode": 0,
+  "pluginBytes": 79551053,
+  "pluginSha256": "5c6e8ac76dc7aadf001ed03b0408d2ac78e29494b997271b6382fcd88f51dec3",
+  "tests": 31.0,
+  "suites": [
+    {
+      "failures": 0,
+      "tests": 1,
+      "errors": 0,
+      "name": "edu.courseassist.bootstrap.DependencyRuntimeTest"
+    },
+    {
+      "failures": 0,
+      "tests": 3,
+      "errors": 0,
+      "name": "edu.courseassist.core.corpus.CorpusDataTest"
+    },
+    {
+      "failures": 0,
+      "tests": 4,
+      "errors": 0,
+      "name": "edu.courseassist.core.corpus.CourseLibraryLifecycleTest"
+    },
+    {
+      "failures": 0,
+      "tests": 15,
+      "errors": 0,
+      "name": "edu.courseassist.core.corpus.CourseLibraryTest"
+    },
+    {
+      "failures": 0,
+      "tests": 2,
+      "errors": 0,
+      "name": "edu.courseassist.core.RuntimeGateTest"
+    },
+    {
+      "failures": 0,
+      "tests": 2,
+      "errors": 0,
+      "name": "edu.courseassist.core.TaskScopeTest"
+    },
+    {
+      "failures": 0,
+      "tests": 1,
+      "errors": 0,
+      "name": "edu.courseassist.model.ModelClassLoadingTest"
+    },
+    {
+      "failures": 0,
+      "tests": 3,
+      "errors": 0,
+      "name": "edu.courseassist.storage.H2StoreTest"
+    }
+  ],
+  "status": "PASS",
+  "baseline": "50f50f8b77daa81cbbfbfb2bcacf564109e7f7f0"
+}

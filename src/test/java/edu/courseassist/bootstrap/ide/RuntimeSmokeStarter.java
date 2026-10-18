@@ -43,9 +43,10 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
                     {"status":"PASS","timestamp":"%s","ideBuild":"%s","javaRuntime":"%s",
                     "checks":["plugin-loaded","application-project-services","project-isolation-disposal",
                     "background-work","Swing-ToolWindow-content-release","Java-PSI-read",
-                    "H2-commit-reopen","JVector-build-query","SpringAI-local-chat-stream-embedding-no-retry"],
+                    "H2-commit-reopen","JVector-build-query","SpringAI-local-chat-stream-embedding-no-retry",
+                    "corpus-managed-PDF-H2-generation-physical-page","corpus-local-vector-recovery-fixed-attempt"],
                     "limitations":["headless IDE command; no visual interaction", "synthetic loopback HTTP only",
-                    "no production sessions, corpus, ReAct or real provider validation"]}
+                    "synthetic corpus ports; no real PDF parser, sessions, ReAct or real provider validation"]}
                     """.formatted(Instant.now(), ApplicationInfo.getInstance().getBuild().asString(),
                     System.getProperty("java.runtime.version")));
             exitCode = 0;
@@ -68,6 +69,7 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
                 "JVector loaded by production plugin");
         var application = CourseAssistantApplication.getInstance();
         require(application == CourseAssistantApplication.getInstance(), "Application singleton");
+        require(application.courses() == application.courses(), "Application owns one shared corpus");
         require(!application.tasks().submit(() -> ApplicationManager.getApplication().isDispatchThread())
                 .get(10, TimeUnit.SECONDS), "Application work off EDT");
         Project[] projects = new Project[2];
