@@ -19,9 +19,11 @@ Wrapper 来自已安装官方 Gradle 的 wrapper 任务；初始化时隔离环�
 
 ## CI 信任边界
 
-GitHub required context 为 `validation`。main push 和四个 dev 的 PR 执行同一入口；开发分支只推送时不重复构建。PR 只接受同仓库四个固定 dev 分支并直接目标 main。PR 事件使用 `pull_request_target` 的主分支工作流，先从基线保存范围检查器/策略，再检出待合并提交，以基线策略检查完整差异，避免成员改检查器后给自己放行。
+GitHub 构建 context 为 `validation`，main push、普通 `pull_request` 与手动 `workflow_dispatch` 执行同一入口；开发分支只推送时不重复构建。PR只接受同仓库四个固定dev分支并直接目标main。构建job只读，不持有机密或写凭据。
 
-随后编译 PR 代码仅使用 `contents: read`，checkout 不保留凭据，不传 secrets，不使用共享可写缓存；不能后续为此任务加入写权限或机密环境。公开 fork PR 不接受。管理员也按 main 的 PR/CI 规则操作；初始建库提交是一次性引导，不作为日常直推先例。
+独立 `F0 scope` 工作流从main处理 `workflow_run` 完成事件，只读取PR文件元数据、main上的策略，并发布 `scope` 状态；不检出或执行PR代码、不读其artifact。校验来源/目标、最新head、全部文件数与重命名前后路径。这样成员修改自己PR中的检查器不会给范围检查放行。scope工作流首次进入main后，负责人将其加入main的必需状态；当前生效状态看CURRENT。
+
+构建checkout不保留凭据，不传secrets、不使用共享可写缓存；scope只额外持有发布状态所需权限。不能给执行PR代码的job加入写权限或机密环境。公开fork PR不接受。管理员也按main的PR/CI规则操作；初始建库提交是一次性引导，不作为日常直推先例。
 
 ## 需要另留证据
 

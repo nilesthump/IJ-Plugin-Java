@@ -20,7 +20,7 @@
 | 独立范围检查 | [93场景结果](evidence/scope-tests.json)全部符合预期，退出0；覆盖4分支路径矩阵、rename两端、main/detached拒绝、merge-base和篡改规则被可信checker拒绝 |
 | Wrapper | 官方生成、JAR SHA-256与官方一致；ZIP固定官方SHA-256；实际下载/使用状态看CURRENT |
 
-独立只读检查由 `/root/bootstrap_review` 在 fresh context 执行；初始CI直接使用PR中的checker会被修改绕过，已修为主分支工作流保存可信checker/策略，再检查待合并差异。复核未发现尚未修复的P1/P2。隔离执行器一度无法启动，测试使用已授权环境重跑；没有把环境失败记成测试通过。
+独立只读检查由 `/root/bootstrap_review` 在 fresh context 执行；初始CI直接使用PR中的checker会被修改绕过，已拆为只读PR构建与仅从main读取策略/文件元数据的范围状态工作流。范围逻辑复核未发现尚未修复的P1/P2，远端接线待实际运行核验。隔离执行器一度无法启动，测试使用已授权环境重跑；没有把环境失败记成测试通过。
 
 ## 远程与运行边界
 
