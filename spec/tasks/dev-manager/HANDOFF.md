@@ -1,6 +1,6 @@
 # 负责人：公共骨架、核心与主线验收：交接模板
 
-本页保留第一组历史交接，最新交接见后续“第二组交接”。第三至第五组及整体产品未完成。历史 PDF 工作补充保持原文，属于本轮开始前已有改动。
+本页保留前两组历史交接，最新交接见后续“第三组交接”。第四、第五组及整体产品未完成。历史 PDF 工作补充保持原文，属于本轮开始前已有改动。
 
 ## 身份与读取
 
@@ -47,3 +47,13 @@
 ### 第二组 PR 与继续位置
 
 第二组 [PR #4](https://github.com/nilesthump/IJ-Plugin-Java/pull/4) 已创建，目标 main，来源 dev-manager；代码提交 `8b41abae4b11e24459d9903778e967b3d55d4d47`。实际门禁和合入以 PR 最新 head 为准；规则满足后合入并核验，保留开发分支。后续 agent 先核对该 PR 状态及 origin/main，勿重做已通过场景；第三组另行实施。开工前 PDF/方案差异仍独立留在工作区。
+
+## 第三组交接（2026-10-18）
+
+- 主工作区保持 dev-manager；开工 HEAD/main 为 `5b945fa936b7c5c7d86aea1e2fc01fe04f32609b`（第二组 PR #4 已合入）。既有方案/PDF差异保留且排除本次提交，成员实现/任务未改，没有新建分支或修改其他人的 HEAD。
+- 第三组行为、显式参数及真实边界见 [WORK_GROUP_3](WORK_GROUP_3.md)，公共接入见 API 第 9 节。ReactEngine 的 Model/Journal/运行资格由调用方明确提供；CourseTools 在 attempt 创建时固定一次 lease，不能由模型步骤重新 openAttempt。一次 step 一订阅，工具仅两个，正常完成/引用/耐久提交共同成功。
+- cancel 返回 true 才表示停止已接受；最终保存先取得资格时为 false，不能显示已停止。runtime/session guard 仍在事务内；Cancelled 不能当作保存故障或检索通识，真实保存失败维持未保存/后续发送阻塞。completion 是隔离取消的观察 future，不用取消它代替 Job.cancel。
+- H2 ReactRepository 要求先初始化 corpus schema，并传入真实 session/project/instance/operation/epoch guard。测试 SQL 根不是生产实现。保存正文/证据/状态与 ca_source_ref 同事务；interrupt 不启动网络；deleteSession 在 DELETING guard 下清私有档案/引用。第四组接完整根生命周期时复用，不能提供生产 no-op guard 或 upsert 复活。
+- ReactContext.history / POLICY 是未来模型/检索改写/摘要/checkpoint 共同资格入口；仅耐久成功最终有效分支生成内容合格。停止/中断/超限/失效生成输出仍在 Snapshot 中显示；重试新 attempt、原输入只投一次。不得绕过资格入口注入任意旧 summary/cache。
+- 最终 All + IdeSmoke 退出 0：51 项 JUnit、FixtureSmoke、插件 ZIP、本机 IDEA/JBR 的严格 SSE 两步 ReAct/固定页证据/H2 档案通过。日志 `tmp/manager-task3/final-validation.log`；公开 evidence/work-group-3-runtime.json / validation.json / review.md。两路独立检查均无未闭合项。
+- 真实/付费模型与嵌入、真实 PDF/可视交互/课程规模 NOT_RUN。模型/预算/限额仍为显式配置与合成候选，完整第四组会话/摘要/项目身份未实施。下一条动作：先核对本第三组 PR 最新 head 的门禁与 main 合入；满足后第三组 DONE，再按用户下一轮请求开始第四组。本轮停止于第三组。

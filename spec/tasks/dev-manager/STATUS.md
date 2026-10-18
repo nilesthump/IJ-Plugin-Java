@@ -1,7 +1,7 @@
 # 负责人：公共骨架、核心与主线验收：状态
 
 - 任务定义：`IN_PROGRESS`。
-- 功能实现：第 1 组 `DONE`（PR #3 已合入 main）；第 2 组 `IMPLEMENTED / VERIFIED`，本交付 PR 的 validation/scope 与 main 合入满足后为 `DONE`；第 3–5 组 `NOT_STARTED`，整体尚未完成。
+- 功能实现：第 1–2 组 `DONE`（PR #3 / #4 已合入 main）；第 3 组 `IMPLEMENTED / VERIFIED`，本交付 PR 的 validation/scope 与 main 合入核验满足后为 `DONE`；第 4–5 组 `NOT_STARTED`，整体尚未完成。
 - 当前分支：`dev-manager`；PR 目标：`main`，合并保留来源分支。
 - 记录日期：2026-10-18。
 - 开工 HEAD / 公共 main 基线：`36452814d58dfda228511bd17556dfa5df69094a`；已 fetch 并核实无 main 增量。
@@ -54,3 +54,13 @@ IDE sandbox 默认禁用 Ultimate 标记，日志仍有其依赖插件与安装�
 ### 第二组交付 PR
 
 [PR #4](https://github.com/nilesthump/IJ-Plugin-Java/pull/4)：dev-manager → main，实现提交 `8b41abae4b11e24459d9903778e967b3d55d4d47`。后续记录提交不改业务代码；门禁必须按 PR 最新 head 检查。独立 Standards/Spec 已闭合，本地 All + IdeSmoke 和范围检查通过。只有最新 head 的 validation/scope 通过且 PR 合入 main 后，第二组完成条件才全部满足；GitHub 实际检查/merge commit 为远端证据，保留 dev-manager。
+
+## 第三组交付：Spring AI、有限 ReAct 与流式（2026-10-18）
+
+- 实现：`IMPLEMENTED / VERIFIED`。第 1、2 组已分别由 PR #3 / #4 合入 main；第三组在本交付 PR 最新 head 的 validation/scope、独立检查和 main 合入核验共同满足后为 `DONE`。整体仍 `IN_PROGRESS`，第 4–5 组 `NOT_STARTED`。
+- 开工 HEAD / origin/main：`5b945fa936b7c5c7d86aea1e2fc01fe04f32609b`。当前 dev-manager / .githooks 已核对，无新建分支；fetch 后无 main 增量。开工前方案/PDF差异保留，第三组提交不包含这些产物。
+- 实现及接入：[WORK_GROUP_3.md](WORK_GROUP_3.md)。固定代次首检与两个课程工具、单所有者串行步骤、严格 Spring AI 请求/SSE 边界、完整预算/限额、正文/thinking/tool/usage 分离、实际最终证据引用、故障分支隔离、统一历史资格、H2 累计/终态档案与来源保留、停止/终态保存竞争和删除 guard 接口。公共 UI/PDF DTO 未改，没有替代成员实现。
+- 最终统一入口：`powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\IJ-Plugin-Java\tmp\gradle-user-home'`，退出 0。51 项 JUnit（本组新增 20 项）、FixtureSmoke、check/buildPlugin、真实本机 IU-262.10968.63 / JBR25.0.4 的 Spring AI/SSE/两步 ReAct/H2/JVector/固定物理页引用通过。原始记录 `tmp/manager-task3/final-validation.log`；[运行报告](evidence/work-group-3-runtime.json)、[验证汇总](evidence/work-group-3-validation.json)。
+- 独立 Standards / Spec 两路只读检查已闭合：停止与成功保存竞争、取消双原子窗口、Error 分类、严格 JSON、首工具失败/停止后第二请求显示丢失均修复并回归。最终未闭合问题各为 0；[检查记录](evidence/work-group-3-review.md)。
+- 失败记录保留：一次测试编译的 Snapshot 导入歧义、首轮定向的取消 future/epoch 竞争失败均修正后重跑；首个 All/IDE 通过后仍按独立检查修复并最终全量重验，没有覆盖旧失败记录。
+- `NOT_RUN`：真实 DeepSeek/课程网关、生产思考模式与 tokenizer/额度、真实乙解析器、可视 UI、真实规模；完整 SessionController、项目身份/草稿、摘要/checkpoint 与根删除接线属第四组。严格协议和测试参数不冒充真实平台能力，未请求付费服务。无已知实现阻塞；本轮到第三组结束，不开展第四组。

@@ -44,9 +44,10 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
                     "checks":["plugin-loaded","application-project-services","project-isolation-disposal",
                     "background-work","Swing-ToolWindow-content-release","Java-PSI-read",
                     "H2-commit-reopen","JVector-build-query","SpringAI-local-chat-stream-embedding-no-retry",
-                    "corpus-managed-PDF-H2-generation-physical-page","corpus-local-vector-recovery-fixed-attempt"],
+                    "corpus-managed-PDF-H2-generation-physical-page","corpus-local-vector-recovery-fixed-attempt",
+                    "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation"],
                     "limitations":["headless IDE command; no visual interaction", "synthetic loopback HTTP only",
-                    "synthetic corpus ports; no real PDF parser, sessions, ReAct or real provider validation"]}
+                    "synthetic corpus ports; no real PDF parser, full session controller or real provider validation"]}
                     """.formatted(Instant.now(), ApplicationInfo.getInstance().getBuild().asString(),
                     System.getProperty("java.runtime.version")));
             exitCode = 0;
@@ -110,6 +111,7 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
             catch (CancellationException expected) { /* Lifecycle control flow, no retrieval fallback. */ }
             require(!application.tasks().isClosed(), "Project disposal preserves app resources");
             DependencyChecks.run(scratch.resolve("database"));
+            ReactRuntimeChecks.run(scratch.resolve("react"));
         } finally {
             ApplicationManager.getApplication().invokeAndWait(() -> {
                 WriteAction.run(() -> {

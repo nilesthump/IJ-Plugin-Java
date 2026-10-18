@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-18",
+  "baseline": "5b945fa936b7c5c7d86aea1e2fc01fe04f32609b",
+  "branch": "dev-manager",
+  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:\\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\\IJ-Plugin-Java\\tmp\\gradle-user-home'",
+  "exitCode": 0,
+  "junit": {
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "newTests": 20,
+    "tests": 51
+  },
+  "fixtureSmoke": "PASS",
+  "check": "PASS",
+  "buildPlugin": "PASS",
+  "ideSmoke": "PASS",
+  "ideBuild": "IU-262.10968.63",
+  "javaRuntime": "25.0.4+1-b508.27",
+  "independentReview": {
+    "standardsOpen": 0,
+    "specOpen": 0
+  },
+  "failureHistory": [
+    "baseline All exit 0",
+    "initial implementation All exit 0",
+    "test compilation failed for ambiguous Snapshot import; fixed",
+    "first targeted regression had three cancellation/epoch failures; fixed",
+    "targeted second run passed 16 tests",
+    "All plus IdeSmoke passed; independent review found terminal race and multi-tool view loss; fixed and regressed",
+    "final All plus IdeSmoke exit 0 with 51 tests"
+  ],
+  "rawLog": "tmp/manager-task3/final-validation.log",
+  "limitations": [
+    "Only synthetic loopback model/SSE and embedding/PDF ports",
+    "No paid or real provider requests",
+    "No visual UI or real PDF adapter integration",
+    "No production SessionController, compaction or full project/session deletion",
+    "Budget and finite limit numbers are synthetic candidates, not verified production defaults"
+  ]
+}
