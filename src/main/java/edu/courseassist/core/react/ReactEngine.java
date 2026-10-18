@@ -179,7 +179,7 @@ public final class ReactEngine {
             }
             if (outcome == null) completion.complete(snapshot); else completion.completeExceptionally(outcome);
         }
-        private boolean isPermitted() { return decision.get() != Decision.CANCELED && permitted.getAsBoolean() && System.nanoTime() - deadline < 0; }
+        private boolean isPermitted() { return decision.get() == Decision.RUNNING && permitted.getAsBoolean() && System.nanoTime() - deadline < 0; }
         private void retrievalFailure(Throwable failure) {
             Throwable cause = unwrap(failure); check();
             if (cause instanceof Error) throw propagate(cause);

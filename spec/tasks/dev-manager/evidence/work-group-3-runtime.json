@@ -1,4 +1,4 @@
-{"status":"PASS","timestamp":"2026-10-18T07:49:39.174831300Z","ideBuild":"IU-262.10968.63","javaRuntime":"25.0.4+1-b508.27",
+{"status":"PASS","timestamp":"2026-10-18T08:10:03.750787500Z","ideBuild":"IU-262.10968.63","javaRuntime":"25.0.4+1-b508.27",
 "checks":["plugin-loaded","application-project-services","project-isolation-disposal",
 "background-work","Swing-ToolWindow-content-release","Java-PSI-read",
 "H2-commit-reopen","JVector-build-query","SpringAI-local-chat-stream-embedding-no-retry",

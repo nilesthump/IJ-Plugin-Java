@@ -34,7 +34,8 @@ public final class ReactTestEnvironment implements AutoCloseable {
     public static final Limits LIMITS = new Limits(6, 8, 16_000, 32_000, 200_000, 1024, Duration.ofSeconds(15), 12);
     public static final EmbeddingSpace SPACE = new EmbeddingSpace("fixture", URI.create("https://example.invalid"), "fixture", 3, "", "", "v1");
     public static final Settings SETTINGS = new Settings(SPACE, new Processing("fixture", 512, 16), new IndexSettings(2, 8, 1.5f, 1.2f));
-    public ReactTestEnvironment(Path root, boolean populate) throws Exception {
+    public ReactTestEnvironment(Path root, boolean populate) throws Exception { this(root,populate,e->e); }
+    public ReactTestEnvironment(Path root, boolean populate, UnaryOperator<Executor> decorateLibraryExecutor) throws Exception {
         this.root = root; Files.createDirectories(root); store = new H2Store(root.resolve("db"));
         embeddings = new CourseEmbeddings() {
             public EmbeddingSpace space() { return SPACE; }
@@ -45,7 +46,7 @@ public final class ReactTestEnvironment implements AutoCloseable {
             String body = Files.readString(request.managedSnapshot());
             return new PdfReadResult(request, 3, List.of(new PdfPage(1, "", PageTextStatus.EMPTY, Optional.empty()),
                     new PdfPage(2, "", PageTextStatus.EMPTY, Optional.empty()), new PdfPage(3, body, PageTextStatus.TEXT, Optional.empty())));
-        }, workers);
+        }, decorateLibraryExecutor.apply(workers));
         library.initialize().get(10, TimeUnit.SECONDS);
         store.transaction(c -> {
             try (var s = c.createStatement()) {

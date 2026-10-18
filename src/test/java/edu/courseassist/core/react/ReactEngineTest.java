@@ -258,4 +258,23 @@ class ReactEngineTest {
             assertTrue(tools.stream().allMatch(t->t.status()==ToolStatus.CANCELED));assertEquals(2,h.queries.get());
         }
     }
+    @Test void terminalSaveCannotReauthorizeAQueuedQueryBeforeLeaseRelease() throws Exception {
+        var gated=new AtomicBoolean();var accepted=new AtomicInteger();var held=new LinkedBlockingQueue<Runnable>();
+        try(var h=new ReactTestEnvironment(temp,true,executor->task->{
+            if(gated.get()&&accepted.incrementAndGet()>1)held.add(task);else executor.execute(task);
+        })) {
+            var saving=new CountDownLatch(1);var release=new CountDownLatch(1);
+            Journal delayed=new Journal(){public void create(Snapshot s){h.journal.create(s);}public void save(Snapshot s,boolean coordinator){
+                if(s.status()==AttemptStatus.STOPPED){saving.countDown();try{if(!release.await(10,TimeUnit.SECONDS))throw new IllegalStateException("save release timeout");}
+                    catch(InterruptedException failure){throw new CompletionException(failure);}}h.journal.save(s,coordinator);}};
+            gated.set(true);var subscriptions=new AtomicInteger();
+            var job=h.start((r,l)->{subscriptions.incrementAndGet();finish(l,"unexpected");return ()->{};},LIMITS,ErrorPolicy.PRODUCT,()->true,delayed,List.of(),h.identity,h.tools());
+            Runnable query=held.poll(10,TimeUnit.SECONDS);assertNotNull(query);assertTrue(job.cancel());assertTrue(saving.await(10,TimeUnit.SECONDS));
+            // Terminal coordination still pins the lease here. The queued query must see revoked
+            // runtime permission even though the local decision has advanced from CANCELED to TERMINAL.
+            h.workers.submit(query).get(5,TimeUnit.SECONDS);int queryCount=h.queries.get();release.countDown();
+            assertThrows(ExecutionException.class,()->h.done(job));assertEquals(0,queryCount);assertEquals(0,subscriptions.get());
+            assertEquals(AttemptStatus.STOPPED,job.snapshot().status());
+        }
+    }
 }
