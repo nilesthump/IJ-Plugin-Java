@@ -27,3 +27,5 @@ Repository 必须传入事务内 Guard（CREATE/LIVE_WRITE/COORDINATOR_TERMINAL/
 ## 验证边界
 
 自动测试使用真实 H2/JVector 和合成分页/嵌入，模型为可控帧或 127.0.0.1 SSE。另在本机 IDEA 的真实插件类加载器运行两步 ReAct、Spring AI 序列化、流式工具聚合、末帧 usage、固定物理页引用和耐久档案。结果待 STATUS 实际回填；可视界面、真实乙解析器、真实服务/生产思考模式、完整第四组会话/压缩/删除及实际规模均 NOT_RUN。
+
+第三组收尾复核：查询许可仅在 Decision.RUNNING 时成立，进入 FINISHING 或 TERMINAL 后不再允许排队查询启动嵌入。回归用受控执行器与 STOPPED 保存栅栏复现“取消→协调保存→lease 尚未释放→释放旧查询”，断言嵌入与模型调用均为 0。52 项 JUnit（新增 21 项）、All + IdeSmoke 最终退出 0；两路独立增量复核闭合。该修正与真实完成记录通过 [PR #6](https://github.com/nilesthump/IJ-Plugin-Java/pull/6) 门禁交付，不开展第四组。

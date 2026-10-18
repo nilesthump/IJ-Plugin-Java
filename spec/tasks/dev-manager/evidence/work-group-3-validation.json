@@ -8,8 +8,8 @@
     "skipped": 0,
     "failures": 0,
     "errors": 0,
-    "newTests": 20,
-    "tests": 51
+    "newTests": 21,
+    "tests": 52
   },
   "fixtureSmoke": "PASS",
   "check": "PASS",
@@ -28,9 +28,10 @@
     "first targeted regression had three cancellation/epoch failures; fixed",
     "targeted second run passed 16 tests",
     "All plus IdeSmoke passed; independent review found terminal race and multi-tool view loss; fixed and regressed",
-    "final All plus IdeSmoke exit 0 with 51 tests"
+    "final All plus IdeSmoke exit 0 with 51 tests",
+    "Post-merge terminal permission window found in final audit; guarded queued-query regression added, both independent reviews closed, All plus IdeSmoke exit 0 with 52 tests"
   ],
-  "rawLog": "tmp/manager-task3/final-validation.log",
+  "rawLog": "tmp/manager-task3/terminal-fence-validation.log",
   "limitations": [
     "Only synthetic loopback model/SSE and embedding/PDF ports",
     "No paid or real provider requests",

@@ -57,3 +57,11 @@
 - ReactContext.history / POLICY 是未来模型/检索改写/摘要/checkpoint 共同资格入口；仅耐久成功最终有效分支生成内容合格。停止/中断/超限/失效生成输出仍在 Snapshot 中显示；重试新 attempt、原输入只投一次。不得绕过资格入口注入任意旧 summary/cache。
 - 最终 All + IdeSmoke 退出 0：51 项 JUnit、FixtureSmoke、插件 ZIP、本机 IDEA/JBR 的严格 SSE 两步 ReAct/固定页证据/H2 档案通过。日志 `tmp/manager-task3/final-validation.log`；公开 evidence/work-group-3-runtime.json / validation.json / review.md。两路独立检查均无未闭合项。
 - 真实/付费模型与嵌入、真实 PDF/可视交互/课程规模 NOT_RUN。模型/预算/限额仍为显式配置与合成候选，完整第四组会话/摘要/项目身份未实施。下一条动作：先核对本第三组 PR 最新 head 的门禁与 main 合入；满足后第三组 DONE，再按用户下一轮请求开始第四组。本轮停止于第三组。
+
+## 第三组主线核验完成（2026-10-18）
+
+第三组 `DONE`：[PR #5](https://github.com/nilesthump/IJ-Plugin-Java/pull/5) 最新 head `d959b0b329629cc75ba329c8b6315cb1613bba1b` 的 validation 与 scope 均 SUCCESS，已合入 main 并 fetch 核验 merge commit `14d465ea761da45d982691270e782e9a006d96d0`。固定 dev-manager 保留；主工作区同步 main，未触及成员分支。远端证据见 [交付记录](evidence/work-group-3-delivery.json)。第 4–5 组仍 NOT_STARTED，整体 IN_PROGRESS；本轮不开展第四组，原有方案/PDF改动继续保留。
+
+### 第三组收尾：终止查询许可（2026-10-18）
+
+在 PR #5 完成基础交付后，收尾复核将查询许可收紧为仅 Decision.RUNNING，避免取消转入终态保存时、lease 尚未释放的排队查询重新获得嵌入资格。可控执行器/延迟终态保存回归验证旧查询的嵌入与模型调用均为 0，两路独立增量检查均闭合。最新统一 All + IdeSmoke 退出 0，共 52 项 JUnit（本组新增 21 项）；原始日志 `tmp/manager-task3/terminal-fence-validation.log`。最终证据见原 work-group-3-validation.json / runtime.json / review.md。该修复和完成记录经 [PR #6](https://github.com/nilesthump/IJ-Plugin-Java/pull/6) 最新 head 的 validation/scope 并合入 main 后生效；未扩展至第四组，历史 51 项记录属于 PR #5 的真实交付批次。

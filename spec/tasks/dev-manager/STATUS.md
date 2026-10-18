@@ -1,7 +1,7 @@
 # 负责人：公共骨架、核心与主线验收：状态
 
 - 任务定义：`IN_PROGRESS`。
-- 功能实现：第 1–2 组 `DONE`（PR #3 / #4 已合入 main）；第 3 组 `IMPLEMENTED / VERIFIED`，本交付 PR 的 validation/scope 与 main 合入核验满足后为 `DONE`；第 4–5 组 `NOT_STARTED`，整体尚未完成。
+- 功能实现：第 1–3 组 `DONE`（PR #3 / #4 / #5 已通过门禁并合入 main，第三组已核验）；第 4–5 组 `NOT_STARTED`，整体尚未完成。
 - 当前分支：`dev-manager`；PR 目标：`main`，合并保留来源分支。
 - 记录日期：2026-10-18。
 - 开工 HEAD / 公共 main 基线：`36452814d58dfda228511bd17556dfa5df69094a`；已 fetch 并核实无 main 增量。
@@ -64,3 +64,11 @@ IDE sandbox 默认禁用 Ultimate 标记，日志仍有其依赖插件与安装�
 - 独立 Standards / Spec 两路只读检查已闭合：停止与成功保存竞争、取消双原子窗口、Error 分类、严格 JSON、首工具失败/停止后第二请求显示丢失均修复并回归。最终未闭合问题各为 0；[检查记录](evidence/work-group-3-review.md)。
 - 失败记录保留：一次测试编译的 Snapshot 导入歧义、首轮定向的取消 future/epoch 竞争失败均修正后重跑；首个 All/IDE 通过后仍按独立检查修复并最终全量重验，没有覆盖旧失败记录。
 - `NOT_RUN`：真实 DeepSeek/课程网关、生产思考模式与 tokenizer/额度、真实乙解析器、可视 UI、真实规模；完整 SessionController、项目身份/草稿、摘要/checkpoint 与根删除接线属第四组。严格协议和测试参数不冒充真实平台能力，未请求付费服务。无已知实现阻塞；本轮到第三组结束，不开展第四组。
+
+## 第三组主线核验完成（2026-10-18）
+
+第三组 `DONE`：[PR #5](https://github.com/nilesthump/IJ-Plugin-Java/pull/5) 最新 head `d959b0b329629cc75ba329c8b6315cb1613bba1b` 的 validation 与 scope 均 SUCCESS，已合入 main 并 fetch 核验 merge commit `14d465ea761da45d982691270e782e9a006d96d0`。固定 dev-manager 保留；主工作区同步 main，未触及成员分支。远端证据见 [交付记录](evidence/work-group-3-delivery.json)。第 4–5 组仍 NOT_STARTED，整体 IN_PROGRESS；本轮不开展第四组，原有方案/PDF改动继续保留。
+
+### 第三组收尾：终止查询许可（2026-10-18）
+
+在 PR #5 完成基础交付后，收尾复核将查询许可收紧为仅 Decision.RUNNING，避免取消转入终态保存时、lease 尚未释放的排队查询重新获得嵌入资格。可控执行器/延迟终态保存回归验证旧查询的嵌入与模型调用均为 0，两路独立增量检查均闭合。最新统一 All + IdeSmoke 退出 0，共 52 项 JUnit（本组新增 21 项）；原始日志 `tmp/manager-task3/terminal-fence-validation.log`。最终证据见原 work-group-3-validation.json / runtime.json / review.md。该修复和完成记录经 [PR #6](https://github.com/nilesthump/IJ-Plugin-Java/pull/6) 最新 head 的 validation/scope 并合入 main 后生效；未扩展至第四组，历史 51 项记录属于 PR #5 的真实交付批次。

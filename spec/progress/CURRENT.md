@@ -8,7 +8,7 @@
 
 - 固定分支：main、dev-manager、dev-a、dev-b、dev-c；四个 dev 各自 PR 到 main，manager 独立。负责人工作区 `H:/IJ-Plugin-Java` 最终保持 dev-manager，成员独立克隆。
 - 单 Gradle Groovy 工程，Java 25；公共接口已落为源码，合成夹具不调用网络。Spring AI/H2/JVector/PDFBox/commonmark 是初始化依赖组合，不代表真实运行已验证。
-- 三个成员任务保持 READY / NOT_STARTED。负责人第 1–2 组已通过 PR #3 / #4 合入 main；第 3 组已实现并通过本地 All/IDE 和独立检查，本交付 PR 最新 head 的 validation/scope 与 main 合入核验满足后为 DONE，此前待集成。第 4–5 组未开始，整体 IN_PROGRESS，详见 [负责人状态](../tasks/dev-manager/STATUS.md)。公共进度归负责人，成员各自维护本任务目录。
+- 三个成员任务保持 READY / NOT_STARTED。负责人第 1–3 组已分别通过 PR #3 / #4 / #5 门禁并合入 main；第三组已核验完成。第 4–5 组未开始，整体 IN_PROGRESS，详见 [负责人状态](../tasks/dev-manager/STATUS.md)。公共进度归负责人，成员各自维护本任务目录。
 - 正式架构状态仍见 WORKING.json，不伪造候选/冻结版本。
 
 ## 初始化验证状态
@@ -44,3 +44,11 @@
 第 1、2 组已通过 PR #3 / #4 合入 main。第三组已实现固定代次首检/课程工具、单所有者有限步骤、严格 Spring AI 请求/SSE、正文/thinking/工具及终止分离、原子累计档案/来源保留、最终实际引用、故障分支隔离和统一上下文资格。最终统一 All + IdeSmoke 退出 0，51 项 JUnit、FixtureSmoke、插件打包和本机 IU-262.10968.63 / JBR25.0.4 场景通过；两路独立检查无未闭合项。准确范围、命令与证据见 [第三组记录](../tasks/dev-manager/WORK_GROUP_3.md) 和 [负责人状态](../tasks/dev-manager/STATUS.md)。
 
 本节随本交付 PR 最新 head 的 validation/scope 通过并合入 main、核验后生效，满足后第三组 DONE；此前为已实现/已验证待集成。第 4–5 组未开始，整体仍 IN_PROGRESS，不开展第四组。真实 API/生产思考模式/实际 tokenizer、真实 PDF/可视 UI/规模、完整 session 与压缩仍待证；没有付费调用或架构冻结。开工前方案/PDF改动保留且不纳入本组提交。
+
+## 第三组主线核验完成（2026-10-18）
+
+第三组 `DONE`：[PR #5](https://github.com/nilesthump/IJ-Plugin-Java/pull/5) 最新 head `d959b0b329629cc75ba329c8b6315cb1613bba1b` 的 validation 与 scope 均 SUCCESS，已合入 main 并 fetch 核验 merge commit `14d465ea761da45d982691270e782e9a006d96d0`。固定 dev-manager 保留；主工作区同步 main，未触及成员分支。远端证据见 [交付记录](../tasks/dev-manager/evidence/work-group-3-delivery.json)。第 4–5 组仍 NOT_STARTED，整体 IN_PROGRESS；本轮不开展第四组，原有方案/PDF改动继续保留。
+
+### 第三组收尾：终止查询许可（2026-10-18）
+
+在 PR #5 完成基础交付后，收尾复核将查询许可收紧为仅 Decision.RUNNING，避免取消转入终态保存时、lease 尚未释放的排队查询重新获得嵌入资格。可控执行器/延迟终态保存回归验证旧查询的嵌入与模型调用均为 0，两路独立增量检查均闭合。最新统一 All + IdeSmoke 退出 0，共 52 项 JUnit（本组新增 21 项）；原始日志 `tmp/manager-task3/terminal-fence-validation.log`。最终证据见原 work-group-3-validation.json / runtime.json / review.md。该修复和完成记录经 [PR #6](https://github.com/nilesthump/IJ-Plugin-Java/pull/6) 最新 head 的 validation/scope 并合入 main 后生效；未扩展至第四组，历史 51 项记录属于 PR #5 的真实交付批次。

@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-18",
+  "group": 3,
+  "state": "DONE",
+  "featurePullRequest": "https://github.com/nilesthump/IJ-Plugin-Java/pull/5",
+  "head": "d959b0b329629cc75ba329c8b6315cb1613bba1b",
+  "mergeCommit": "14d465ea761da45d982691270e782e9a006d96d0",
+  "mergedAt": "2026-10-18T08:05:17Z",
+  "checks": [
+    {
+      "name": "validation",
+      "state": "SUCCESS",
+      "url": "https://github.com/nilesthump/IJ-Plugin-Java/actions/runs/39109540297/job/117622486483"
+    },
+    {
+      "name": "scope",
+      "state": "SUCCESS",
+      "url": "https://github.com/nilesthump/IJ-Plugin-Java/actions/runs/39110046248"
+    }
+  ],
+  "sourceBranchPreserved": "dev-manager",
+  "localAllIdeSmokeExit": 0,
+  "junitTests": 51,
+  "independentStandardsOpen": 0,
+  "independentSpecOpen": 0,
+  "remainingGroups": [
+    4,
+    5
+  ],
+  "realProvider": "NOT_RUN"
+}
