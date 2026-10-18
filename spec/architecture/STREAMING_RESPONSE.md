@@ -1,5 +1,7 @@
 # F0 流式回答与增量 Markdown 设计
 
+实施回填（2026-10-18）：第三组已在 `SpringAiCourseModel` 严格 SSE 与 `ReactEngine` 中实现每 step 一订阅、独立正文/thinking/tool、真实结束/EOF区分、usage末帧、累计前缀、有限队列/输出、取消与最终保存竞争；`ReactRepository` 提供事务 guard 下的累计/终态保存及来源保留。`ReactViews` 投影既有公共 DTO，不承担丙的 Markdown/配色渲染。真实平台能力、可视界面与第四组完整 session 接线仍待证；见 [第三组记录](../tasks/dev-manager/WORK_GROUP_3.md)。以下历史设计提案保留，不据实现回填宣称冻结。
+
 更新：2026-10-16（Asia/Shanghai）。状态：讨论提案，权威状态为 `WORKING.json`。用户在 `evidence/user-turn-027.md` 确认第一版回答流式显示、生成中逐步更新。本文定义最小契约与验证边界，尚未接入真实流或创建主插件工程。
 
 ## 1. 所有权与一次模型调用

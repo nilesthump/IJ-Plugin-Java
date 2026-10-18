@@ -8,7 +8,7 @@
 
 - 固定分支：main、dev-manager、dev-a、dev-b、dev-c；四个 dev 各自 PR 到 main，manager 独立。负责人工作区 `H:/IJ-Plugin-Java` 最终保持 dev-manager，成员独立克隆。
 - 单 Gradle Groovy 工程，Java 25；公共接口已落为源码，合成夹具不调用网络。Spring AI/H2/JVector/PDFBox/commonmark 是初始化依赖组合，不代表真实运行已验证。
-- 三个成员任务保持 READY / NOT_STARTED。负责人第 1 组已通过 PR #3 合入 main；第 2 组资料与检索核心已实现并通过本地 All/IDE 和独立检查，本交付 PR 的 validation/scope 通过并合入 main 后为 DONE，此前为待集成。第 3–5 组未开始，整体 IN_PROGRESS，详见 [负责人状态](../tasks/dev-manager/STATUS.md)。公共进度归负责人，成员各自维护本任务目录。
+- 三个成员任务保持 READY / NOT_STARTED。负责人第 1–2 组已通过 PR #3 / #4 合入 main；第 3 组已实现并通过本地 All/IDE 和独立检查，本交付 PR 最新 head 的 validation/scope 与 main 合入核验满足后为 DONE，此前待集成。第 4–5 组未开始，整体 IN_PROGRESS，详见 [负责人状态](../tasks/dev-manager/STATUS.md)。公共进度归负责人，成员各自维护本任务目录。
 - 正式架构状态仍见 WORKING.json，不伪造候选/冻结版本。
 
 ## 初始化验证状态
@@ -38,3 +38,9 @@
 本节随本交付 PR 的 validation/scope 通过并合入 main 后生效，满足后第 2 组 DONE；此前为待集成。整体仍 IN_PROGRESS，第 3–5 组未开始。真实乙 PDF/服务联调、生产界面/配置/会话/ReAct 与真实课程规模仍有明确未执行边界，不据合成验证宣称完整 F0 或架构冻结。开工前方案/PDF改动保留且不纳入本组提交。
 
 第二组交付入口：[PR #4](https://github.com/nilesthump/IJ-Plugin-Java/pull/4)，实现提交 `8b41aba`；只有最新 head 的 validation/scope 与 main 合入核验共同满足后，上述第二组 DONE 条件生效。合并保留固定来源分支。
+
+## 负责人第三组：Spring AI、有限 ReAct 与流式（2026-10-18）
+
+第 1、2 组已通过 PR #3 / #4 合入 main。第三组已实现固定代次首检/课程工具、单所有者有限步骤、严格 Spring AI 请求/SSE、正文/thinking/工具及终止分离、原子累计档案/来源保留、最终实际引用、故障分支隔离和统一上下文资格。最终统一 All + IdeSmoke 退出 0，51 项 JUnit、FixtureSmoke、插件打包和本机 IU-262.10968.63 / JBR25.0.4 场景通过；两路独立检查无未闭合项。准确范围、命令与证据见 [第三组记录](../tasks/dev-manager/WORK_GROUP_3.md) 和 [负责人状态](../tasks/dev-manager/STATUS.md)。
+
+本节随本交付 PR 最新 head 的 validation/scope 通过并合入 main、核验后生效，满足后第三组 DONE；此前为已实现/已验证待集成。第 4–5 组未开始，整体仍 IN_PROGRESS，不开展第四组。真实 API/生产思考模式/实际 tokenizer、真实 PDF/可视 UI/规模、完整 session 与压缩仍待证；没有付费调用或架构冻结。开工前方案/PDF改动保留且不纳入本组提交。

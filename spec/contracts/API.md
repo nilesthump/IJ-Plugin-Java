@@ -129,3 +129,15 @@
 原始 H2 向量、托管 PDF 及 sourceVersion 不依赖当前索引生存。未来回答提交方需在 lease 释放前为实际来源调用 retainSources(owner, sourceIds)，删除私有记录时 releaseReferences(owner)；这只是共享来源保留入口，尚不是回答/证据/状态共同提交或 session 删除实现。历史引用通过固定 sourceVersionId 查询 sourcePath。清理先 previewCleanup，再显式 cleanup，并在事务内重新检查引用/活动/占用；文件删除失败保留可继续的 blob 身份。
 
 公共 UI/PDF DTO 签名未改；成员无需导入 manager 内部 corpus 类型。生产 ApplicationController 的事件/状态装配、凭据与运行 epoch 配置仍待第 4 组；本组不注册替代成员解析器，不给合成控制器增加假成功。实现、参数及真实验证边界见 [第二组记录](../tasks/dev-manager/WORK_GROUP_2.md)。
+
+## 9. 第三组问答核心接入
+
+manager 内部 `core.react.ReactEngine` 接受冻结 Identity/Input、同 session 已归档历史、attempt 创建时取得的 CourseTools lease、显式 Limits/ErrorPolicy/Budget、运行资格、Journal 和累计 Snapshot 观察者。调用前由第四组完成用户提交与活跃槽，不能把本入口当作草稿提交。每个 step 唯一模型订阅，核心首检和后续课程工具共用原代次；`ReactViews.attempt(snapshot)` 转为既有公共 AttemptView，无新 UI SDK 依赖。
+
+`Job.cancel()` 返回是否接受停止：true 表示停止赢得原子决策，之后不可能耐久成功；false 表示终态保存已开始或已经终止，界面不能宣称已停止。它不等待远端确认或数据库；epoch/session 失效仍由事务内 guard 决定。`completion()` 为隔离取消的观察 future；异常保留原始 cause，累计 snapshot 仍可显示。PRODUCT 检索故障和视图投递异常分别经 retrievalFailures/observerFailures 交任务边界，不写全量输入或凭据日志。
+
+`model.SpringAiCourseModel` 使用固定 Spring AI 请求类型，显式配置 DeepSeek 风格 SSE、模型、thinking/usage 和 HTTP 客户端，无隐式工具循环或重试。真实 DeepSeek/课程网关能力尚未验证；构造不发送请求。正文、thinking、完整工具请求、终止原因与 usage 分离，正常结束、非空最终正文、实际引用和耐久提交共同成立才成功。
+
+`storage.ReactRepository` 需先初始化共享 corpus schema，并提供必需的事务内 Guard；CREATE/LIVE_WRITE/COORDINATOR_TERMINAL/READ/DELETE 均复验目标。运行失效的 guard 应抛 CancellationException，IO/SQL 保存失败则保留原错并阻塞依赖该提交的发送。正文/证据/状态与共享来源保留同事务保存；interrupt 不启动网络；session 删除入口清该组档案/来源引用且不清共享资料。本轮没有生产 no-op guard 或完整 session 控制器。
+
+后续请求、检索改写、摘要/checkpoint 必须共用 ReactContext.history 的耐久最终分支资格规则和 POLICY，不接受未经来源资格校验的旧摘要/cache；第四组负责压缩/根生命周期接线。实现、候选测试参数与明确未验证范围见 [第三组记录](../tasks/dev-manager/WORK_GROUP_3.md)。
