@@ -8,6 +8,9 @@ import edu.courseassist.contract.PdfReader;
 import edu.courseassist.core.TaskScope;
 import edu.courseassist.core.RuntimeGate;
 import edu.courseassist.storage.H2Store;
+import edu.courseassist.storage.CourseRepository;
+import edu.courseassist.storage.ManagedPdfStore;
+import edu.courseassist.core.corpus.CourseLibrary;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.HashSet;
@@ -26,6 +29,7 @@ public final class CourseAssistantApplication implements Disposable {
     private final Set<TaskScope> projects = new HashSet<>();
     private final RuntimeGate runtime = new RuntimeGate();
     private boolean disposed;
+    private CourseLibrary courses;
 
     public static CourseAssistantApplication getInstance() {
         return ApplicationManager.getApplication().getService(CourseAssistantApplication.class);
@@ -35,6 +39,14 @@ public final class CourseAssistantApplication implements Disposable {
     public H2Store storage() { return storage; }
     public TaskScope tasks() { return tasks; }
     public RuntimeGate runtime() { return runtime; }
+
+    /** Lazy resource owner; initialize/operations schedule all I/O in the shared background executor. */
+    public synchronized CourseLibrary courses() {
+        if (disposed) throw new IllegalStateException("Application service disposed");
+        if (courses == null) courses = new CourseLibrary(new CourseRepository(storage),
+                new ManagedPdfStore(Path.of(PathManager.getConfigPath(), "courseassist-f0", "pdf")), this::pdfReader, executor);
+        return courses;
+    }
 
     synchronized TaskScope newProjectScope() {
         if (disposed) throw new IllegalStateException("Application service disposed");
@@ -61,6 +73,7 @@ public final class CourseAssistantApplication implements Disposable {
         projects.forEach(TaskScope::close);
         projects.clear();
         tasks.close();
+        if (courses != null) courses.close();
         storage.close();
         executor.shutdown();
     }

@@ -6,6 +6,8 @@ import com.sun.net.httpserver.HttpServer;
 import edu.courseassist.storage.H2Store;
 import edu.courseassist.model.ModelClassLoading;
 import edu.courseassist.model.SpringAiTransport;
+import edu.courseassist.model.CourseEmbeddings;
+import edu.courseassist.core.corpus.CorpusData.EmbeddingSpace;
 import io.github.jbellis.jvector.graph.GraphIndexBuilder;
 import io.github.jbellis.jvector.graph.GraphSearcher;
 import io.github.jbellis.jvector.graph.ListRandomAccessVectorValues;
@@ -70,6 +72,7 @@ public final class DependencyChecks {
             require(result.getNodes().length == 1 && result.getNodes()[0].node == 1, "JVector query");
         }
         ModelClassLoading.call(() -> { springAiLoopback(); return null; });
+        CorpusRuntimeChecks.run(scratch.resolve("corpus"));
     }
 
     private static void springAiLoopback() throws Exception {
@@ -133,9 +136,12 @@ public final class DependencyChecks {
             require(propagated && chatRequests.get() == 3, "HTTP failure propagated without retry");
             var embeddings = OpenAiEmbeddingModel.builder().openAiClient(openAi)
                     .options(OpenAiEmbeddingOptions.builder().model("synthetic-embedding").dimensions(3).build()).build();
-            float[] vector = embeddings.embed("local document");
-            require(vector.length == 3 && vector[0] == 1 && embeddingRequests.get() == 1,
-                    "Spring AI OpenAI controlled embedding response");
+            var courseEmbedding = CourseEmbeddings.springAi(embeddings, new EmbeddingSpace("synthetic", java.net.URI.create(baseUrl),
+                    "synthetic-embedding", 3, "document: ", "query: ", "fixture-v1"));
+            float[] vector = courseEmbedding.document("local document");
+            float[] query = courseEmbedding.query("local question");
+            require(vector.length == 3 && vector[0] == 1 && query[0] == 1 && embeddingRequests.get() == 2,
+                    "Spring AI corpus document/query controlled embedding response");
             } finally { openAi.close(); }
         } finally { server.stop(0); }
     }

@@ -1,0 +1,7 @@
+{"status":"PASS","timestamp":"2026-10-18T07:07:14.640178700Z","ideBuild":"IU-262.10968.63","javaRuntime":"25.0.4+1-b508.27",
+"checks":["plugin-loaded","application-project-services","project-isolation-disposal",
+"background-work","Swing-ToolWindow-content-release","Java-PSI-read",
+"H2-commit-reopen","JVector-build-query","SpringAI-local-chat-stream-embedding-no-retry",
+"corpus-managed-PDF-H2-generation-physical-page","corpus-local-vector-recovery-fixed-attempt"],
+"limitations":["headless IDE command; no visual interaction", "synthetic loopback HTTP only",
+"synthetic corpus ports; no real PDF parser, sessions, ReAct or real provider validation"]}

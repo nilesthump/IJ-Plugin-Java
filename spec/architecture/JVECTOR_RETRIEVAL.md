@@ -57,3 +57,9 @@ P0 需要分别留证：依赖/Java25无额外模块标志的构建查询探针�
 依赖来源附记见 `evidence/jvector-probe-repository-note.json`：本次 Maven 解析实际使用继承的 Aliyun 镜像，不宣称 Central-only 隔离解析；构件 hash 与运行日志已保存。后续受控构建需同时隔离全局和用户 Maven 设置，本轮不为此重复运行图查询。
 
 分工仍按 5:1:1:1：负责人-2承接代次/向量存储及图构建，负责人-3承接查询/映射/证据；丙只展示准备/检索状态，甲乙边界不扩大。具体参数与版本由负责成员实现验证后回填。
+
+## 6. 第二组实施回填（2026-10-18）
+
+`CourseLibrary` / `GenerationHandle` 已落地 H2 float32-le 原始向量、带指纹与 ordinal 的耐久代次、每查询独立 GraphSearcher、旧 lease 保留和每代次共享恢复 future。查询结果包含固定 generation/chunk/document/source/物理页/页内范围；同维不同空间拒绝查询或复用，空间/处理变化通过显式全库 reindex 发布。没有全扫描回退。实际插件内已运行合成入库、查询、关闭重开后的本地向量恢复与旧 attempt 移除后检索；仍不能据此证明真实课程召回或服务配置。
+
+schema v1 固定编码 float32 little-endian、JVector4.0.1 与 COSINE [0,1] 分数语义；恢复校验配置、向量/正文 SHA-256、数量和 ordinal。分块/图/Top-K/阈值没有生产默认值，当前合成参数仅供边界验证。详情、准确运行证据和未执行项见 [WORK_GROUP_2](../tasks/dev-manager/WORK_GROUP_2.md) / STATUS。
