@@ -1,0 +1,75 @@
+{
+  "date": "2026-10-20",
+  "timezone": "Asia/Singapore",
+  "branch": "dev-b",
+  "main_baseline": "2976118fb4e8a8980da70b59041ed29f77d524fc",
+  "java": "JetBrains JBR 25.0.3",
+  "pdfbox": "3.0.5",
+  "junit_jupiter": "5.13.4",
+  "module_compilation": {
+    "status": "PASS",
+    "exit_code": 0,
+    "release": 25,
+    "method": "supplemental javac; not full plugin compilation"
+  },
+  "module_junit": {
+    "status": "PASS",
+    "exit_code": 0,
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "method": "JUnit Platform Console 1.13.4; generated synthetic PDFs"
+  },
+  "local_instructor_pdf_probe": {
+    "status": "PASS",
+    "exit_code": 0,
+    "documents": 9,
+    "physical_pages": 199,
+    "empty_text_pages": 0,
+    "independent_pypdf_page_counts_match": true,
+    "original_bytes_unchanged": true,
+    "managed_copy_rename_and_delete": true,
+    "lecture_text_in_evidence": false
+  },
+  "unified_all": {
+    "status": "PASS",
+    "exit_code": 0,
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -GradleUserHome \"$PWD\\tmp\\gradle-home\"",
+    "log": "tmp/dev-b-validation/baseline-network.log",
+    "initial_sandbox_attempt_exit": 1,
+    "sdk_version": "2026.2.3",
+    "sdk_build": "262.10968.63",
+    "junit_suites": 15,
+    "junit_tests": 88,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "fixture_smoke": "PASS",
+    "plugin_zip": "build/distributions/IJ-Plugin-Java-0.1.0-dev.zip"
+  },
+  "repository_structure": {
+    "status": "PASS",
+    "exit_code": 0
+  },
+  "production_extension_registration": {
+    "status": "NOT_RUN",
+    "request": "PDF-REG-001",
+    "owner": "dev-manager"
+  },
+  "ide_runtime": "NOT_RUN",
+  "real_model_api": "NOT_RUN",
+  "original_input_pdfs_and_instructor_directory_ignored": true,
+  "limits": [
+    "Supplemental module checks do not replace scripts/validate.ps1 -Scope All.",
+    "No guarantee of all-PDF glyph recovery or human layout order.",
+    "Production registration, pipeline integration, independent review and main merge remain pending."
+  ],
+  "write_scope": {
+    "status": "PASS",
+    "exit_code": 0,
+    "paths": 8,
+    "log": "tmp/dev-b-validation/scope.log"
+  },
+  "production_jar_contains_adapter": true,
+  "production_jar_contains_pdf_documents": false
+}
