@@ -1,10 +1,30 @@
 # 乙：固定 PDF 快照解析：公共依赖与接口请求
 
-当前：`NONE_RECORDED`。尚未核查的需求不等于已确认无需依赖。此文件用于提出公共变更，不授权成员修改 build、plugin.xml、contract 或 fixtures。
+当前：`PROPOSED`，见 PDF-REG-001。此文件用于提出公共变更，不授权成员修改 build、plugin.xml、contract 或 fixtures。
 
 负责人在公共范围评估并从 `dev-manager` PR 到 `main`，成员同步 `main` 后接入。公共签名以 [API.md](../../contracts/API.md) 与 Java 定义为准；PDFBox/commonmark 等已预配依赖先检查现有构建，避免重复申请。
 
-## 请求模板（每项复制一份）
+## PDF-REG-001：注册已实现的 PDF reader
+
+- 提出日期 / 归属人：2026-10-20 / dev-b；状态 `PROPOSED`，尚未获负责人接入或合入确认。
+- 触发场景：`CourseAssistantApplication.pdfReader()` 要求扩展点恰有一个实现。当前主线只有 extension point 声明，没有生产解析器注册，真实资料导入尚不能通过该入口取得 reader。
+- 最小公共变更：负责人在 `src/main/resources/META-INF/plugin.xml` 的 `edu.courseassist.f0` 命名空间注册 `pdfReader implementation="edu.courseassist.pdf.PdfBoxPdfReader"`。沿用既有 `PdfReader` 契约，不新增字段、依赖、服务或 fixtures。
+
+  建议负责人在现有 plugin.xml 的 idea-plugin 下添加：
+
+  ```xml
+  <extensions defaultExtensionNs="edu.courseassist.f0">
+      <pdfReader implementation="edu.courseassist.pdf.PdfBoxPdfReader"/>
+  </extensions>
+  ```
+
+- 实现要求：类为 public/final，public 无参构造；无实例可变状态；同步读取并关闭本次文件资源，线程/取消/托管生命周期仍归核心。
+- 已有证据：Java25 编译与 12 项真实合成 PDF JUnit 通过；九份真实课件共 199 页的固定副本读取、页数独立核对、原件未变和副本重命名/删除通过。另已运行统一 All，退出 0，全工程 88 项 JUnit/FixtureSmoke/buildPlugin 均通过；见 [IMPLEMENTATION](IMPLEMENTATION.md)。这些证据仍不替代生产扩展点和实际 IDEA 联调。
+- 可独立继续：B1–B3 已实现及补充验证；组长注册前可完善范围内测试/文档，不能自行修改公共注册或直接绕过 application 服务。
+- 联合验收：负责人注册合入 main 后，dev-b 同步；真实插件中取得 reader，用三页合成文件走入库管线，验证来源/物理页引用以及坏页不发布新版本。真实模型效果单独验证。
+- 负责人结论 / 公共 PR / main 提交：`PENDING`。未通过工具向他人发送消息，本文是仓库内的待评估接入记录。
+
+## 后续请求模板
 
 - 请求 ID / 提出日期 / 归属人：待填。
 - 状态：PROPOSED / ACCEPTED / IMPLEMENTED / REJECTED（按事实填写）。
