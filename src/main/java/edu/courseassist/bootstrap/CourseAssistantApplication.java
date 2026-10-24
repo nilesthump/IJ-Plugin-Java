@@ -37,6 +37,7 @@ public final class CourseAssistantApplication implements Disposable {
     private CourseLibrary courses;
     public record Controllers(ApplicationCoordinator application,SessionCoordinator sessions) {}
     private CompletableFuture<Controllers> controllers;
+    public synchronized boolean initializationFailed() { return controllers != null && controllers.isCompletedExceptionally(); }
     private final CompletableFuture<Void> shutdownCompletion=new CompletableFuture<>();
     private final Thread shutdownHook=Thread.ofPlatform().name("courseassist-local-shutdown").unstarted(()->{
         dispose();

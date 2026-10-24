@@ -155,3 +155,11 @@ SubmitDraft/RetryAttempt/ManualCompact 的去重在 busy、revision 和未保存
 摘要复用配置的生成模型，独立无工具请求。自动规划已包含本轮真实输入证据与tools；旧checkpoint复用要检查POLICY/完整来源资格指纹。持续整理使用有效旧摘要加新增完整前缀，旧摘要不升级成课程事实；激活再次检查根、instance、operation撤销、runtimeEpoch、父指针与前缀。原始档案不删除。公开参数与实际/未执行边界见 [第四组记录](../tasks/dev-manager/WORK_GROUP_4.md)。
 
 ApplicationCoordinator 与 CredentialUpdateSink 共用 OFF 门槛；stage复制短期字符值，单次ref两分钟失效，拒绝/消费/关闭均清理。PasswordSafe 是唯一生产凭据持久入口；H2只存非秘密profiles。ConfiguredRuntimeFactory 构造不发连通请求，不选默认alias；当前为显式 DeepSeek风格SSE/OpenAI嵌入兼容路线，真实平台能力未验证。资料任务返回operationId，可在负责人任务边界查询原cause；普通view仅有简短提示。引用命令先校验该session实际citation，再打开固定托管版本及物理页定位。
+
+## 11. 第五组生产装配（2026-10-24）
+
+现已注册唯一 JavaCodeCapturePort、PdfBoxPdfReader，并通过公共 CaptureEntryAction 接入右键菜单；前文“无成员实现/占位 UI”仅是对应组的历史状态。首次右键若项目身份尚未初始化，打开侧栏并提示恢复/身份选择后重新添加，不排队异步改绑原动作。就绪时同步委托成员动作冻结选区与当前目标。
+
+BootstrapToolWindowFactory 后台初始化后在 EDT 构造真实 CourseAssistantView，内容释放关闭观察/高亮资源，不停止 session 业务。身份不明时明确新建或关联未占用的旧归属；关联仍复验空目标及双方版本。初始化失败保留原始诊断且不显示成功空状态；应用存储失败须排障后重启，关联失败可重新选择。
+
+自动验证已区分真实 IDEA/注册 PDF/PSI/H2/界面与本地合成模型响应；真实服务、人工体验/PDF跳页与规模仍待证。详细证据及人工入口见 [第五组](../tasks/dev-manager/WORK_GROUP_5.md)。

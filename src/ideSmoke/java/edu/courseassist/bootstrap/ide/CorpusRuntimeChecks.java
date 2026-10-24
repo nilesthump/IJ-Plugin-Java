@@ -15,25 +15,28 @@ import java.util.concurrent.TimeUnit;
 import static edu.courseassist.core.corpus.CorpusData.*;
 import static edu.courseassist.bootstrap.ide.DependencyChecks.require;
 
-/** Real manager corpus code inside the plugin classloader, with explicit synthetic PDF/embedding ports. */
+/** Registered PDF adapter and real corpus persistence; embeddings remain synthetic. */
 public final class CorpusRuntimeChecks {
     private CorpusRuntimeChecks() {}
     public static void run(Path scratch) throws Exception {
+        run(scratch, new edu.courseassist.pdf.PdfBoxPdfReader());
+    }
+    public static void run(Path scratch, edu.courseassist.contract.PdfReader reader) throws Exception {
         scratch = scratch.resolve("run-" + java.util.UUID.randomUUID());
         Files.createDirectories(scratch);
-        Path selected = Files.writeString(scratch.resolve("selected-fixture.pdf"), "synthetic-fixed-bytes");
+        Path selected = scratch.resolve("selected-fixture.pdf");
+        writePdf(selected);
         var space = new EmbeddingSpace("fixture", URI.create("https://example.invalid"), "fixture-model", 3, "", "", "v1");
         var settings = new Settings(space, new Processing("synthetic-reader-v1", 200, 10), new IndexSettings(2, 8, 1.5f, 1.2f));
         CourseEmbeddings embeddings = new CourseEmbeddings() {
             public EmbeddingSpace space() { return space; }
-            public float[] document(String t) { return t.equals("physical three") ? new float[]{0, 1, 0} : new float[]{1, 0, 0}; }
+            public float[] document(String t) { return t.contains("physical three") ? new float[]{0, 1, 0} : new float[]{1, 0, 0}; }
             public float[] query(String t) { return new float[]{0, 1, 0}; }
         };
         String oldSource, generation;
         try (var executor = Executors.newCachedThreadPool(); var store = new H2Store(scratch.resolve("db"));
              var library = new CourseLibrary(new CourseRepository(store), new ManagedPdfStore(scratch.resolve("pdf")),
-                     () -> request -> new PdfReadResult(request, 3, List.of(new PdfPage(1, "physical one", PageTextStatus.TEXT, Optional.empty()),
-                             new PdfPage(2, "", PageTextStatus.EMPTY, Optional.empty()), new PdfPage(3, "physical three", PageTextStatus.TEXT, Optional.empty()))), executor)) {
+                     () -> reader, executor)) {
             library.initialize().get(10, TimeUnit.SECONDS);
             var change = library.importPdf(selected, "runtime fixture", library.snapshot().get(10, TimeUnit.SECONDS).base(), settings, embeddings, () -> true)
                     .completion().toCompletableFuture().get(20, TimeUnit.SECONDS);
@@ -61,6 +64,19 @@ public final class CorpusRuntimeChecks {
                 library.remove(state.base(), new MaterialTarget(material.documentId(), material.sourceVersionId(), material.materialRevision()), () -> true).completion().toCompletableFuture().get(10, TimeUnit.SECONDS);
                 require(lease.search("question", queryOnly, new SearchSettings(1, 0.9f), () -> true).get(10, TimeUnit.SECONDS).getFirst().source().versionId().equals(oldSource), "Old attempt survives removal");
             }
+        }
+    }
+    public static void writePdf(Path path) throws Exception {
+        try (var document = new org.apache.pdfbox.pdmodel.PDDocument()) {
+            for (String text : List.of("physical one", "", "physical three")) {
+                var page = new org.apache.pdfbox.pdmodel.PDPage(); document.addPage(page);
+                if (!text.isEmpty()) try (var stream = new org.apache.pdfbox.pdmodel.PDPageContentStream(document, page)) {
+                    stream.beginText();
+                    stream.setFont(new org.apache.pdfbox.pdmodel.font.PDType1Font(org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName.HELVETICA), 12);
+                    stream.newLineAtOffset(72, 720); stream.showText(text); stream.endText();
+                }
+            }
+            document.save(path.toFile());
         }
     }
 }

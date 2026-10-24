@@ -18,7 +18,7 @@ java {
 // Local fixtures are a source set, not a published self-dependency variant.
 sourceSets {
     ideSmoke {
-        java.srcDir 'src/test/java'
+        java.srcDir 'src/ideSmoke/java'
         java.include 'edu/courseassist/bootstrap/ide/**'
         compileClasspath = sourceSets.main.output + configurations.compileClasspath
         runtimeClasspath = output + compileClasspath
@@ -31,6 +31,9 @@ sourceSets {
     test {
         compileClasspath += sourceSets.testFixtures.output
         runtimeClasspath += sourceSets.testFixtures.output
+        // Shared runtime probes are compiled once in their own source root, never as test sources.
+        compileClasspath += sourceSets.ideSmoke.output
+        runtimeClasspath += sourceSets.ideSmoke.output
     }
 }
 
