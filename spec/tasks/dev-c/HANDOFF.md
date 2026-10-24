@@ -2,7 +2,7 @@
 
 ## 当前分支与范围
 
-- 日期：2026-10-24；固定分支 `dev-c`，同步的本地 `origin/main` 基线 `9cf52ca`。未创建新分支。
+- 日期：2026-10-24；固定分支 `dev-c`，同步的本地 `origin/main` 基线 `9cf52ca`。功能提交 `3674cbe` 已推至 `origin/dev-c`，未创建新分支。
 - 本次改动仅位于 `src/main/java/edu/courseassist/ui/**`、`src/test/java/edu/courseassist/ui/**`、`spec/tasks/dev-c/**`。未编辑 `bootstrap`、公共契约、构建或插件 XML。
 - 本地 hooks 已安装。工作区中的 `tmp/` 缓存和合成冒烟脚本被忽略，不作为交付文件。
 
@@ -21,6 +21,6 @@
 
 ## 后续
 
-1. staged 范围检查已通过（10 路径，退出码 0）；提交与 `dev-c → main` PR 时保留上述限制。
+1. staged 范围检查已通过（10 路径，退出码 0）；功能已提交并推送。创建 `dev-c → main` PR 时保留上述限制。
 2. 负责人完成公共接线、IDE 版本协调，成员同步后在真实插件中核验显示、Java 高亮、配色和关闭资源。
 3. 独立检查、main 合入及核验后更新任务状态；合入后不删除 dev-c 分支。

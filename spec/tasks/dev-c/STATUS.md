@@ -1,7 +1,7 @@
 # 丙：Tool Window 与状态驱动界面：状态
 
 - 任务状态：`IN_PROGRESS`。成员允许范围内的视图与事件适配已实现，统一验证已通过；生产 Tool Window 接线、目标 IDE 可视验证、独立检查和合入仍未完成。
-- 记录日期：2026-10-24；分支：`dev-c`；开始时工作区干净，基线为 `9cf52ca`。本次仅改 `ui/**` 和 `spec/tasks/dev-c/**`。
+- 记录日期：2026-10-24；分支：`dev-c`；开始时工作区干净，基线为 `9cf52ca`。功能提交 `3674cbe` 已推至 `origin/dev-c`。本次仅改 `ui/**` 和 `spec/tasks/dev-c/**`。
 - 仓库本地 hooks 已通过 `scripts/git/Configure-Git.ps1` 安装；未新建或切换分支。
 
 ## 已实现
@@ -23,10 +23,11 @@
 | 真实 IDEA UI、高亮及配色动态行为、付费模型 | NOT_RUN | 尚未运行目标 IDEA 可视界面或实际付费模型；合成测试仅证明视图/契约行为 |
 | 生产 Tool Window 接线与端到端 | NOT_RUN | `BootstrapToolWindowFactory` 仍为负责人占位实现；见 [依赖请求](DEPENDENCY_REQUEST.md) |
 | staged 写入范围与差异检查 | PASS | `scripts/check-scope.ps1 -Staged`：10 路径、退出码 0；`git diff --cached --check`：退出码 0 |
-| PR、main 合入 | NOT_RUN | 提交与 PR 后更新；合入由负责人/审核流程完成 |
+| `dev-c` 推送 | PASS | `git -c credential.helper=manager -c credential.interactive=never push origin dev-c` 退出码 0；无强推 |
+| PR、main 合入 | NOT_RUN | PR 尚未创建；合入由负责人/审核流程完成 |
 
 ## 继续动作
 
-1. 提交已暂存的 `dev-c` 改动；PR 写明合成测试、版本差异和生产接线依赖。
+1. 创建 `dev-c → main` PR；描述写明合成测试、版本差异和生产接线依赖。
 2. 负责人从其公共范围接 `BootstrapToolWindowFactory`，并协调目标 IDEA 2026.2.3 的实际运行验证；成员同步后复验和交接。
 3. 经独立检查、`main` 合入及核验后才能将任务标为完成；当前不把合成 fixture 当真实核心/API 成功。
