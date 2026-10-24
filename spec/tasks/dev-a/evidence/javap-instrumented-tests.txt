@@ -1,0 +1,13 @@
+﻿Compiled from "SourceRangesTest.java"
+class edu.courseassist.editor.SourceRangesTest {
+  edu.courseassist.editor.SourceRangesTest();
+  void mapsMultilineUtf16OffsetsWithAnExclusiveEnd();
+  void mapsAnEndAtTheBeginningOfTheNextLine();
+  void rejectsCoordinatesOutsideTheFrozenDocument();
+}
+Compiled from "TaskScopeTest.java"
+class edu.courseassist.core.TaskScopeTest {
+  edu.courseassist.core.TaskScopeTest();
+  void closeRevokesQueuedAndLateDeliveryWithoutInterruptingWorker() throws java.lang.Exception;
+  void scopesAreIndependentAndOriginalFailuresPropagate();
+}
