@@ -72,6 +72,10 @@ public final class SessionCoordinator implements SessionController, SelectionSin
     public CompletionStage<Binding> associate(String instance,String source,long sourceRevision,long targetRevision) {
         return command(()->{ProjectState p=project(instance);Binding b=repository.associate(p.binding.projectId(),instance,source,sourceRevision,targetRevision);p.binding=b;refresh(p);return b;});
     }
+    /** Identity chooser metadata only; actual association rechecks revisions and occupancy. */
+    public CompletionStage<List<Binding>> availableBindings() {
+        return command(() -> repository.bindings().stream().filter(b -> b.instance().isEmpty()).toList());
+    }
     public CompletionStage<Void> closeProject(String instance) {
         ProjectState p=projects.get(instance);if(p==null)return CompletableFuture.completedFuture(null);
         p.open.set(false);revokeReservations(instance,Optional.empty());

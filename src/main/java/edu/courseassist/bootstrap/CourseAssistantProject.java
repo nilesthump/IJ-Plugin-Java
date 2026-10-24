@@ -22,6 +22,7 @@ public final class CourseAssistantProject implements Disposable {
     private final TaskScope tasks = application.newProjectScope();
     private final Project project;
     private CompletableFuture<Binding> binding;
+    private boolean disposed;
 
     public CourseAssistantProject(Project project){this.project=project;}
 
@@ -35,6 +36,7 @@ public final class CourseAssistantProject implements Disposable {
 
     /** Unknown identity stays exceptional until the view explicitly chooses new/association. */
     public synchronized CompletableFuture<Binding> openSessions(boolean asNew) {
+        if (disposed) return CompletableFuture.failedFuture(new IllegalStateException("Project service disposed"));
         if(binding==null||binding.isCompletedExceptionally()) {
             binding=application.tasks().submit(()->{
                 if(project.getBasePath()==null)throw new IllegalStateException("Project has no local directory");
@@ -44,6 +46,11 @@ public final class CourseAssistantProject implements Disposable {
         return binding.copy();
     }
     public CompletableFuture<SessionController> sessionController(){return openSessions(false).thenCompose(ignored->application.controllers().thenApply(c->c.sessions()));}
+    public CompletableFuture<Binding> associate(Binding source) {
+        return openSessions(true).thenCompose(target -> application.controllers().thenCompose(c ->
+                c.sessions().associate(projectInstanceId, source.projectId(), source.revision(), target.revision())))
+                .thenApply(next -> { synchronized (this) { binding = CompletableFuture.completedFuture(next); } return next; });
+    }
     public SelectionSink selectionSink(){return start->{
         if(!start.projectInstanceId().equals(projectInstanceId))throw new IllegalArgumentException("Capture from another project instance");
         CompletableFuture<Binding> current;
@@ -60,7 +67,7 @@ public final class CourseAssistantProject implements Disposable {
 
     @Override public void dispose() {
         CompletableFuture<Binding> current;
-        synchronized(this){current=binding;}
+        synchronized(this){if(disposed)return;disposed=true;current=binding;}
         if(current!=null)current.thenCompose(ignored->application.controllers()).thenCompose(c->c.sessions().closeProject(projectInstanceId));
         application.closeProjectScope(tasks);
     }

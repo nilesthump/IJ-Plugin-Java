@@ -1,0 +1,155 @@
+{
+  "date": "2026-10-24",
+  "baseline": "fb425c9",
+  "branch": "dev-manager",
+  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:\\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\\IJ-Plugin-Java\\tmp\\gradle-user-home'",
+  "exitCode": 0,
+  "status": "PASS",
+  "suites": [
+    {
+      "name": "edu.courseassist.bootstrap.DependencyRuntimeTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.core.corpus.CorpusDataTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.core.corpus.CourseLibraryLifecycleTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.core.corpus.CourseLibraryTest",
+      "tests": "15",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.core.react.ReactEngineTest",
+      "tests": "19",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.core.RuntimeGateTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.core.session.ContextPlannerTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.core.session.ProjectAssociationTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.core.session.SessionCoordinatorTest",
+      "tests": "10",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.core.session.SessionFailureTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.core.TaskScopeTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.editor.SourceRangesTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.model.ConfiguredRuntimeFactoryTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.model.ModelClassLoadingTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.model.SpringAiCourseModelTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.pdf.PdfBoxPdfReaderTest",
+      "tests": "12",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.storage.H2StoreTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.ui.CourseAssistantViewTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.courseassist.ui.SafeMarkdownTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ],
+  "package": {
+    "path": "build/distributions/IJ-Plugin-Java-0.1.0-dev.zip",
+    "bytes": 79788041,
+    "sha256": "fac53bce19e6f891a9b933aed94fdb86dec89468127a17939f408a7afea75e7d",
+    "entries": 60,
+    "testCodeAbsent": true
+  },
+  "rawLog": "tmp/manager-task5/final-validation.log",
+  "firstFailure": "integration-validation-1.log: headless name dialog; corrected test to create via controller and test non-dialog real view actions",
+  "humanIj": "NOT_RUN",
+  "realProvider": "NOT_RUN",
+  "scaleRecall": "NOT_RUN"
+}

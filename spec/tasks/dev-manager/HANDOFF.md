@@ -76,3 +76,14 @@
 - Delete先持久栅栏再清全部私有H2/内存和布局；没有私有旁存。无根预留票据也清理，迟到回调不得新建诊断。失败保留DELETE_FAILED，继续Delete才能报告完整成功；共享PDF/向量保留。
 - 最终 All + IdeSmoke 退出0，确切JUnit计数与报告见 evidence/work-group-4-validation.json / runtime.json。两路独立检查0遗留；原始失败日志与修复说明未覆盖。真实API、语义质量、成员可视联调及规模仍NOT_RUN，无付费调用。
 - 本PR validation/scope和main合入核验满足后第四组DONE，整体IN_PROGRESS、第五组NOT_STARTED。本轮完成后停在第四组；下一位先核对本轮PR/delivery与origin/main，再按用户要求启动第五组或成员集成，不重做已有场景。开工前方案/PDF仍独立留在工作区。
+
+## 最新：第五组集成与人工验收准备（2026-10-24）
+
+- dev-manager 已从最新 origin/main 快进到 `fb425c9`（原 `2976118`），成员代码通过各自 PR 到 main 后取得，保留所有固定分支和开工前方案/PDF/讨论差异。
+- 第五组 IMPLEMENTED / VERIFIED：真实 UI/凭据/项目身份接线，PDF/代码端口及首次右键引导，独立 ideSmoke 源根；实现与依赖请求结论见 [WORK_GROUP_5](WORK_GROUP_5.md)。没有越过成员目录归属。
+- 最终统一 All + IdeSmoke 退出 0；19 suites / 100 tests，失败/错误/跳过均 0；真实本机 IU-262.10968.63 / JBR25.0.4 的注册动作→PSI→H2、注册 PDF→索引、真实 UI 草稿保存/重开通过。准确命令、包哈希和原始失败/修复记录见 [WHITEBOX_TESTS](WHITEBOX_TESTS.md) / evidence/work-group-5-validation.json。
+- Standards/Spec 两路独立检查修复后均 0 遗留。发布 ZIP 79,788,041 bytes，不含测试代码/JUnit/fixtures。
+- [BLACKBOX_TEST_PLAN](BLACKBOX_TEST_PLAN.md) 提供 47 项 IJ 人工步骤和合成 PDF/Java 样例，包含安装、两类 API key/配置、导入准备。人工结果全部 NOT_RUN，真实模型/嵌入/摘要语义与规模未执行，未调用付费模型。
+- 本组开发交付 DONE 仍以本 PR 最新 head 的 validation/scope、main 合入及 fetch 核验为条件；人工验收独立保留。最终英文报告/演示不在本轮制作。架构未冻结，F1 未实施。
+- 用户本轮授权原文已记本地 user-turn-050，sources 哈希和 DISCUSSION 引用已补，继续 Git 忽略。开工前已存在的 AGENTS/方案/PDF/讨论记录改动不并入本组提交。
+- 下一条动作：检查本组 PR 的 validation/scope，成功后按门禁合入 main 并核验；用户按黑盒方案实际安装并回报逐项结果。

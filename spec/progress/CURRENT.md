@@ -60,3 +60,11 @@
 最终统一All + IdeSmoke退出0，实际JUnit计数见验证汇总；FixtureSmoke/插件打包、本机IU-262.10968.63/JBR25.0.4的真实服务/H2恢复/硬删除和Windows同卷目录移动/复制通过。两路独立检查未闭合均0，实施失败保留后已修复重验。没有真实付费请求；真实平台/摘要语义/tokenizer、成员可视联调、人工PDF页定位/退出与规模仍NOT_RUN，架构未冻结。
 
 本记录仅在本交付PR最新head的validation/scope通过、合入main并fetch核验后作为第四组DONE；满足前为已实现/已验证待集成。第五组NOT_STARTED、整体IN_PROGRESS，不扩展第五组。固定dev-manager保留，开工前方案/PDF差异未纳入本组交付。
+
+## 最新：第五组集成与人工验收准备（2026-10-24）
+
+dev-manager 已同步 origin/main `fb425c9`，其中成员 editor/pdf/ui 均已通过各自 PR 合入。第五组生产端口/真实 UI/首次右键/身份选择及独立 ideSmoke 源根已实现；最终统一 All + IdeSmoke 退出 0，100 项 JUnit 无失败，真实本机 IDEA 注册采集/PSI/H2、注册 PDF 入库检索与 UI 草稿保存重开通过，两路独立检查已闭合。
+
+详细行为、失败修复、包哈希与未执行边界见 [WORK_GROUP_5](../tasks/dev-manager/WORK_GROUP_5.md) / [WHITEBOX_TESTS](../tasks/dev-manager/WHITEBOX_TESTS.md)。[47 项人工黑盒方案](../tasks/dev-manager/BLACKBOX_TEST_PLAN.md)含插件安装、生成/嵌入 key、PDF 导入及合成样例，人工/真实 API/规模全部 NOT_RUN。旧段落的成员 NOT_STARTED 与未接线属于历史状态；架构仍未冻结，F1 未实施。
+
+本组仅在对应 PR 最新 head 的 validation/scope 成功、main 合入并核验后记开发交付 DONE；人工黑盒仍由用户执行，不能据自动白盒宣称产品验收完成。既有方案/PDF/讨论改动保留且不纳入本组提交。
