@@ -85,3 +85,12 @@
 - VS Code 的 JUnit 红线仍由 `DEV-A-002` 的重叠 source set 引起；Gradle 实际编译与测试通过。
 - 目标 IDEA 右键、真实 PSI、文档变化、动作事件、项目关闭/取消：`NOT_RUN`，等待 `DEV-A-001` / `DEV-A-004` 后继续。
 - 真实模型、嵌入或课程 API：`NOT_RUN`，本任务未调用外部服务。
+
+## 2026-10-24：同步 main 后验证
+
+- 已合并 `origin/main`（负责人 PR #11）到 `dev-a`；生产 action/port 注册与独立 `ideSmoke` 源码根已到位。
+- VS Code 当前对 `editor` 主源码与测试均返回无诊断，原 JUnit source-set 映射问题已消失。
+- 首次统一 `All + IdeSmoke` 因 Gradle Test Executor 连接超时退出 1；105 项业务测试实际通过，未执行到 IDE smoke。随后 focused editor 9 项退出 0。
+- 重跑 `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -GradleUserHome C:\\Users\\Lenovo\\.gradle`：退出 0。20 个 suite、106 项测试，失败/错误/跳过均 0；FixtureSmoke、check、buildPlugin 及 IDE smoke 均通过。
+- `build/reports/ide-smoke/result.json`：`PASS`；IDE `IU-262.10968.63`、JBR `25.0.4`，实际覆盖注册动作/端口、Java PSI 和耐久三段捕获。
+- `DEV-A-004` 尚未按 test framework 依赖形式落实；甲自己的自动化 PSI/文档变化/取消测试仍不能编译。可以进入生产集成与人工 IDEA 验证阶段，但扩展平台 fixture 测试仍需负责人协调。
