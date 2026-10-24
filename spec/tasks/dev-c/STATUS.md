@@ -24,10 +24,11 @@
 | 生产 Tool Window 接线与端到端 | NOT_RUN | `BootstrapToolWindowFactory` 仍为负责人占位实现；见 [依赖请求](DEPENDENCY_REQUEST.md) |
 | staged 写入范围与差异检查 | PASS | `scripts/check-scope.ps1 -Staged`：10 路径、退出码 0；`git diff --cached --check`：退出码 0 |
 | `dev-c` 推送 | PASS | `git -c credential.helper=manager -c credential.interactive=never push origin dev-c` 退出码 0；无强推 |
-| PR、main 合入 | NOT_RUN | PR 尚未创建；合入由负责人/审核流程完成 |
+| `dev-c → main` PR | DRAFT | [#10](https://github.com/nilesthump/IJ-Plugin-Java/pull/10) 已创建，描述含行为、验证和限制；待独立检查及公共接线 |
+| main 合入与核验 | NOT_RUN | 合入由负责人/审核流程完成，合入后核验并保留 dev-c |
 
 ## 继续动作
 
-1. 创建 `dev-c → main` PR；描述写明合成测试、版本差异和生产接线依赖。
+1. 在 [PR #10](https://github.com/nilesthump/IJ-Plugin-Java/pull/10) 完成独立检查，跟踪负责人公共接线与目标 IDE 验证。
 2. 负责人从其公共范围接 `BootstrapToolWindowFactory`，并协调目标 IDEA 2026.2.3 的实际运行验证；成员同步后复验和交接。
 3. 经独立检查、`main` 合入及核验后才能将任务标为完成；当前不把合成 fixture 当真实核心/API 成功。
