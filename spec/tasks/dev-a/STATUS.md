@@ -1,10 +1,10 @@
 # 甲：编辑器代码采集：状态
 
 - 任务定义：`IN_PROGRESS`。
-- 功能实现：`IN_PROGRESS`。已实现 Java 编辑器动作、固定选区坐标转换和 `CodeCapturePort` 的后台 PSI 采集；动作及扩展注册等待负责人处理 `DEV-A-001`。
+- 功能实现：`IN_PROGRESS`。已实现固定选区、纯值冻结、坐标转换和后台 PSI 采集；生产注册与真实平台测试分别等待 `DEV-A-001` / `DEV-A-004`。
 - 当前分支：`dev-a`；PR 目标：`main`，合并保留来源分支。
-- 记录日期：2026-10-23。
-- 当前 HEAD / 公共 main 基线：`9cf52ca`；`dev-a` 与 `origin/main` 同步后开始实现。
+- 记录日期：2026-10-24。
+- 当前已推送提交：`a089fc3`；本轮后续测试与记录尚未提交。
 - 公共基线：按根 AGENTS、[API](../../contracts/API.md) 和本任务 [README](README.md) 核对；契约/fixtures 与工程骨架不等于本任务实现。
 
 ## 当前可观察结果
@@ -71,3 +71,17 @@
 ### 本轮最终验证结果（替代上方运行中状态）
 
 统一 All 验证退出 0，BUILD SUCCESSFUL in 4m 2s。JUnit XML 汇总：16 个 suite，91 项测试，失败 0，错误 0，跳过 0。SourceRangesTest 包含在本次报告中。FixtureSmoke、check、buildPlugin 均通过；实际 IDEA/PSI 运行 NOT_RUN（未使用 -IdeSmoke）。历史类加载失败本轮未复现，不证明此前根因已修复；VS Code JUnit 源集映射仍待 DEV-A-002。原日志 tmp/precommit/fix-validation.log，本次 XML 位于 build/test-results/test/。
+
+## 2026-10-24：后续开发的当前权威状态
+
+本节替代上方较早的 `BLOCKED`、`INCOMPLETE` 和 91 项计数；历史记录保留用于说明当时观察，不表示当前结果。
+
+- 将动作开始时的不可变 `SelectionStart` 构造提取为包内纯逻辑 `freezeSelection`，生产动作使用同一路径。
+- 新增 3 项动作冻结测试：固定项目/文件/版本/正文/UTF-16 范围、重复捕获身份、空或越界选区。
+- `SourceRangesTest` 从 3 项扩展到 6 项，增加文件边界、空行零长度范围、CRLF、代理对、负数/反向/不存在行。
+- focused 命令：`.\\gradlew.bat --no-daemon --console=plain --gradle-user-home C:\\Users\\Lenovo\\.gradle test --tests "edu.courseassist.editor.*"`；退出 0，9 项 editor 测试通过。
+- 统一命令：`powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -GradleUserHome C:\\Users\\Lenovo\\.gradle`；退出 0，`BUILD SUCCESSFUL in 4m 47s`。17 个 suite、97 项测试，失败/错误/跳过均 0；FixtureSmoke、check、buildPlugin 通过。
+- 真实 PSI fixture 探针在 `:compileTestJava` 失败：当前 test classpath 不含 `com.intellij.testFramework.fixtures.BasePlatformTestCase`。不可编译文件已撤回，公共依赖请求见 `DEV-A-004`。
+- VS Code 的 JUnit 红线仍由 `DEV-A-002` 的重叠 source set 引起；Gradle 实际编译与测试通过。
+- 目标 IDEA 右键、真实 PSI、文档变化、动作事件、项目关闭/取消：`NOT_RUN`，等待 `DEV-A-001` / `DEV-A-004` 后继续。
+- 真实模型、嵌入或课程 API：`NOT_RUN`，本任务未调用外部服务。

@@ -51,16 +51,28 @@ public final class CaptureSelectionAction extends DumbAwareAction {
         if (startOffset == endOffset) {
             throw new IllegalArgumentException("Empty selection is not a capture");
         }
-        CharSequence text = document.getCharsSequence();
-        String selectedText = text.subSequence(startOffset, endOffset).toString();
         CourseAssistantProject projectService = CourseAssistantProject.getInstance(project);
-        SelectionStart start = new SelectionStart(
-                UUID.randomUUID().toString(),
+        SelectionStart start = freezeSelection(
                 projectService.projectInstanceId(),
-                new FileSnapshotRef(file.getUrl(), document.getModificationStamp(), JavaLanguage.INSTANCE.getID()),
-                selectedText,
-                SourceRanges.fromOffsets(text, startOffset, endOffset));
+                file.getUrl(),
+                document.getModificationStamp(),
+                JavaLanguage.INSTANCE.getID(),
+                document.getCharsSequence(),
+                startOffset,
+                endOffset);
         projectService.selectionSink().beginCapture(start);
+    }
+
+    static SelectionStart freezeSelection(String projectInstanceId, String fileRef, long documentVersion,
+                                          String languageId, CharSequence text, int startOffset, int endOffset) {
+        var range = SourceRanges.fromOffsets(text, startOffset, endOffset);
+        String selectedText = text.subSequence(startOffset, endOffset).toString();
+        return new SelectionStart(
+                UUID.randomUUID().toString(),
+                projectInstanceId,
+                new FileSnapshotRef(fileRef, documentVersion, languageId),
+                selectedText,
+                range);
     }
 
     private static <T> T require(T value, String message) {

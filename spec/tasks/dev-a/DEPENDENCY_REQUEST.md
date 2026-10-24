@@ -52,3 +52,13 @@
 ### 本轮最终验证结果（替代上方运行中状态）
 
 统一 All 验证退出 0，BUILD SUCCESSFUL in 4m 2s。JUnit XML 汇总：16 个 suite，91 项测试，失败 0，错误 0，跳过 0。SourceRangesTest 包含在本次报告中。FixtureSmoke、check、buildPlugin 均通过；实际 IDEA/PSI 运行 NOT_RUN（未使用 -IdeSmoke）。历史类加载失败本轮未复现，不证明此前根因已修复；VS Code JUnit 源集映射仍待 DEV-A-002。原日志 tmp/precommit/fix-validation.log，本次 XML 位于 build/test-results/test/。
+
+## DEV-A-004：提供 IntelliJ 平台测试框架依赖
+
+- 请求 ID / 提出日期 / 归属人：`DEV-A-004` / 2026-10-24 / dev-a。
+- 状态：`PROPOSED`，属于 `dev-manager` 公共构建范围。
+- 触发场景：甲需要用真实 Java PSI 覆盖方法/类结构、构造器、嵌套类、文档版本变化、跨边界和项目关闭场景。当前 `test` classpath 可编译 IntelliJ 产品 API，但不包含 `com.intellij.testFramework.fixtures.BasePlatformTestCase`。
+- 实际证据：新增平台测试后执行 `.\\gradlew.bat --no-daemon --console=plain --gradle-user-home C:\\Users\\Lenovo\\.gradle test --tests "edu.courseassist.editor.JavaCodeCapturePortTest"`，`:compileTestJava` 因 `com.intellij.testFramework.fixtures` 不存在而退出 1；未保留该不可编译测试文件。
+- 最小公共变更：按当前 IntelliJ Platform Gradle Plugin 2.19.0 的官方方式，仅为 `test` source set 增加匹配目标 IDE 版本的 IntelliJ Platform test framework 依赖；不要把测试框架加入生产插件或运行时包。若公共测试约定选择其他已有平台测试入口，也需允许 `dev-a` 在自身测试目录运行真实 PSI fixture。
+- 验证要求：平台测试编译并实际运行；统一 `scripts/validate.ps1 -Scope All` 与必要 `-IdeSmoke` 仍需通过，发布 ZIP 不包含测试框架。准确依赖写法和版本由负责人按现有插件版本落实。
+- 可独立继续：坐标转换边界、纯值冻结逻辑、任务记录整理；真实 PSI、动作事件和项目生命周期测试等待该请求。
