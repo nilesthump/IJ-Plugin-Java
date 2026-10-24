@@ -1,0 +1,13 @@
+{"status":"PASS","timestamp":"2026-10-24T13:13:35.056240500Z","ideBuild":"IU-262.10968.63","javaRuntime":"25.0.4+1-b508.27",
+"checks":["plugin-loaded","application-project-services","project-isolation-disposal",
+"background-work","Swing-ToolWindow-content-release","Java-PSI-read",
+"H2-commit-reopen","JVector-build-query","SpringAI-local-chat-stream-embedding-no-retry",
+"corpus-managed-PDF-H2-generation-physical-page","corpus-local-vector-recovery-fixed-attempt",
+"SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation",
+"production-session-roots-dedup-typed-code-draft-tabs-restore-hard-delete",
+"native-directory-identity-same-volume-move-copy-isolation",
+"registered-PDF-reader-real-three-page-file","registered-editor-action-port",
+"production-ToolWindow-controller-draft-save-reopen",
+"registered-editor-action-Java-PSI-durable-three-part-capture"],
+"limitations":["headless IDE command; no visual interaction", "synthetic loopback HTTP only",
+"synthetic models/embeddings; no human visual acceptance or real provider validation"]}

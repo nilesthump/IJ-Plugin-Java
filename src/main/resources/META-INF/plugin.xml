@@ -3,8 +3,7 @@
     <name>Course Assistant F0</name>
     <vendor>F0 Team</vendor>
     <description><![CDATA[
-        F0 course assistant development baseline. Course RAG, session persistence,
-        model integration and final UI are assigned work; this bootstrap is not a finished assistant.
+        Java course assistant with PDF retrieval, source citations, editor context and persistent sessions.
     ]]></description>
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
@@ -12,7 +11,18 @@
         <extensionPoint name="codeCapture" interface="edu.courseassist.contract.CodeCapturePort" dynamic="true"/>
         <extensionPoint name="pdfReader" interface="edu.courseassist.contract.PdfReader" dynamic="true"/>
     </extensionPoints>
+    <extensions defaultExtensionNs="edu.courseassist.f0">
+        <codeCapture implementation="edu.courseassist.editor.JavaCodeCapturePort"/>
+        <pdfReader implementation="edu.courseassist.pdf.PdfBoxPdfReader"/>
+    </extensions>
+    <actions>
+        <action id="edu.courseassist.CaptureSelection" class="edu.courseassist.bootstrap.CaptureEntryAction"
+                text="添加到课程助教" description="将选区、所在方法和类结构加入当前会话草稿">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
     <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Course Assistant" displayType="BALLOON"/>
         <applicationService serviceImplementation="edu.courseassist.bootstrap.CourseAssistantApplication"/>
         <projectService serviceImplementation="edu.courseassist.bootstrap.CourseAssistantProject"/>
         <toolWindow id="Course Assistant" anchor="right"

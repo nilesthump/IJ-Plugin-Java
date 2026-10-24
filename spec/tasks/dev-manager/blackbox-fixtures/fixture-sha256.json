@@ -1,0 +1,22 @@
+[
+  {
+    "file": "broken.pdf",
+    "sha256": "2003e538655914bda923d31a36185f6c88bc31440fd6d7219ddf3feb2aa748e7"
+  },
+  {
+    "file": "CaptureSample.java",
+    "sha256": "931db32c3eb4422ac9a7fef503359d24452ed8127d2e6d8b669075f30d993e71"
+  },
+  {
+    "file": "course-a-v1.pdf",
+    "sha256": "4e3ed2aec15566ff810b39bf0670c0b9a309e766226e385d642b5bc4f7012454"
+  },
+  {
+    "file": "course-a-v2.pdf",
+    "sha256": "d3a21769e9b0c42fe71afe81ced4f15f6b6847145d93dfee71f1d116055a871b"
+  },
+  {
+    "file": "course-b.pdf",
+    "sha256": "3a2e2a3acfb7e5ad76022d5068ab025d09cb55d5ef67b1ad706b699da0069c6f"
+  }
+]

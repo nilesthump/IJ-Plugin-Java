@@ -81,3 +81,14 @@ IDE sandbox 默认禁用 Ultimate 标记，日志仍有其依赖插件与安装�
 - 两路独立review（Standards/Spec）已闭合，未闭合均0；原始问题、修复及复查边界见 [检查记录](evidence/work-group-4-review.md)。开工All通过；实施编译/拒绝包装/取消断言失败与首轮IDE fileKey为空失败均保留日志；修正后完整重验，最终日志 `tmp/manager-task4/final-validation-credential.log`。没有付费服务请求。
 - `NOT_RUN`：真实课程/生成/嵌入服务、真实摘要语义质量/tokenizer/服务窗口和额度、成员编辑器/PDF/可视UI联调与人工PDF跳页、人工正常IDE退出/强杀、实际课程规模和跨机器迁移。保守字节预算与有限参数仅为实施候选，不冒充真实平台已验证。架构未冻结。
 - 开工前方案/PDF差异保持原样并排除本组提交；STATUS/HANDOFF/CURRENT只暂存本组增量。远端PR、head、validation/scope与merge commit以本轮delivery证据/PR实际记录为准。合并保留dev-manager，主工作区继续该分支；本轮不开展第五组。
+
+## 最新：第五组集成与人工验收准备（2026-10-24）
+
+- dev-manager 已从最新 origin/main 快进到 `fb425c9`（原 `2976118`），成员代码通过各自 PR 到 main 后取得，保留所有固定分支和开工前方案/PDF/讨论差异。
+- 第五组 IMPLEMENTED / VERIFIED：真实 UI/凭据/项目身份接线，PDF/代码端口及首次右键引导，独立 ideSmoke 源根；实现与依赖请求结论见 [WORK_GROUP_5](WORK_GROUP_5.md)。没有越过成员目录归属。
+- 最终统一 All + IdeSmoke 退出 0；19 suites / 100 tests，失败/错误/跳过均 0；真实本机 IU-262.10968.63 / JBR25.0.4 的注册动作→PSI→H2、注册 PDF→索引、真实 UI 草稿保存/重开通过。准确命令、包哈希和原始失败/修复记录见 [WHITEBOX_TESTS](WHITEBOX_TESTS.md) / evidence/work-group-5-validation.json。
+- Standards/Spec 两路独立检查修复后均 0 遗留。发布 ZIP 79,788,041 bytes，不含测试代码/JUnit/fixtures。
+- [BLACKBOX_TEST_PLAN](BLACKBOX_TEST_PLAN.md) 提供 47 项 IJ 人工步骤和合成 PDF/Java 样例，包含安装、两类 API key/配置、导入准备。人工结果全部 NOT_RUN，真实模型/嵌入/摘要语义与规模未执行，未调用付费模型。
+- 本组开发交付 DONE 仍以本 PR 最新 head 的 validation/scope、main 合入及 fetch 核验为条件；人工验收独立保留。最终英文报告/演示不在本轮制作。架构未冻结，F1 未实施。
+- 用户本轮授权原文已记本地 user-turn-050，sources 哈希和 DISCUSSION 引用已补，继续 Git 忽略。开工前已存在的 AGENTS/方案/PDF/讨论记录改动不并入本组提交。
+- 下一条动作：检查本组 PR 的 validation/scope，成功后按门禁合入 main 并核验；用户按黑盒方案实际安装并回报逐项结果。

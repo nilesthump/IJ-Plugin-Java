@@ -47,9 +47,12 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
                     "corpus-managed-PDF-H2-generation-physical-page","corpus-local-vector-recovery-fixed-attempt",
                     "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation",
                     "production-session-roots-dedup-typed-code-draft-tabs-restore-hard-delete",
-                    "native-directory-identity-same-volume-move-copy-isolation"],
+                    "native-directory-identity-same-volume-move-copy-isolation",
+                    "registered-PDF-reader-real-three-page-file","registered-editor-action-port",
+                    "production-ToolWindow-controller-draft-save-reopen",
+                    "registered-editor-action-Java-PSI-durable-three-part-capture"],
                     "limitations":["headless IDE command; no visual interaction", "synthetic loopback HTTP only",
-                    "synthetic model/corpus ports; no real PDF parser, visual UI or real provider validation"]}
+                    "synthetic models/embeddings; no human visual acceptance or real provider validation"]}
                     """.formatted(Instant.now(), ApplicationInfo.getInstance().getBuild().asString(),
                     System.getProperty("java.runtime.version")));
             exitCode = 0;
@@ -72,6 +75,9 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
         require(io.github.jbellis.jvector.graph.GraphSearcher.class.getClassLoader() == descriptor.getPluginClassLoader(),
                 "JVector loaded by production plugin");
         var application = CourseAssistantApplication.getInstance();
+        require(application.pdfReader() instanceof edu.courseassist.pdf.PdfBoxPdfReader, "Registered PDF reader");
+        require(com.intellij.openapi.actionSystem.ActionManager.getInstance().getAction("edu.courseassist.CaptureSelection")
+                instanceof edu.courseassist.bootstrap.CaptureEntryAction, "Registered editor readiness action");
         require(application == CourseAssistantApplication.getInstance(), "Application singleton");
         require(application.courses() == application.courses(), "Application owns one shared corpus");
         require(!application.tasks().submit(() -> ApplicationManager.getApplication().isDispatchThread())
@@ -94,7 +100,7 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
                 new BootstrapToolWindowFactory().createToolWindowContent(projects[0], window);
                 require(window.getContentManager().getContentCount() == 1, "Tool Window factory content");
                 var released = new java.util.concurrent.atomic.AtomicBoolean();
-                window.getContentManager().getContent(0).setDisposer(() -> released.set(true));
+                Disposer.register(window.getContentManager().getContent(0), () -> released.set(true));
                 window.getContentManager().removeAllContents(true);
                 require(released.get(), "View disposal");
                 require(!a.get().tasks().isClosed(), "View disposal leaves project work alive");
@@ -114,11 +120,13 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
             catch (CancellationException expected) { /* Lifecycle control flow, no retrieval fallback. */ }
             require(!application.tasks().isClosed(), "Project disposal preserves app resources");
             DependencyChecks.run(scratch.resolve("database"));
+            CorpusRuntimeChecks.run(scratch.resolve("registered-pdf"), application.pdfReader());
             ReactRuntimeChecks.run(scratch.resolve("react"));
             SessionRuntimeChecks.run(scratch.resolve("sessions"));
             // Exercise the real lazy application/project service wiring as well as isolated roots.
             b.get().openSessions(true).get(15,TimeUnit.SECONDS);
             var controller=b.get().sessionController().get(15,TimeUnit.SECONDS);
+            require(b.get().codeCapture() instanceof edu.courseassist.editor.JavaCodeCapturePort, "Registered code capture port");
             var manager=application.controllers().get(15,TimeUnit.SECONDS).sessions();
             var create=new edu.courseassist.contract.ChatContracts.CreateSession(new edu.courseassist.contract.ChatContracts.EventMeta(
                     java.util.UUID.randomUUID().toString(),b.get().projectInstanceId(),java.util.Optional.empty()),"service-wiring");
@@ -126,6 +134,7 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
             String session=manager.snapshot(b.get().projectInstanceId()).activeSessionId().orElseThrow();
             controller.dispatch(new edu.courseassist.contract.ChatContracts.DeleteSession(new edu.courseassist.contract.ChatContracts.EventMeta(
                     java.util.UUID.randomUUID().toString(),b.get().projectInstanceId(),java.util.Optional.of(session)))).toCompletableFuture().get(15,TimeUnit.SECONDS);
+            IntegrationViewChecks.run(projects[1], b.get());
         } finally {
             ApplicationManager.getApplication().invokeAndWait(() -> {
                 WriteAction.run(() -> {
@@ -133,6 +142,7 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
                 });
             });
         }
+        EditorIntegrationChecks.run(scratch.resolve("editor-integration"));
         // Explicitly verify the service's disposal boundary before normal IDE shutdown repeats it.
         application.dispose();
         application.shutdownCompletion().get(20,TimeUnit.SECONDS);
