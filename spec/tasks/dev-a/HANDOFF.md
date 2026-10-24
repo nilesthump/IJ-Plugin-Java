@@ -56,3 +56,18 @@
 - 本轮统一命令：powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -GradleUserHome C:\Users\Lenovo\.gradle。日志：tmp/precommit/validation.log（本地忽略文件）。
 - 当前结果：RUNNING / INCOMPLETE，尚无退出码。repository 通过，compileJava / compileTestJava 等为 UP-TO-DATE，FixtureSmoke 实际 PASS；停留在 :test，尚未产生 JUnit XML，不能声称测试或插件打包通过。此次未执行 IdeSmoke。历史失败证据保持原日期，不作为本次运行结果。
 - 只有验证获得终态后才能更新本轮 PASS/FAIL；当前只可视为带未完成验证的检查点候选。DEV-A-001/002、两处空值诊断和历史测试类加载问题仍未关闭。
+
+
+## 2026-10-24：检查点后的显式判空修复
+
+- 基线：095d290，分支 dev-a；本轮未提交或推送。
+- JavaCodeCapturePort：在已处理起止均空分支后，为方法/类的跨边界判断增加 startMethod == null / startClass == null。其余行为不变：均空仍为 NOT_APPLICABLE，单端空或对象不同仍抛出原异常，同一非空对象正常捕获。
+- 编辑器诊断：修复前本文件 2 处 potential null pointer access；修复后 problems 明确返回 No errors found。未关闭 null analysis。git diff --check 通过。
+- 本轮统一验证命令：powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -GradleUserHome C:\Users\Lenovo\.gradle。日志 tmp/precommit/fix-validation.log。repository PASS、compileJava 实际执行成功、FixtureSmoke PASS；compileTestJava UP-TO-DATE。当前 :test 仍运行，无 JUnit XML 或最终退出码，完整结果 RUNNING / INCOMPLETE；插件打包与 IDE 场景不记通过。
+- 上次 tmp/precommit/validation.log 停在 :test，但原进程已不存在、执行会话无法恢复；终态 UNKNOWN，不能继续标为运行中或声称成功。
+- 公共阻塞分别见 DEV-A-001、DEV-A-002、DEV-A-003；未修改共享构建、公共源码或插件注册。下一步先获取本轮测试终态，再由负责人修复源集并重验运行阻塞。
+
+
+### 本轮最终验证结果（替代上方运行中状态）
+
+统一 All 验证退出 0，BUILD SUCCESSFUL in 4m 2s。JUnit XML 汇总：16 个 suite，91 项测试，失败 0，错误 0，跳过 0。SourceRangesTest 包含在本次报告中。FixtureSmoke、check、buildPlugin 均通过；实际 IDEA/PSI 运行 NOT_RUN（未使用 -IdeSmoke）。历史类加载失败本轮未复现，不证明此前根因已修复；VS Code JUnit 源集映射仍待 DEV-A-002。原日志 tmp/precommit/fix-validation.log，本次 XML 位于 build/test-results/test/。

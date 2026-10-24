@@ -106,7 +106,7 @@ public final class JavaCodeCapturePort implements CodeCapturePort {
             }
             return absent(ContextKind.METHOD, "no-enclosing-method");
         }
-        if (startMethod != endMethod) {
+        if (startMethod == null || startMethod != endMethod) {
             throw new IllegalArgumentException("Selection crosses a method boundary");
         }
         return captured(ContextKind.METHOD, startMethod.getText(),
@@ -119,7 +119,7 @@ public final class JavaCodeCapturePort implements CodeCapturePort {
         if (startClass == null && endClass == null) {
             return absent(ContextKind.CLASS_STRUCTURE, "no-enclosing-class");
         }
-        if (startClass != endClass) {
+        if (startClass == null || startClass != endClass) {
             throw new IllegalArgumentException("Selection crosses a class boundary");
         }
         return captured(ContextKind.CLASS_STRUCTURE, renderClassStructure(startClass),

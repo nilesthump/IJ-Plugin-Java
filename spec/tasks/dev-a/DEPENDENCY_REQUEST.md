@@ -39,3 +39,16 @@
 - 实测：VS Code Gradle Build Server 将 src/test/java 映射到 ideSmoke 输出且无 test=true；已下载并导入的 JUnit 依赖均标记 test=true。详见本任务 STATUS 的 2026-10-24 诊断。
 - 建议：将 bootstrap/ide smoke 源码迁移到独立 src/ideSmoke/java，移除共享 src/test/java 的 ideSmoke 源目录配置，同步脚本/文档/范围规则中实际受影响的路径引用。保留 JUnit 为 testImplementation，不将其提升为生产依赖。
 - 验证：重新导入后确认 src/test/java 的 test=true 和 JUnit 可见性；统一 All 与 IdeSmoke 尚未运行，方案尚未实施。原测试运行期 ClassNotFoundException 需独立验证。
+
+
+## DEV-A-003：统一测试运行阻塞与公共诊断收尾
+
+- 日期 / 状态：2026-10-24 / PROPOSED，归属 dev-manager。
+- 测试运行：历史 UrlClassLoader ClassNotFoundException 证据见 evidence/TEST_SANDBOX_DIAGNOSIS.md；2026-10-24 检查点验证日志停止在 :test，后续检查原进程已不存在且无法恢复退出码，结果为 INCOMPLETE / UNKNOWN，不认定为相同异常或通过。源集修复后应独立重验测试运行。
+- 公共代码仍有方法引用的 null type safety 诊断、未使用 import，以及 SpringAiTransport.messageConverters 的弃用提示。请按实际依赖版本核对非空注解/泛型约束，清理未使用 import；迁移 configureMessageConverters 时保留显式转换器集合及避免不兼容格式探测的行为，用本地合成 HTTP 场景验证。不要把 JUnit 提升为生产依赖或关闭空值检查代替修复。
+- 本成员已经用显式起点判空消除 JavaCodeCapturePort 的两处诊断，未改公共源码、构建、版本或注册。生产接入仍依赖 DEV-A-001，编辑器测试源码映射仍依赖 DEV-A-002。
+
+
+### 本轮最终验证结果（替代上方运行中状态）
+
+统一 All 验证退出 0，BUILD SUCCESSFUL in 4m 2s。JUnit XML 汇总：16 个 suite，91 项测试，失败 0，错误 0，跳过 0。SourceRangesTest 包含在本次报告中。FixtureSmoke、check、buildPlugin 均通过；实际 IDEA/PSI 运行 NOT_RUN（未使用 -IdeSmoke）。历史类加载失败本轮未复现，不证明此前根因已修复；VS Code JUnit 源集映射仍待 DEV-A-002。原日志 tmp/precommit/fix-validation.log，本次 XML 位于 build/test-results/test/。
