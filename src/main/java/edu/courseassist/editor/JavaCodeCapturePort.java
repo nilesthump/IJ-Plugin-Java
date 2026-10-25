@@ -92,9 +92,19 @@ public final class JavaCodeCapturePort implements CodeCapturePort {
         if (!javaFile.getText().contentEquals(documentText)) {
             throw new IllegalStateException("Java PSI does not match the frozen document");
         }
+        // Boundary ownership is determined by selected Java tokens, not line-selection padding.
+        // Keep the frozen selection and its original coordinates verbatim in the returned group.
+        int contextStart = selectionStart, contextEnd = selectionEnd;
+        while (contextStart < contextEnd && Character.isWhitespace(documentText.charAt(contextStart))) contextStart++;
+        while (contextEnd > contextStart && Character.isWhitespace(documentText.charAt(contextEnd - 1))) contextEnd--;
+        if (contextStart == contextEnd) {
+            return new CapturedCodeGroup(start, List.of(
+                    absent(ContextKind.METHOD, "whitespace-only-selection"),
+                    absent(ContextKind.CLASS_STRUCTURE, "whitespace-only-selection")));
+        }
         return new CapturedCodeGroup(start, List.of(
-                methodContext(javaFile, documentText, selectionStart, selectionEnd),
-                classContext(javaFile, documentText, selectionStart, selectionEnd)));
+                methodContext(javaFile, documentText, contextStart, contextEnd),
+                classContext(javaFile, documentText, contextStart, contextEnd)));
     }
 
     private static AutomaticContext methodContext(PsiJavaFile file, CharSequence text, int startOffset, int endOffset) {
