@@ -292,3 +292,5 @@ IDE sandbox 默认禁用 Ultimate 标记，日志仍有其依赖插件与安装�
 独立All：dev-a 106 tests通过，dev-manager 146 tests通过；dev-c编译因main尚无ImportCoursePdfs/captureOffsets/captureOrder等契约而失败，按依赖阻塞如实保留草稿。完整集成树169 tests+IDE PASS与用户F0验收仍有效，但不冒充拆分分支单独验证。顺序：#13合入main→#14同步并补独立IdeSmoke→#14合入main→#15同步并全量验证。此轮只创建PR，未合并三份新PR；F2仍未开工。验证生成的安装ZIP已再次清理。
 
 合并前补测发现分拆IDE测试等待新UI自动保存，但当前main仍为手动保存UI，IntegrationViewChecks:44超时。测试现兼容已有saveDraft按钮，通过真实保存动作核验持久化/重开；UI PR落地后无该按钮，同一断言仍要求自动保存。未改生产UI或跳过持久化断言。待#13合入后统一重跑All+IdeSmoke。
+
+#14 CI两次失败在不同连续提问用例（删除资料后续问、手动摘要），本地前者20次全部通过。测试观察等待原为10秒，与合成模型自身10秒预算相同，不能覆盖随后H2提交和慢runner调度；改为30秒测试观察窗口，业务超时与断言不变。补充提交拒绝原因、未收尾operation和完整异常输出；不再盲目重跑。待新提交全量验证。

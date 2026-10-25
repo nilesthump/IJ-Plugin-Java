@@ -71,11 +71,17 @@ public final class SessionTestEnvironment implements AutoCloseable {
     public EventMeta meta(String instance,String session){return new EventMeta(SessionData.id(),instance,Optional.ofNullable(session));}
     public CommandResult dispatch(ViewEvent event) throws Exception{return sessions.dispatch(event).toCompletableFuture().get(10,TimeUnit.SECONDS);}
     public SessionViewState view(String instance,String session){return sessions.snapshot(instance).sessions().stream().filter(s->s.sessionId().equals(session)).findFirst().orElseThrow();}
-    public void text(String instance,String session,String text) throws Exception {DraftView d=view(instance,session).draft();require(dispatch(new UpdateDraftText(meta(instance,session),d.draftId(),d.revision(),text)).outcome()==Outcome.APPLIED,"draft saved");}
+    public void text(String instance,String session,String text) throws Exception {DraftView d=view(instance,session).draft();var result=dispatch(new UpdateDraftText(meta(instance,session),d.draftId(),d.revision(),text));require(result.outcome()==Outcome.APPLIED,"draft saved: "+result.rejection());}
     public SubmitDraft submitEvent(String instance,String session){var d=view(instance,session).draft();return new SubmitDraft(meta(instance,session),d.draftId(),d.revision());}
-    public void submit(String instance,String session) throws Exception {require(dispatch(submitEvent(instance,session)).outcome()==Outcome.APPLIED,"submission applied");}
-    public void idle(String instance,String session) throws Exception {await(()->view(instance,session).activeOperation().isEmpty());sessions.refreshAll().toCompletableFuture().get(10,TimeUnit.SECONDS);}
-    public static void await(BooleanSupplier predicate) throws Exception {long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(10);while(!predicate.getAsBoolean()){if(System.nanoTime()>deadline)throw new IllegalStateException("Condition timed out");Thread.sleep(10);}}
+    public void submit(String instance,String session) throws Exception {var result=dispatch(submitEvent(instance,session));require(result.outcome()==Outcome.APPLIED,"submission applied: "+result.rejection());}
+    public void idle(String instance,String session) throws Exception {
+        try{await(()->view(instance,session).activeOperation().isEmpty());}
+        catch(IllegalStateException timeout){throw new IllegalStateException("Session did not settle: operation="+view(instance,session).activeOperation()+", blocked="+view(instance,session).writesBlocked()+", observerErrors="+observerErrors.size(),timeout);}
+        sessions.refreshAll().toCompletableFuture().get(30,TimeUnit.SECONDS);
+    }
+    // Test observation includes hosted-runner scheduling and durable H2 publication.
+    // It must outlive the synthetic model's 10-second budget; production limits are unchanged.
+    public static void await(BooleanSupplier predicate) throws Exception {long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(30);while(!predicate.getAsBoolean()){if(System.nanoTime()>deadline)throw new IllegalStateException("Condition did not complete within 30 seconds");Thread.sleep(10);}}
     public static CapturedCodeGroup group(SelectionStart start){return new CapturedCodeGroup(start,List.of(
             new AutomaticContext(ContextKind.METHOD,ContextStatus.CAPTURED,Optional.of("void x() { int x = 1; }"),Optional.of(start.selection()),Optional.empty()),
             new AutomaticContext(ContextKind.CLASS_STRUCTURE,ContextStatus.CAPTURED,Optional.of("class X { int field; }"),Optional.of(start.selection()),Optional.empty())));}
