@@ -90,7 +90,7 @@ public final class ApplicationContracts {
         public ApplicationEventMeta { requireId(commandId, "commandId"); requireRevision(expectedAppStateRevision); }
     }
     public sealed interface ApplicationEvent permits EnablePlugin, DisablePlugin, UpdateProviderConfig,
-            ImportCoursePdf, ReplaceCourseMaterial, RemoveCourseMaterial { ApplicationEventMeta meta(); }
+            ImportCoursePdf, ImportCoursePdfs, ReplaceCourseMaterial, RemoveCourseMaterial { ApplicationEventMeta meta(); }
 
     public record EnablePlugin(ApplicationEventMeta meta) implements ApplicationEvent {
         public EnablePlugin { Objects.requireNonNull(meta, "meta"); }
@@ -108,6 +108,10 @@ public final class ApplicationContracts {
     }
     public record ImportCoursePdf(ApplicationEventMeta meta, Path selectedFile, CorpusBase expectedCorpus) implements ApplicationEvent {
         public ImportCoursePdf { Objects.requireNonNull(meta, "meta"); inputFile(selectedFile); Objects.requireNonNull(expectedCorpus, "expectedCorpus"); }
+    }
+    /** Sequential import in picker order; stops on failure or runtime stop. */
+    public record ImportCoursePdfs(ApplicationEventMeta meta, List<Path> selectedFiles, CorpusBase expectedCorpus) implements ApplicationEvent {
+        public ImportCoursePdfs { Objects.requireNonNull(meta,"meta"); selectedFiles=List.copyOf(selectedFiles);if(selectedFiles.isEmpty())throw new IllegalArgumentException("No PDF selected");selectedFiles.forEach(ApplicationContracts::inputFile);Objects.requireNonNull(expectedCorpus,"expectedCorpus"); }
     }
     public record ReplaceCourseMaterial(ApplicationEventMeta meta, MaterialTarget target, Path selectedFile,
                                          CorpusBase expectedCorpus) implements ApplicationEvent {

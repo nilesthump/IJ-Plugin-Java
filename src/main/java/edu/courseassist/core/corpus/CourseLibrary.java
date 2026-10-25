@@ -43,7 +43,9 @@ public final class CourseLibrary implements AutoCloseable {
         synchronized (gate) {
             ensureOpen();
             if (initialized == null) initialized = CompletableFuture.runAsync(() -> {
-                repository.initialize(); var base = repository.base();
+                repository.initialize();
+                synchronized (fileGate) { finishDeletions(); }
+                var base = repository.base();
                 synchronized (gate) { ensureOpen(); active = base; base.generationId().ifPresent(this::entry); }
             }, executor);
             // A consumer may cancel this dependent future; the shared restore remains owned by the application.
@@ -122,11 +124,38 @@ public final class CourseLibrary implements AutoCloseable {
     }
     public Job<Change> remove(CorpusBase base, MaterialTarget target, BooleanSupplier permitted) {
         return start(permitted, job -> {
-            List<Derived> members = members(base, job);
-            Settings settings = repository.load(base.generationId().orElseThrow(() -> new Conflict("No corpus to remove from"))).settings();
-            members.removeIf(d -> d.source().documentId().equals(target.documentId()));
-            return publish(job, new Generation(id(), settings, members), base, Optional.of(target), Optional.empty(), true);
+            synchronized (fileGate) {
+                Change change;
+                if (target.expectedSourceVersionId().isEmpty()) {
+                    synchronized (gate) {
+                        job.check(); if (!active.equals(base)) throw new Conflict("Corpus base changed");
+                        Set<String> sources = repository.documentSources(target.documentId());
+                        CorpusBase committed = repository.removeUnpublished(base, target);
+                        active = committed; job.committed = true;
+                        revokeDeletedSources(sources, job);
+                        change = new Change(Disposition.PUBLISHED, target.documentId(), Optional.empty(), committed);
+                    }
+                } else {
+                    List<Derived> members = members(base, job);
+                    Settings settings = repository.load(base.generationId().orElseThrow(() -> new Conflict("No corpus to remove from"))).settings();
+                    members.removeIf(d -> d.source().documentId().equals(target.documentId()));
+                    change = publish(job, new Generation(id(), settings, members), base, Optional.of(target), Optional.empty(), true);
+                }
+                finishDeletions();
+                return change;
+            }
         });
+    }
+    private void finishDeletions() {
+        try {
+            for (String md5 : repository.deletingBlobs()) { files.delete(md5); repository.finishBlobDelete(md5); }
+        } catch (java.io.IOException failure) { throw new CompletionException(failure); }
+    }
+    /** gate held; immutable graph readers are revoked before their pending results can escape. */
+    private void revokeDeletedSources(Set<String> sources, Job<?> removal) {
+        for (Job<?> candidate : jobs) if (candidate != removal && !Collections.disjoint(candidate.sources, sources)) candidate.removed = true;
+        for (Entry entry : entries.values()) if (!Collections.disjoint(entry.sources, sources)) entry.removed = true;
+        for (Lease lease : List.copyOf(leases)) if (lease.entry != null && lease.entry.removed) lease.close();
     }
     /** Explicit whole-active-set reindex for a processing/model change. Never reuse equal-dimension spaces. */
     public Job<Change> reindex(CorpusBase base, Settings settings, CourseEmbeddings embeddings, BooleanSupplier permitted) {
@@ -152,7 +181,9 @@ public final class CourseLibrary implements AutoCloseable {
             job.check(); float[] vector = embeddings.document(slice.text()); job.check();
             chunks.add(new Chunk(id(), slice.physicalPage(), slice.start(), slice.end(), slice.text(), vector, settings.space().dimensions()));
         }
-        job.check(); return repository.saveDerived(new Derived(source, id(), settings, pdf.pages(), chunks));
+        synchronized (gate) {
+            job.check(); return repository.saveDerived(new Derived(source, id(), settings, pdf.pages(), chunks));
+        }
     }
     private List<Derived> members(CorpusBase base, Job<?> job) {
         synchronized (gate) {
@@ -170,16 +201,18 @@ public final class CourseLibrary implements AutoCloseable {
                 throw new IllegalStateException("Graph handle does not match candidate generation");
             synchronized (gate) {
                 job.check(); if (!active.equals(base)) throw new Conflict("Corpus base changed; candidate was not published");
+                Set<String> deletedSources = remove ? repository.documentSources(target.orElseThrow().documentId()) : Set.of();
                 CorpusBase committed = repository.publish(generation, base, target, changed, remove, job.registered ? Optional.of(job.id) : Optional.empty());
-                Entry newEntry = new Entry(generation.id(), CompletableFuture.completedFuture(handle));
+                Entry newEntry = new Entry(generation.id(), generation.sourceIds(), CompletableFuture.completedFuture(handle));
                 entries.put(generation.id(), newEntry); CorpusBase previous = active; active = committed; job.committed = true; published = true;
+                if (remove) revokeDeletedSources(deletedSources, job);
                 previous.generationId().ifPresent(this::discardUnused);
                 return new Change(Disposition.PUBLISHED, changed.map(Source::documentId).orElseGet(() -> target.map(MaterialTarget::documentId).orElse("corpus")), changed.map(Source::versionId), committed);
             }
         } finally { if (!published) handle.close(); }
     }
     private Entry entry(String id) {
-        return entries.computeIfAbsent(id, key -> new Entry(key, CompletableFuture.supplyAsync(() -> {
+        return entries.computeIfAbsent(id, key -> new Entry(key, repository.generationSources(key), CompletableFuture.supplyAsync(() -> {
             try {
                 var generation = repository.load(key);
                 for (Derived d : generation.members()) files.verify(repository.blob(d.source().versionId()));
@@ -198,8 +231,8 @@ public final class CourseLibrary implements AutoCloseable {
         }
     }
     private final class Entry {
-        final String id; final CompletableFuture<GenerationHandle> future; int references;
-        Entry(String id, CompletableFuture<GenerationHandle> future) { this.id = id; this.future = future; }
+        final String id; final Set<String> sources; final CompletableFuture<GenerationHandle> future; int references; boolean removed;
+        Entry(String id, Set<String> sources, CompletableFuture<GenerationHandle> future) { this.id = id; this.sources = sources; this.future = future; }
     }
     public final class Lease implements AutoCloseable {
         private final CorpusBase base;
@@ -239,8 +272,7 @@ public final class CourseLibrary implements AutoCloseable {
                     synchronized (gate) { checkLease(); if (result.isCancelled()) throw new CancellationException("Query wait cancelled"); }
                     if (failure != null) throw new CompletionException(failure);
                     T value = read.apply(h);
-                    synchronized (gate) { checkLease(); pending.remove(result); }
-                    result.complete(value);
+                    synchronized (gate) { checkLease(); pending.remove(result); result.complete(value); }
                 } catch (Throwable problem) { result.completeExceptionally(problem); }
                 finally {
                     synchronized (gate) { pending.remove(result); if (entry != null) { entry.references--; discardUnused(entry.id); } }
@@ -254,7 +286,7 @@ public final class CourseLibrary implements AutoCloseable {
             });
             return result;
         }
-        private void checkLease() { ensureOpen(); if (released) throw new CancellationException("Attempt corpus lease released"); }
+        private void checkLease() { ensureOpen(); if (released || entry != null && entry.removed) throw new CancellationException("Attempt corpus lease released or material deleted"); }
         @Override public void close() {
             List<CompletableFuture<?>> cancelled;
             synchronized (gate) {
@@ -293,11 +325,14 @@ public final class CourseLibrary implements AutoCloseable {
             }
         }, executor);
     }
+    public static final class MaterialDeleted extends RuntimeException {
+        public MaterialDeleted() { super("资料已删除"); }
+    }
     public CompletableFuture<Path> sourcePath(String sourceId) {
         return initialize().thenApplyAsync(v -> {
             synchronized (fileGate) {
                 ManagedPdfStore.Blob blob;
-                synchronized (gate) { ensureOpen(); blob = repository.blob(sourceId); }
+                synchronized (gate) { ensureOpen(); if (!repository.hasSource(sourceId)) throw new MaterialDeleted(); blob = repository.blob(sourceId); }
                 try { files.verify(blob); return files.path(blob.md5()); }
                 catch (java.io.IOException failure) { throw new CompletionException(failure); }
             }
@@ -308,7 +343,7 @@ public final class CourseLibrary implements AutoCloseable {
     }
     private Set<String> pinned() {
         Set<String> pinned = new HashSet<>();
-        for (Entry e : entries.values()) if (e.references > 0) pinned.addAll(repository.load(e.id).sourceIds());
+        for (Entry e : entries.values()) if (e.references > 0 && !e.removed) pinned.addAll(e.sources);
         for (Job<?> job : jobs) pinned.addAll(job.sources);
         return pinned;
     }
@@ -351,7 +386,7 @@ public final class CourseLibrary implements AutoCloseable {
         private final String id = CourseLibrary.id(); private final BooleanSupplier permitted;
         private final CompletableFuture<T> result = new CompletableFuture<>();
         private final CompletableFuture<Void> settled = new CompletableFuture<>();
-        private volatile boolean cancelled;
+        private volatile boolean cancelled, removed;
         private boolean registered, committed, resultClaimed;
         private volatile Set<String> sources = Set.of();
         private Job(BooleanSupplier permitted) { this.permitted = permitted; }
@@ -359,7 +394,7 @@ public final class CourseLibrary implements AutoCloseable {
         public CompletionStage<T> completion() { return result.minimalCompletionStage(); }
         public CompletionStage<Void> settled() { return settled.minimalCompletionStage(); }
         private boolean claimResult() { if (resultClaimed) return false; resultClaimed = true; return true; }
-        private void check() { if (cancelled || closed) throw new CancellationException("Corpus operation invalidated"); checkPermit(permitted); }
+        private void check() { if (removed) throw new Conflict("Material deleted"); if (cancelled || closed) throw new CancellationException("Corpus operation invalidated"); checkPermit(permitted); }
         /** Linearizes against the short publication commit; never interrupts JDBC or a shared restore. */
         public void cancel() {
             boolean deliver;

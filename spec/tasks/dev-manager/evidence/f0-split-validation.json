@@ -1,0 +1,13 @@
+{
+  "command": "scripts/validate.ps1 -Scope All -LocalIdePath <local IDEA> -GradleUserHome <shared cache>",
+  "exitCode": 0,
+  "junit": {
+    "tests": 146,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ideSmoke": "NOT_RUN on split manager: EditorIntegrationChecks requires dev-a whitespace fix",
+  "integrated": "169 tests plus IDEA smoke PASS before split; user accepted F0",
+  "next": "dev-a PR -> main; manager sync and IdeSmoke; manager PR -> main; dev-c sync and validation; F2 NOT_STARTED"
+}

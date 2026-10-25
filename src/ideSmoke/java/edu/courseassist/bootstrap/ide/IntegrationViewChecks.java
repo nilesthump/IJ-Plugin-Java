@@ -38,8 +38,8 @@ final class IntegrationViewChecks {
             edt(() -> {});
             edt(() -> {
                 var root = window.get().getContentManager().getContent(0).getComponent();
-                ((JTextArea) find(root, "draftPreview")).setText("integration draft preserved exactly\n");
-                ((JButton) find(root, "saveDraft")).doClick();
+                ((javax.swing.text.JTextComponent) find(root, "draftPreview")).setText("integration draft preserved exactly\n");
+                // Debounced autosave must persist without a separate save button.
             });
             SessionTestEnvironment.await(() -> sessions.snapshot(service.projectInstanceId()).sessions().stream()
                     .anyMatch(s -> s.sessionId().equals(session) && s.draft().text().equals("integration draft preserved exactly\n")));
@@ -49,7 +49,7 @@ final class IntegrationViewChecks {
                     "Closing production view preserves durable session");
             edt(() -> new BootstrapToolWindowFactory().createToolWindowContent(project, window.get()));
             awaitComponent(window.get(), "draftPreview");
-            edt(() -> require(((JTextArea) find(window.get().getContentManager().getContent(0).getComponent(), "draftPreview"))
+            edt(() -> require(((javax.swing.text.JTextComponent) find(window.get().getContentManager().getContent(0).getComponent(), "draftPreview"))
                     .getText().equals("integration draft preserved exactly\n"), "Reopened real view restores draft"));
         } finally {
             edt(() -> { window.get().getContentManager().removeAllContents(true);
