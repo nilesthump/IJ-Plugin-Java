@@ -1,0 +1,45 @@
+{
+  "command": "scripts/validate.ps1 -Scope All -LocalIdePath <local IDEA> -GradleUserHome <shared cache>",
+  "exitCode": 0,
+  "junit": {
+    "tests": 146,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ideSmoke": "NOT_RUN on split manager: EditorIntegrationChecks requires dev-a whitespace fix",
+  "integrated": "169 tests plus IDEA smoke PASS before split; user accepted F0",
+  "next": "dev-a PR -> main; manager sync and IdeSmoke; manager PR -> main; dev-c sync and validation; F2 NOT_STARTED",
+  "pullRequests": [
+    {
+      "branch": "dev-a",
+      "number": 13,
+      "url": "https://github.com/nilesthump/IJ-Plugin-Java/pull/13",
+      "head": "067deb7d915ceb550e9b88a88fe2dbff3a394bf9",
+      "draft": false
+    },
+    {
+      "branch": "dev-manager",
+      "number": 14,
+      "url": "https://github.com/nilesthump/IJ-Plugin-Java/pull/14",
+      "head": "4a33fc669228f608350b93e368e3c119264f216f",
+      "draft": true
+    },
+    {
+      "branch": "dev-c",
+      "number": 15,
+      "url": "https://github.com/nilesthump/IJ-Plugin-Java/pull/15",
+      "head": "c668d4feafbe3846e62fe2eb466d5efbfdb364fe",
+      "draft": true
+    }
+  ],
+  "devAIndependentAll": {
+    "tests": 106,
+    "exitCode": 0
+  },
+  "devCIndependentAll": {
+    "exitCode": 1,
+    "reason": "New public contracts not yet on main",
+    "draft": true
+  }
+}

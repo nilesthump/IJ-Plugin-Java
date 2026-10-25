@@ -43,7 +43,7 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
                     {"status":"PASS","timestamp":"%s","ideBuild":"%s","javaRuntime":"%s",
                     "checks":["plugin-loaded","application-project-services","project-isolation-disposal",
                     "background-work","Swing-ToolWindow-content-release","Java-PSI-read",
-                    "H2-commit-reopen","JVector-build-query","SpringAI-local-chat-stream-embedding-no-retry",
+                    "production-configured-runtime-construction-no-network","H2-commit-reopen","JVector-build-query","SpringAI-local-chat-stream-embedding-no-retry",
                     "corpus-managed-PDF-H2-generation-physical-page","corpus-local-vector-recovery-fixed-attempt",
                     "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation",
                     "production-session-roots-dedup-typed-code-draft-tabs-restore-hard-delete",
@@ -119,6 +119,7 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
             try { a.get().tasks().submit(() -> "late").join(); throw new IllegalStateException("Late work accepted"); }
             catch (CancellationException expected) { /* Lifecycle control flow, no retrieval fallback. */ }
             require(!application.tasks().isClosed(), "Project disposal preserves app resources");
+            ConfiguredEnableChecks.run();
             DependencyChecks.run(scratch.resolve("database"));
             CorpusRuntimeChecks.run(scratch.resolve("registered-pdf"), application.pdfReader());
             ReactRuntimeChecks.run(scratch.resolve("react"));

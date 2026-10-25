@@ -135,11 +135,18 @@ public final class SessionCoordinator implements SessionController, SelectionSin
             try {CommandResult result=apply(p,event);refresh(p);return result;}
             catch(RuntimeException failure){Throwable cause=ReactEngine.unwrap(failure);
                 if(cause instanceof Rejected rejected)return reject(event,rejected.reason,p.view.revision());
+                if (event instanceof OpenCitation && cause instanceof CourseLibrary.MaterialDeleted) {
+                    refresh(p); var view = p.view;
+                    p.view = new ProjectChatViewState(view.projectId(), p.instance, view.revision()+1, view.sessions(), view.openSessionIds(), view.activeSessionId(),
+                            List.of(SessionData.notice("MATERIAL_DELETED", "资料已删除", event.meta().sessionId().orElse(null), null)));
+                    for (var observer : p.observers) deliver(observer, p.view);
+                    return new CommandResult(event.meta().commandId(), Outcome.APPLIED, p.view.revision(), Optional.empty(), Optional.empty());
+                }
                 if(!ReactEngine.isCancellation(cause)&&event.meta().sessionId().isPresent()) {
                     String session=event.meta().sessionId().get();failures.put(session,cause);
                     if(event instanceof UpdateDraftText edit) {
                         var before=p.view.sessions().stream().filter(s->s.sessionId().equals(session)).findFirst();
-                        before.ifPresent(s->unsavedDrafts.put(session,new DraftView(edit.draftId(),edit.expectedDraftRevision(),edit.text(),s.draft().captures(),SaveState.FAILED)));
+                        before.ifPresent(s->unsavedDrafts.put(session,new DraftView(edit.draftId(),edit.expectedDraftRevision(),edit.text(),s.draft().captures(),SaveState.FAILED,placements(edit,s.draft()),edit.captureOrder().orElse(s.draft().captureOrder()))));
                     }
                     if(event instanceof UpdateDraftText||event instanceof SubmitDraft||event instanceof RemoveDraftCapture)blocked.add(session);
                     publishFailure(p,session);
@@ -167,13 +174,13 @@ public final class SessionCoordinator implements SessionController, SelectionSin
             failures.remove(target);blocked.remove(target);unsavedDrafts.remove(target);reservations.entrySet().removeIf(e->e.getValue().ticket.targetSessionId().equals(target));
         } else if(event instanceof UpdateDraftText e)repository.edit(project,instance,target,s->{
             SessionRepository.requireDraft(s.draft(),e.draftId(),e.expectedDraftRevision());
-            return s.change(new DraftView(s.draft().draftId(),s.draft().revision()+1,e.text(),s.draft().captures(),SaveState.SAVED),s.turns(),s.operation());
+            return s.change(new DraftView(s.draft().draftId(),s.draft().revision()+1,e.text(),s.draft().captures(),SaveState.SAVED,placements(e,s.draft()),e.captureOrder().orElse(s.draft().captureOrder())),s.turns(),s.operation());
         });
         else if(event instanceof RemoveDraftCapture e) {
             repository.edit(project,instance,target,s->{SessionRepository.requireDraft(s.draft(),e.draftId(),e.expectedDraftRevision());
                 if(s.draft().captures().stream().noneMatch(g->g.captureId().equals(e.captureId())))throw new Rejected(Rejection.INVALID_TARGET);
                 return s.change(new DraftView(s.draft().draftId(),s.draft().revision()+1,s.draft().text(),s.draft().captures().stream()
-                        .filter(g->!g.captureId().equals(e.captureId())).toList(),SaveState.SAVED),s.turns(),s.operation());});
+                        .filter(g->!g.captureId().equals(e.captureId())).toList(),SaveState.SAVED,s.draft().captureOffsets(),s.draft().captureOrder()),s.turns(),s.operation());});
             Reservation r=reservations.remove(e.captureId());if(r!=null)r.valid.set(false);
         } else if(event instanceof SubmitDraft||event instanceof RetryAttempt||event instanceof ManualCompact) {
             long epoch=runtime.snapshot().epoch();
@@ -212,6 +219,21 @@ public final class SessionCoordinator implements SessionController, SelectionSin
             repository.tabs(project,instance,tabs,active);
         }
         return new CommandResult(meta.commandId(),Outcome.APPLIED,p.view.revision()+1,Optional.empty(),Optional.empty());
+    }
+    private static Map<String,Integer> placements(UpdateDraftText event,DraftView draft) {
+        if(event.captureOrder().isPresent()) {
+            var order=event.captureOrder().get();var ids=draft.captures().stream().map(DraftCapture::captureId).collect(java.util.stream.Collectors.toSet());
+            if(order.size()!=ids.size() || !new HashSet<>(order).equals(ids))throw new Rejected(Rejection.INVALID_INPUT);
+        }
+        Map<String,Integer> supplied=event.captureOffsets().orElse(draft.captureOffsets());
+        Map<String,Integer> result=new HashMap<>();
+        for(var capture:draft.captures()) if(supplied.containsKey(capture.captureId())) {
+            int offset=supplied.get(capture.captureId());
+            if(offset<0 || event.captureOffsets().isPresent() && offset>event.text().length())throw new Rejected(Rejection.INVALID_INPUT);
+            result.put(capture.captureId(),Math.min(offset,event.text().length()));
+        }
+        if(event.captureOffsets().isPresent() && supplied.keySet().stream().anyMatch(id->draft.captures().stream().noneMatch(c->c.captureId().equals(id)))) throw new Rejected(Rejection.INVALID_INPUT);
+        return Map.copyOf(result);
     }
     private Consumer<Citation> citationOpener=citation->{throw new IllegalStateException("Citation opener not configured");};
     public void citationOpener(Consumer<Citation> opener){citationOpener=Objects.requireNonNull(opener);}
@@ -300,7 +322,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
                 repository.edit(p.binding.projectId(),p.instance,ticket.targetSessionId(),s->{
                     if(!reservation.valid.get()||!s.draft().draftId().equals(ticket.draftId()))throw new CancellationException("Capture revoked");
                     List<DraftCapture> groups=new ArrayList<>(s.draft().captures());groups.add(new DraftCapture(start.captureId(),CaptureState.PENDING,start.source(),Optional.empty(),Optional.empty()));
-                    return s.change(new DraftView(ticket.draftId(),s.draft().revision()+1,s.draft().text(),groups,SaveState.SAVED),s.turns(),s.operation());});
+                    return s.change(new DraftView(ticket.draftId(),s.draft().revision()+1,s.draft().text(),groups,SaveState.SAVED,s.draft().captureOffsets(),s.draft().captureOrder()),s.turns(),s.operation());});
                 refresh(p);
                 // The adapter runs only after the durable group exists, outside the command writer.
                 workers.execute(()->{
@@ -327,7 +349,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
                     if(index<0)throw new CancellationException("Capture group removed");
                     captures.set(index,new DraftCapture(r.start.captureId(),error==null?CaptureState.READY:CaptureState.FAILED,r.start.source(),
                             Optional.ofNullable(group).filter(ignored->error==null),error==null?Optional.empty():Optional.of("捕获失败，请重新捕获")));
-                    return s.change(new DraftView(s.draft().draftId(),s.draft().revision()+1,s.draft().text(),captures,SaveState.SAVED),s.turns(),s.operation());});
+                    return s.change(new DraftView(s.draft().draftId(),s.draft().revision()+1,s.draft().text(),captures,SaveState.SAVED,s.draft().captureOffsets(),s.draft().captureOrder()),s.turns(),s.operation());});
                 if(error!=null){failures.put(r.ticket.targetSessionId(),ReactEngine.unwrap(error));r.completion.completeExceptionally(error);}else r.completion.complete(null);
                 refresh(p);
             }catch(Throwable failure){r.completion.completeExceptionally(failure);
@@ -359,7 +381,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         DraftView draft=unsavedDrafts.get(session);
         if(draft!=null)repository.edit(p.binding.projectId(),instance,session,s->{
             SessionRepository.requireDraft(s.draft(),draft.draftId(),draft.revision());
-            return s.change(new DraftView(draft.draftId(),draft.revision()+1,draft.text(),draft.captures(),SaveState.SAVED),s.turns(),s.operation());});
+            return s.change(new DraftView(draft.draftId(),draft.revision()+1,draft.text(),draft.captures(),SaveState.SAVED,draft.captureOffsets(),draft.captureOrder()),s.turns(),s.operation());});
         blocked.remove(session);unsavedDrafts.remove(session);failures.remove(session);overlays.entrySet().removeIf(e->e.getValue().identity().sessionId().equals(session));
     }
     /** Local command barrier for lifecycle integration and deterministic state observation. */
@@ -372,7 +394,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
             if(s.lifecycle()!=Lifecycle.LIVE){sessions.add(new SessionViewState(s.id(),s.title(),s.revision(),s.lifecycle(),s.draft(),List.of(),Optional.empty(),true,Set.of(SessionAction.DELETE),s.notices()));continue;}
             List<HistoryTurn> history=repository.history(s.projectId(),p.instance,s.id());List<TurnView> turns=new ArrayList<>();
             for(int n=0;n<s.turns().size();n++) {
-                Turn turn=s.turns().get(n);List<MessagePart> parts=new ArrayList<>();parts.add(new TextPart(turn.id()+":text",turn.input().question()));parts.addAll(turn.input().code());
+                Turn turn=s.turns().get(n);List<MessagePart> parts=edu.courseassist.contract.ChatContracts.visibleParts(turn.input().question(),turn.input().code(),turn.input().captureOffsets(),turn.input().captureOrder());
                 var attempts=history.get(n).attempts().stream().map(a->{Snapshot overlay=overlays.get(a.identity().attemptId());return ReactViews.attempt(overlay!=null&&overlay.revision()>=a.revision()?overlay:a);}).toList();
                 turns.add(new TurnView(turn.id(),turn.requestId(),new MessageView(turn.id()+":message",Role.USER,parts,turn.createdAt()),attempts));
             }
@@ -393,7 +415,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
     private void publishFailure(ProjectState p,String session) {
         if(!p.open.get()||p.view==null)return;var old=p.view;
         var sessions=old.sessions().stream().map(s->s.sessionId().equals(session)?new SessionViewState(s.sessionId(),s.title(),s.revision()+1,s.lifecycle(),
-                unsavedDrafts.getOrDefault(session,new DraftView(s.draft().draftId(),s.draft().revision(),s.draft().text(),s.draft().captures(),SaveState.FAILED)),s.turns(),s.activeOperation(),true,
+                unsavedDrafts.getOrDefault(session,new DraftView(s.draft().draftId(),s.draft().revision(),s.draft().text(),s.draft().captures(),SaveState.FAILED,s.draft().captureOffsets(),s.draft().captureOrder())),s.turns(),s.activeOperation(),true,
                 Set.of(SessionAction.CLOSE_TAB,SessionAction.DELETE,SessionAction.RECOVER),List.of(SessionData.notice("UNSAVED_STATE","保存失败，请恢复后再发送",session,null))):s).toList();
         p.view=new ProjectChatViewState(old.projectId(),p.instance,old.revision()+1,sessions,old.openSessionIds(),old.activeSessionId(),old.notices());
         for(var observer:p.observers)deliver(observer,p.view);

@@ -19,7 +19,13 @@ gradle/wrapper/gradle-wrapper.jar
 gradle/wrapper/gradle-wrapper.properties
 gradlew
 gradlew.bat
+output/pdf/F0_DEVELOPMENT_PLAN.manifest.json
+output/pdf/F0_DEVELOPMENT_PLAN.model.json
+output/pdf/F0_DEVELOPMENT_PLAN.pdf
+output/pdf/F0_DEVELOPMENT_PLAN.verification.json
+output/pdf/README.md
 README.md
+scripts/architecture/export_pdf.py
 scripts/check-repository.ps1
 scripts/check-scope.ps1
 scripts/git/Configure-Git.ps1
@@ -29,6 +35,10 @@ scripts/validate.ps1
 settings.gradle
 spec/architecture/BASELINE.md
 spec/architecture/COURSE_LIBRARY.md
+spec/architecture/diagrams/f0-components.png
+spec/architecture/diagrams/f0-components.puml
+spec/architecture/diagrams/f0-react.png
+spec/architecture/diagrams/f0-react.puml
 spec/architecture/ENGINEERING_BLUEPRINT.md
 spec/architecture/ERROR_HANDLING.md
 spec/architecture/F0_BEHAVIOR.md
