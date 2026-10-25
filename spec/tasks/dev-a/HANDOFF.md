@@ -71,3 +71,24 @@
 ### 本轮最终验证结果（替代上方运行中状态）
 
 统一 All 验证退出 0，BUILD SUCCESSFUL in 4m 2s。JUnit XML 汇总：16 个 suite，91 项测试，失败 0，错误 0，跳过 0。SourceRangesTest 包含在本次报告中。FixtureSmoke、check、buildPlugin 均通过；实际 IDEA/PSI 运行 NOT_RUN（未使用 -IdeSmoke）。历史类加载失败本轮未复现，不证明此前根因已修复；VS Code JUnit 源集映射仍待 DEV-A-002。原日志 tmp/precommit/fix-validation.log，本次 XML 位于 build/test-results/test/。
+
+## 2026-10-24：后续开发交接（当前权威状态）
+
+本节替代上方较早的运行状态与测试计数。
+
+- 当前已推送提交：`a089fc3`；本轮尚未提交。
+- 本轮将不可变捕获值构造提取为 `CaptureSelectionAction.freezeSelection`，并新增 3 项测试；`SourceRangesTest` 扩展至 6 项。
+- focused editor 测试退出 0，共 9 项通过。
+- 统一 All 退出 0，`BUILD SUCCESSFUL in 4m 47s`；17 个 suite、97 项测试，失败/错误/跳过均 0；FixtureSmoke、check、buildPlugin 通过。
+- 平台 PSI 测试尝试确认缺少 IntelliJ test framework 后已撤回不可编译文件，见 `DEV-A-004`。
+- 继续顺序：负责人落实 `DEV-A-001`、`DEV-A-002`、`DEV-A-004`；同步 main 后补真实 PSI、文档变化、动作事件、项目关闭/取消完成测试；最后在本机目标 IDEA 验证右键和跨标签回传。
+- `-IdeSmoke`、真实 IDEA 右键/PSI 生命周期、真实 API 均为 `NOT_RUN`。
+
+## 2026-10-24：合并 main 后交接更新
+
+- `DEV-A-001` / `DEV-A-002` 已由负责人 PR #11 落实：生产动作/端口已注册，`ideSmoke` 已分离；VS Code editor 诊断清零。
+- editor focused 9 项退出 0。
+- 统一 `All + IdeSmoke` 最终退出 0；20 个 suite、106 项测试，失败/错误/跳过均 0；IDE smoke 报告 `PASS`，覆盖真实注册动作、Java PSI 与耐久捕获。
+- 首次统一运行发生一次 Gradle Test Executor 连接超时，重跑未复现；该次业务 XML 中 105 项均通过，无业务断言失败。
+- 可以继续生产集成/人工 IDEA 场景；若要在 `dev-a` 测试目录补构造器、跨边界、文档变化和项目关闭/取消的自动平台测试，仍需 `DEV-A-004` 或负责人明确提供等价的可扩展测试入口。
+- 真实提供方/API、人工作用界面和强制退出仍为 `NOT_RUN`。
