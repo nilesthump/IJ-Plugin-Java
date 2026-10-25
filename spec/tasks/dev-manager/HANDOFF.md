@@ -292,3 +292,10 @@
 合并前补测发现分拆IDE测试等待新UI自动保存，但当前main仍为手动保存UI，IntegrationViewChecks:44超时。测试现兼容已有saveDraft按钮，通过真实保存动作核验持久化/重开；UI PR落地后无该按钮，同一断言仍要求自动保存。未改生产UI或跳过持久化断言。待#13合入后统一重跑All+IdeSmoke。
 
 #14 CI两次失败在不同连续提问用例（删除资料后续问、手动摘要），本地前者20次全部通过。测试观察等待原为10秒，与合成模型自身10秒预算相同，不能覆盖随后H2提交和慢runner调度；改为30秒测试观察窗口，业务超时与断言不变。补充提交拒绝原因、未收尾operation和完整异常输出；不再盲目重跑。待新提交全量验证。
+
+
+## #15 合并门禁的确定性测试修复（2026-10-25）
+
+#13、#14 已通过门禁合入。#15 的169项CI中，dedupPrecedesBusyAndRevisionAndNewDraftSurvives在BUSY断言读取空rejection失败；本地169项及IDE通过。独立分析发现该用例保持模型未完成，却依赖真实10秒预算；慢runner可能在断言前结束旧attempt。这是与日志一致的测试竞争路径，日志未记录终态，不能断言唯一根因。
+
+该用例改用现有pauseGeneration：先暂停启动、预约操作，核验去重/BUSY/新草稿/单turn且请求数0，再恢复并核验唯一请求、持久成功和旧revision拒绝。生产实现、预算和断言资格不放宽。修复只从dev-manager PR到main，再供dev-c同步；F2实现未开始。统一All退出0：146 tests、失败/错误/跳过0；日志tmp/f0-split-publication/manager-deterministic-validation.log。独立复核确认暂停先于React计时，所有原断言保留。IDE此次纯测试变更不重跑，前次证据仍独立保留。
