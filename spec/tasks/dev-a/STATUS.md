@@ -94,3 +94,9 @@
 - 重跑 `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -GradleUserHome C:\\Users\\Lenovo\\.gradle`：退出 0。20 个 suite、106 项测试，失败/错误/跳过均 0；FixtureSmoke、check、buildPlugin 及 IDE smoke 均通过。
 - `build/reports/ide-smoke/result.json`：`PASS`；IDE `IU-262.10968.63`、JBR `25.0.4`，实际覆盖注册动作/端口、Java PSI 和耐久三段捕获。
 - `DEV-A-004` 尚未按 test framework 依赖形式落实；甲自己的自动化 PSI/文档变化/取消测试仍不能编译。可以进入生产集成与人工 IDEA 验证阶段，但扩展平台 fixture 测试仍需负责人协调。
+
+## 2026-10-25 F0 验收后分拆交付
+
+用户已通过 F0 并授权按既有分支分拆提交。F2 尚未开工。本次只复制该分支归属的已验收修复，不修改公共门禁。完整集成工作区 All + IdeSmoke：169 tests、0失败，本机IDEA PASS；该结果不是拆分分支独立通过证明。UI 依赖负责人本轮新增契约，需公共 PR 合入 main 后同步再验证。
+
+分拆分支独立 scripts/validate.ps1 -Scope All 退出0：106项测试，失败/错误/跳过0。拆分分支本轮独立IdeSmoke NOT_RUN；此前完整集成树包含真实PSI空白选区检查并已通过。
