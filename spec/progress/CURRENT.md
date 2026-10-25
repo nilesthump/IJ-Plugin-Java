@@ -213,3 +213,13 @@ dev-manager 已同步 origin/main `fb425c9`，其中成员 editor/pdf/ui 均已�
 - 本轮新PR尚未创建：现行branch-scopes.json的managerExcluded及main可信scope阻止10个已验收UI/editor文件。完整PR说明与精确文件清单见F0_DELIVERY_PR.md；未绕过hooks、未改门禁，待用户确认目录归属或按成员分支拆分交付路线。F0验收通过与交付PR尚未发起分别记录。
 
 拆分后负责人分支独立 All 退出0：146项测试，失败/错误/跳过0。独立 IdeSmoke 尚未执行：新增EditorIntegrationChecks依赖dev-a边缘空白修复，需其先合入main后同步验证。合入顺序dev-a → dev-manager → dev-c；均各自PR到main。验证生成的ZIP随后删除。
+
+## 分拆 PR 已发起（2026-10-25）
+
+用户明确 approve 后，使用三个既有分支的独立克隆分拆提交，hooks和目录规则未修改。PR #13（dev-a，067deb7）为编辑器边界修复；PR #14（dev-manager）为核心与文档草稿；PR #15（dev-c，c668d4f）为界面草稿，均目标main且保留分支。
+
+- https://github.com/nilesthump/IJ-Plugin-Java/pull/13
+- https://github.com/nilesthump/IJ-Plugin-Java/pull/14
+- https://github.com/nilesthump/IJ-Plugin-Java/pull/15
+
+独立All：dev-a 106 tests通过，dev-manager 146 tests通过；dev-c编译因main尚无ImportCoursePdfs/captureOffsets/captureOrder等契约而失败，按依赖阻塞如实保留草稿。完整集成树169 tests+IDE PASS与用户F0验收仍有效，但不冒充拆分分支单独验证。顺序：#13合入main→#14同步并补独立IdeSmoke→#14合入main→#15同步并全量验证。此轮只创建PR，未合并三份新PR；F2仍未开工。验证生成的安装ZIP已再次清理。

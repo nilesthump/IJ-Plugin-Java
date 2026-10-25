@@ -278,3 +278,13 @@
 用户已通过 F0 并授权按既有分支分拆提交。F2 尚未开工。本次只复制该分支归属的已验收修复，不修改公共门禁。完整集成工作区 All + IdeSmoke：169 tests、0失败，本机IDEA PASS；该结果不是拆分分支独立通过证明。UI 依赖负责人本轮新增契约，需公共 PR 合入 main 后同步再验证。
 
 拆分后负责人分支独立 All 退出0：146项测试，失败/错误/跳过0。独立 IdeSmoke 尚未执行：新增EditorIntegrationChecks依赖dev-a边缘空白修复，需其先合入main后同步验证。合入顺序dev-a → dev-manager → dev-c；均各自PR到main。验证生成的ZIP随后删除。
+
+## 分拆 PR 已发起（2026-10-25）
+
+用户明确 approve 后，使用三个既有分支的独立克隆分拆提交，hooks和目录规则未修改。PR #13（dev-a，067deb7）为编辑器边界修复；PR #14（dev-manager）为核心与文档草稿；PR #15（dev-c，c668d4f）为界面草稿，均目标main且保留分支。
+
+- https://github.com/nilesthump/IJ-Plugin-Java/pull/13
+- https://github.com/nilesthump/IJ-Plugin-Java/pull/14
+- https://github.com/nilesthump/IJ-Plugin-Java/pull/15
+
+独立All：dev-a 106 tests通过，dev-manager 146 tests通过；dev-c编译因main尚无ImportCoursePdfs/captureOffsets/captureOrder等契约而失败，按依赖阻塞如实保留草稿。完整集成树169 tests+IDE PASS与用户F0验收仍有效，但不冒充拆分分支单独验证。顺序：#13合入main→#14同步并补独立IdeSmoke→#14合入main→#15同步并全量验证。此轮只创建PR，未合并三份新PR；F2仍未开工。验证生成的安装ZIP已再次清理。
