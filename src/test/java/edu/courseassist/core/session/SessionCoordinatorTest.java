@@ -55,11 +55,16 @@ class SessionCoordinatorTest {
         try(var e=new SessionTestEnvironment(root)) {
             e.configureAndEnable();e.open("a","a",false);String session=e.create("a");e.text("a",session,"original");
             AtomicReference<Listener> listener=new AtomicReference<>();e.model.set((r,l)->{listener.set(l);return ()->{};});
-            SubmitDraft event=e.submitEvent("a",session);CommandResult first=e.dispatch(event);await(()->listener.get()!=null);
+            // Hold the reserved operation before model startup: BUSY/dedup assertions must
+            // not race the synthetic model's real elapsed-time limit on slow runners.
+            e.pauseGeneration.set(true);
+            SubmitDraft event=e.submitEvent("a",session);CommandResult first=e.dispatch(event);
+            assertEquals(Outcome.APPLIED,first.outcome());
             e.text("a",session,"next draft");CommandResult duplicate=e.dispatch(event);
-            assertEquals(first.operationId(),duplicate.operationId());assertEquals(1,e.requests.size());
+            assertEquals(first.operationId(),duplicate.operationId());assertEquals(0,e.requests.size());
             assertEquals(Rejection.BUSY,e.dispatch(e.submitEvent("a",session)).rejection().orElseThrow());
             assertEquals(1,e.view("a",session).turns().size());assertEquals("next draft",e.view("a",session).draft().text());
+            e.resumeGeneration();await(()->listener.get()!=null);assertEquals(1,e.requests.size());
             finish(listener.get(),"answer");e.idle("a",session);
             assertEquals("next draft",e.view("a",session).draft().text());assertEquals(ContextEligibility.ELIGIBLE_DURABLE_SUCCESS,e.view("a",session).turns().getFirst().attempts().getFirst().contextEligibility());
             assertEquals(Rejection.STALE_REVISION,e.dispatch(new SubmitDraft(e.meta("a",session),event.draftId(),event.expectedDraftRevision())).rejection().orElseThrow());
