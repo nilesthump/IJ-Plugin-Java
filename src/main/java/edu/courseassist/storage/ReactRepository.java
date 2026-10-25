@@ -114,7 +114,7 @@ public final class ReactRepository implements Journal {
             step.suppliedEvidence().forEach(e -> sources.add(e.source().versionId()));
             step.tools().forEach(t -> t.evidence().forEach(e -> sources.add(e.source().versionId())));
         }
-        for (String source : sources) try (var s = c.prepareStatement("MERGE INTO ca_source_ref KEY(owner_id,source_id) VALUES(?,?)")) {
+        for (String source : sources) try (var s = c.prepareStatement("MERGE INTO ca_source_ref KEY(owner_id,source_id) SELECT ?,id FROM ca_source WHERE id=?")) {
             s.setString(1, "react:" + snapshot.identity().attemptId()); s.setString(2, source); s.executeUpdate();
         }
     }

@@ -21,6 +21,36 @@ import static edu.courseassist.bootstrap.ide.SessionTestEnvironment.*;
 
 class SessionCoordinatorTest {
     @TempDir Path root;
+    @Test void removedCitationShowsNoticeAndKeepsChatWritableAfterReopen() throws Exception {
+        Citation citation; String session;
+        try(var e=new SessionTestEnvironment(root, request -> new edu.courseassist.contract.PdfContracts.PdfReadResult(request,1,
+                List.of(new edu.courseassist.contract.PdfContracts.PdfPage(1,"synthetic course",edu.courseassist.contract.PdfContracts.PageTextStatus.TEXT,Optional.empty()))))) {
+            e.configureAndEnable(); e.open("a","a",false); session=e.create("a");
+            var resources=e.app.resources();
+            var imported=e.courses.importPdf(Files.writeString(root.resolve("source.pdf"),"synthetic bytes"),"source",e.courses.snapshot().get().base(),resources.corpus(),resources.embeddings(),()->true);
+            imported.completion().toCompletableFuture().get(); imported.settled().toCompletableFuture().get();
+            String chunk;
+            try(var lease=e.courses.openAttempt()) { chunk=lease.search("course",resources.embeddings(),resources.search(),()->true).get().getFirst().chunkId(); }
+            e.model.set((request,listener)->{finish(listener,"preserved answer [[course:"+chunk+"]]");return ()->{};});
+            e.text("a",session,"question");e.submit("a",session);e.idle("a",session);
+            citation=e.repository.history(e.sessions.snapshot("a").projectId(),"a",session).getFirst().attempts().getFirst().citations().getFirst();
+            var snapshot=e.courses.snapshot().get();var material=snapshot.materials().getFirst();
+            e.courses.remove(snapshot.base(),new MaterialTarget(material.documentId(),material.sourceVersionId(),material.materialRevision()),()->true).completion().toCompletableFuture().get();
+            e.sessions.citationOpener(c->e.courses.sourcePath(c.sourceVersionId()).join());
+            assertEquals(Outcome.APPLIED,e.dispatch(new OpenCitation(e.meta("a",session),citation)).outcome());
+            assertEquals("资料已删除",e.sessions.snapshot("a").notices().getFirst().message());
+            assertFalse(e.view("a",session).writesBlocked());assertEquals(1,e.view("a",session).turns().size());
+            e.model.set((request,listener)->{finish(listener,"next answer");return ()->{};});
+            e.text("a",session,"next question");e.submit("a",session);e.idle("a",session);
+            assertFalse(e.view("a",session).writesBlocked());assertEquals(2,e.view("a",session).turns().size());
+        }
+        try(var e=new SessionTestEnvironment(root)) {
+            e.open("b","a",false);e.sessions.citationOpener(c->e.courses.sourcePath(c.sourceVersionId()).join());
+            e.dispatch(new OpenCitation(e.meta("b",session),citation));
+            assertEquals("资料已删除",e.sessions.snapshot("b").notices().getFirst().message());
+            assertEquals(2,e.view("b",session).turns().size());
+        }
+    }
     @Test void dedupPrecedesBusyAndRevisionAndNewDraftSurvives() throws Exception {
         try(var e=new SessionTestEnvironment(root)) {
             e.configureAndEnable();e.open("a","a",false);String session=e.create("a");e.text("a",session,"original");
@@ -44,7 +74,8 @@ class SessionCoordinatorTest {
             e.sessions.captureCompletion("capture").toCompletableFuture().get(10,TimeUnit.SECONDS);e.sessions.refreshAll().toCompletableFuture().get();
             assertEquals(a,ticket.targetSessionId());assertEquals(CaptureState.READY,e.view("a",a).draft().captures().getFirst().state());
             assertEquals("edited during capture",e.view("a",a).draft().text());assertTrue(e.view("a",b).draft().captures().isEmpty());
-            e.submit("a",a);e.idle("a",a);var turn=e.view("a",a).turns().getFirst();assertEquals(4,turn.userMessage().parts().size());
+            e.submit("a",a);e.idle("a",a);var turn=e.view("a",a).turns().getFirst();assertEquals(2,turn.userMessage().parts().size());
+            assertEquals(PartKind.SELECTION,((CodePart)turn.userMessage().parts().getLast()).kind());
             assertTrue(e.requests.getFirst().messages().stream().anyMatch(m->m.content().contains("CLASS_STRUCTURE")));
         }
     }

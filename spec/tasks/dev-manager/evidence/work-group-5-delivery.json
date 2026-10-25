@@ -1,0 +1,16 @@
+{
+  "recordedAt": "2026-10-24T21:39:16.7635949+08:00",
+  "status": "DEVELOPMENT_DELIVERY_DONE",
+  "pr": "https://github.com/nilesthump/IJ-Plugin-Java/pull/11",
+  "reviewedHead": "3741ab17bfbd6c1e27df2646a5e922da4100392b",
+  "validation": "success",
+  "validationRun": "40098035235",
+  "scope": "success",
+  "scopeRun": "40098800485",
+  "mergeCommit": "5ec16c494235e7fd6914e642728e03c17b858b79",
+  "fetchedOriginMain": "5ec16c494235e7fd6914e642728e03c17b858b79",
+  "localDevManager": "5ec16c494235e7fd6914e642728e03c17b858b79",
+  "manualBlackbox": "NOT_RUN",
+  "paidModelCalls": 0,
+  "note": "Post-merge local delivery receipt; preserves pre-existing uncommitted architecture and task-record changes."
+}

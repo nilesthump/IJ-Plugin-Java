@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-25",
+  "branch": "dev-manager",
+  "head": "5ec16c494235e7fd6914e642728e03c17b858b79",
+  "status": "LOCAL_VERIFIED_AWAITING_USER_ACCEPTANCE",
+  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:/IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:/IJ-Plugin-Java/tmp/gradle-user-home'",
+  "exitCode": 0,
+  "junit": {
+    "tests": 153,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 28
+  },
+  "ideSmoke": {
+    "status": "PASS",
+    "timestamp": "2026-10-25T08:40:54.106289700Z",
+    "ideBuild": "IU-262.10968.63",
+    "javaRuntime": "25.0.4+1-b508.27",
+    "checks": [
+      "plugin-loaded",
+      "application-project-services",
+      "project-isolation-disposal",
+      "background-work",
+      "Swing-ToolWindow-content-release",
+      "Java-PSI-read",
+      "production-configured-runtime-construction-no-network",
+      "H2-commit-reopen",
+      "JVector-build-query",
+      "SpringAI-local-chat-stream-embedding-no-retry",
+      "corpus-managed-PDF-H2-generation-physical-page",
+      "corpus-local-vector-recovery-fixed-attempt",
+      "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation",
+      "production-session-roots-dedup-typed-code-draft-tabs-restore-hard-delete",
+      "native-directory-identity-same-volume-move-copy-isolation",
+      "registered-PDF-reader-real-three-page-file",
+      "registered-editor-action-port",
+      "production-ToolWindow-controller-draft-save-reopen",
+      "registered-editor-action-Java-PSI-durable-three-part-capture"
+    ],
+    "limitations": [
+      "headless IDE command; no visual interaction",
+      "synthetic loopback HTTP only",
+      "synthetic models/embeddings; no human visual acceptance or real provider validation"
+    ]
+  },
+  "log": "tmp/feedback8-final-validation.log",
+  "artifact": {
+    "path": "build/distributions/IJ-Plugin-Java-0.1.0-dev-feedback8.zip",
+    "bytes": 79849918,
+    "sha256": "87db15f5f97638d4437d6880b9019ffe97da298a76787ab7ff372e992f2432fb"
+  },
+  "reviews": {
+    "spec": 0,
+    "standards": 0
+  },
+  "manual": "NOT_RUN",
+  "realApi": "NOT_RUN_THIS_ROUND",
+  "visualPreview": "evidence/feedback8-ui-preview.png; synthetic Swing layout inspected, not actual user IDE interaction",
+  "limitations": [
+    "headless IDE runtime checks",
+    "actual streaming flicker, IME and caret interaction require user IJ retest",
+    "raw archived response unchanged; displayed references do not upgrade context eligibility"
+  ],
+  "memoryProfile": "Temporary serial low-memory init removed after validation; product build unchanged",
+  "git": "No commit/push/PR"
+}

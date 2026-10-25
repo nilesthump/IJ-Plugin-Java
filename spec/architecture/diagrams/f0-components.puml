@@ -1,0 +1,41 @@
+@startuml
+title F0 组件与职责（实施提案）
+top to bottom direction
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 17
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam ArrowColor #536B85
+skinparam componentStyle rectangle
+skinparam componentBackgroundColor #EDF5FC
+skinparam componentBorderColor #4A78A5
+skinparam packageBackgroundColor #F7FAFD
+skinparam packageBorderColor #B8CBDE
+skinparam nodesep 32
+skinparam ranksep 35
+
+package "IntelliJ IDEA 内嵌插件（纯 Java）" {
+  component "编辑器入口\ndev-a" as Editor
+  component "Tool Window / 资料视图\ndev-c" as UI
+  component "核心编排 · dev-manager\nsession / 草稿 / ReAct\n预算 / 固定证据" as Core #DDF0E8
+  component "固定 PDF 分页\ndev-b" as PDF
+  component "Spring AI\n模型适配" as Model
+  component "课程检索适配" as Retriever
+  component "JVector\n固定代次图" as JV
+  database "H2\n业务数据 / 原始向量" as DB
+  artifact "托管 PDF\n固定导入版本" as Files
+
+  Editor --> Core
+  UI <--> Core
+  Core --> PDF
+  Core --> Model
+  Core --> Retriever
+  Retriever --> JV
+  Retriever --> DB
+  Core --> DB
+  Core --> Files
+}
+cloud "外部生成 / 嵌入 API" as API #FFF3DE
+Model --> API : HTTP
+@enduml

@@ -49,6 +49,27 @@ public final class ChatContracts {
         }
     }
 
+    public static List<MessagePart> visibleParts(String text,List<CodePart> code,java.util.Map<String,Integer> offsets) { return visibleParts(text,code,offsets,code.stream().filter(c->c.kind()==PartKind.SELECTION).map(CodePart::captureId).toList()); }
+    public static List<MessagePart> visibleParts(String text, List<CodePart> code, java.util.Map<String,Integer> offsets,List<String> order) {
+        java.util.ArrayList<MessagePart> result=new java.util.ArrayList<>();
+        var selections=code.stream().filter(c->c.kind()==PartKind.SELECTION)
+                .sorted(java.util.Comparator.<CodePart>comparingInt(c->offsets.getOrDefault(c.captureId(),text.length())).thenComparingInt(c->order.indexOf(c.captureId()))).toList();
+        int cursor=0,index=0;
+        for(var selection:selections) {
+            int offset=Math.max(cursor,Math.min(text.length(),offsets.getOrDefault(selection.captureId(),text.length())));
+            if(offset>cursor)result.add(new TextPart("text-"+(index++),text.substring(cursor,offset)));
+            result.add(selection);cursor=offset;
+        }
+        if(cursor<text.length())result.add(new TextPart("text-"+index,text.substring(cursor)));
+        return List.copyOf(result);
+    }
+
+    public static List<String> orderedCaptures(List<String> available,List<String> requested) {
+        java.util.LinkedHashSet<String> result=new java.util.LinkedHashSet<>();
+        if(requested!=null)for(String id:requested)if(available.contains(id))result.add(id);
+        result.addAll(available);return List.copyOf(result);
+    }
+
     public record MessageView(String messageId, Role role, List<MessagePart> parts, Instant createdAt) {
         public MessageView {
             requireId(messageId, "messageId"); Objects.requireNonNull(role, "role");
@@ -75,10 +96,15 @@ public final class ChatContracts {
     }
 
     public record DraftView(String draftId, long revision, String text, List<DraftCapture> captures,
-                            SaveState saveState) {
+                            SaveState saveState, java.util.Map<String,Integer> captureOffsets,List<String> captureOrder) {
+        public DraftView(String id,long rev,String text,List<DraftCapture> captures,SaveState state,java.util.Map<String,Integer> offsets) { this(id,rev,text,captures,state,offsets,null); }
+        public DraftView(String draftId,long revision,String text,List<DraftCapture> captures,SaveState saveState) { this(draftId,revision,text,captures,saveState,java.util.Map.of()); }
         public DraftView {
             requireId(draftId, "draftId"); requireRevision(revision); Objects.requireNonNull(text, "text");
             captures = List.copyOf(captures); Objects.requireNonNull(saveState, "saveState");
+            captureOrder=orderedCaptures(captures.stream().map(DraftCapture::captureId).toList(),captureOrder);
+            captureOffsets = captureOffsets == null ? java.util.Map.of() : java.util.Map.copyOf(captureOffsets);
+            for (var entry : captureOffsets.entrySet()) if (entry.getValue()<0 || entry.getValue()>text.length()) throw new IllegalArgumentException("Capture offset outside text");
         }
     }
 
@@ -231,8 +257,11 @@ public final class ChatContracts {
     /** Retry local storage coordination only; never resends a model request. */
     public record RecoverSession(EventMeta meta) implements ViewEvent { public RecoverSession { target(meta); } }
 
-    public record UpdateDraftText(EventMeta meta, String draftId, long expectedDraftRevision, String text) implements ViewEvent {
-        public UpdateDraftText { target(meta); requireId(draftId, "draftId"); requireRevision(expectedDraftRevision); Objects.requireNonNull(text, "text"); }
+    public record UpdateDraftText(EventMeta meta, String draftId, long expectedDraftRevision, String text,
+                                  Optional<java.util.Map<String,Integer>> captureOffsets,Optional<List<String>> captureOrder) implements ViewEvent {
+        public UpdateDraftText(EventMeta meta,String id,long rev,String text,Optional<java.util.Map<String,Integer>> offsets) { this(meta,id,rev,text,offsets,Optional.empty()); }
+        public UpdateDraftText(EventMeta meta,String draftId,long revision,String text) { this(meta,draftId,revision,text,Optional.empty()); }
+        public UpdateDraftText { target(meta); requireId(draftId, "draftId"); requireRevision(expectedDraftRevision); Objects.requireNonNull(text, "text"); captureOffsets = Objects.requireNonNull(captureOffsets).map(java.util.Map::copyOf); captureOrder=Objects.requireNonNull(captureOrder).map(List::copyOf); }
     }
     public record SubmitDraft(EventMeta meta, String draftId, long expectedDraftRevision) implements ViewEvent {
         public SubmitDraft { target(meta); requireId(draftId, "draftId"); requireRevision(expectedDraftRevision); }

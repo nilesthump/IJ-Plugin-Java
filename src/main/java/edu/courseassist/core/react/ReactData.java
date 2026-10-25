@@ -16,8 +16,10 @@ public final class ReactData {
             if (runtimeEpoch < 0) throw new IllegalArgumentException("Negative epoch");
         }
     }
-    public record Input(String question, List<CodePart> code) {
-        public Input { Objects.requireNonNull(question); code = List.copyOf(code); }
+    public record Input(String question, List<CodePart> code, Map<String,Integer> captureOffsets,List<String> captureOrder) {
+        public Input(String question,List<CodePart> code,Map<String,Integer> offsets) { this(question,code,offsets,null); }
+        public Input(String question,List<CodePart> code) { this(question,code,Map.of()); }
+        public Input { Objects.requireNonNull(question); code = List.copyOf(code); captureOffsets=captureOffsets==null?Map.of():Map.copyOf(captureOffsets); captureOrder=edu.courseassist.contract.ChatContracts.orderedCaptures(code.stream().filter(c->c.kind()==PartKind.SELECTION).map(CodePart::captureId).toList(),captureOrder); }
     }
     public record Call(String id, String name, String arguments) {
         public Call { Objects.requireNonNull(id); Objects.requireNonNull(name); Objects.requireNonNull(arguments); }

@@ -180,7 +180,7 @@ public final class SessionRepository {
             if(event instanceof SubmitDraft e) {
                 requireDraft(draft,e.draftId(),e.expectedDraftRevision()); var code=SessionData.code(draft);
                 if(draft.text().isBlank()&&code.isEmpty()) throw new Rejected(Rejection.INVALID_INPUT);
-                input=new Input(draft.text(),code); draft=new DraftView(draft.draftId(),draft.revision()+1,"",List.of(),SaveState.SAVED);
+                input=new Input(draft.text(),code,draft.captureOffsets(),draft.captureOrder()); draft=new DraftView(draft.draftId(),draft.revision()+1,"",List.of(),SaveState.SAVED);
             } else if(event instanceof RetryAttempt e) {
                 Turn original=turns.stream().filter(t->t.id().equals(e.turnId())).findFirst().orElseThrow(()->new Rejected(Rejection.INVALID_TARGET));
                 if(original.attempts().isEmpty()||!original.attempts().getLast().attemptId().equals(e.previousAttemptId())) throw new Rejected(Rejection.INVALID_TARGET);
@@ -256,7 +256,7 @@ public final class SessionRepository {
                 State old=state(c,project,s.id()); if(old.lifecycle()!=Lifecycle.LIVE) return null;
                 var captures=old.draft().captures().stream().map(g->g.state()==CaptureState.PENDING?
                         new DraftCapture(g.captureId(),CaptureState.RECAPTURE_REQUIRED,g.source(),Optional.empty(),Optional.of("请重新捕获")):g).toList();
-                DraftView draft=new DraftView(old.draft().draftId(),old.draft().revision()+(captures.equals(old.draft().captures())?0:1),old.draft().text(),captures,SaveState.SAVED);
+                DraftView draft=new DraftView(old.draft().draftId(),old.draft().revision()+(captures.equals(old.draft().captures())?0:1),old.draft().text(),captures,SaveState.SAVED,old.draft().captureOffsets(),old.draft().captureOrder());
                 put(c,new State(old.id(),project,old.title(),old.revision()+1,Lifecycle.LIVE,false,draft,old.turns(),Optional.empty(),List.of())); return null;
             }).join();
         }

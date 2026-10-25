@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-24T23:41:27.6280495+08:00",
+  "status": "DIAGNOSTICS_VERIFIED_USER_CAUSE_UNCONFIRMED",
+  "branch": "dev-manager",
+  "base": "5ec16c4",
+  "prCreated": false,
+  "paidRequests": 0,
+  "validation": "scripts/validate.ps1 -Scope All -IdeSmoke with local IU-262.10968.63 and isolated Gradle cache",
+  "exitCode": 0,
+  "tests": {
+    "suites": 24,
+    "tests": 115.0,
+    "failures": 0.0,
+    "errors": 0.0,
+    "skipped": 0.0
+  },
+  "log": "tmp/enable-final-validation-2.log",
+  "runtime": {
+    "status": "PASS",
+    "timestamp": "2026-10-24T15:40:38.081291Z",
+    "ideBuild": "IU-262.10968.63",
+    "javaRuntime": "25.0.4+1-b508.27",
+    "checks": [
+      "plugin-loaded",
+      "application-project-services",
+      "project-isolation-disposal",
+      "background-work",
+      "Swing-ToolWindow-content-release",
+      "Java-PSI-read",
+      "production-configured-runtime-construction-no-network",
+      "H2-commit-reopen",
+      "JVector-build-query",
+      "SpringAI-local-chat-stream-embedding-no-retry",
+      "corpus-managed-PDF-H2-generation-physical-page",
+      "corpus-local-vector-recovery-fixed-attempt",
+      "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation",
+      "production-session-roots-dedup-typed-code-draft-tabs-restore-hard-delete",
+      "native-directory-identity-same-volume-move-copy-isolation",
+      "registered-PDF-reader-real-three-page-file",
+      "registered-editor-action-port",
+      "production-ToolWindow-controller-draft-save-reopen",
+      "registered-editor-action-Java-PSI-durable-three-part-capture"
+    ],
+    "limitations": [
+      "headless IDE command; no visual interaction",
+      "synthetic loopback HTTP only",
+      "synthetic models/embeddings; no human visual acceptance or real provider validation"
+    ]
+  },
+  "package": {
+    "path": "H:\\IJ-Plugin-Java\\build\\distributions\\IJ-Plugin-Java-0.1.0-dev-enable-diagnostics.zip",
+    "bytes": 79811412,
+    "sha256": "65f2353869a2e5e5bb9333794c518286a5e3621da48005eba47c0d5703a10edb"
+  },
+  "review": {
+    "standardsOpen": 0,
+    "specOpen": 0
+  },
+  "redLogs": [
+    "tmp/enable-diagnostic-red.log",
+    "tmp/enable-linkage-red.log"
+  ],
+  "userEnableResult": "NOT_RUN with new diagnostics package"
+}
