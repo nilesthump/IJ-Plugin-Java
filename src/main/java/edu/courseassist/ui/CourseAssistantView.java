@@ -4,18 +4,12 @@ import com.intellij.openapi.project.Project;
 import edu.courseassist.contract.ApplicationController;
 import edu.courseassist.contract.ApplicationContracts.ApplicationViewState;
 import edu.courseassist.contract.ChatContracts.AttemptView;
-import edu.courseassist.contract.ChatContracts.BranchView;
-import edu.courseassist.contract.ChatContracts.CaptureState;
-import edu.courseassist.contract.ChatContracts.Citation;
-import edu.courseassist.contract.ChatContracts.CodePart;
 import edu.courseassist.contract.ChatContracts.CloseSessionTab;
 import edu.courseassist.contract.ChatContracts.CreateSession;
 import edu.courseassist.contract.ChatContracts.DeleteSession;
 import edu.courseassist.contract.ChatContracts.DraftCapture;
 import edu.courseassist.contract.ChatContracts.EventMeta;
 import edu.courseassist.contract.ChatContracts.ManualCompact;
-import edu.courseassist.contract.ChatContracts.ModelStepView;
-import edu.courseassist.contract.ChatContracts.MessagePart;
 import edu.courseassist.contract.ChatContracts.OpenSessionTab;
 import edu.courseassist.contract.ChatContracts.OpenCitation;
 import edu.courseassist.contract.ChatContracts.ProjectChatViewState;
@@ -37,10 +31,6 @@ import edu.courseassist.contract.SessionController;
 import edu.courseassist.contract.CredentialUpdateSink;
 import edu.courseassist.contract.ViewSubscription;
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
-import javax.swing.BoxLayout;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,13 +41,9 @@ import javax.swing.JButton;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JEditorPane;
-import javax.swing.JSplitPane;
-import javax.swing.JToggleButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -65,44 +51,24 @@ import javax.swing.event.DocumentListener;
 
 /** A first state-driven view for the public project and application controllers. */
 public final class CourseAssistantView implements AutoCloseable {
+    private static final com.intellij.openapi.util.Key<Map<String, String>> RECOVERY = com.intellij.openapi.util.Key.create("courseassist.draftRecovery");
+    private final Map<String, String> recovery;
     private final String projectInstanceId;
     private final SessionController sessions;
     private final JPanel root = new JPanel(new BorderLayout(8, 8));
-    private final JTabbedPane tabs = new JTabbedPane();
-    private final DefaultListModel<SessionViewState> sessionModel = new DefaultListModel<>();
-    private final JList<SessionViewState> sessionList = new JList<>(sessionModel);
-    private final DefaultListModel<DraftCapture> captureModel = new DefaultListModel<>();
-    private final JList<DraftCapture> captureList = new JList<>(captureModel);
-    private final JTextArea draft = area("draftPreview");
-    private final JTextArea capture = area("capturePreview");
-    private final JTextArea historyCode = area("historyCode");
-    private final JTextArea historyQuestions = area("historyQuestions");
-    private final JPanel highlightedCaptures = new JPanel();
-    private final JPanel highlightedHistory = new JPanel();
-    private final IdeCodeViewer codeViewer;
-    private final IdeCodeViewer historyCodeViewer;
-    private final JTextArea answer = area("answerPreview");
-    private final JButton copyAnswerSource = button("copyAnswerSource", "复制最近回答原文");
-    private final JEditorPane markdown = new JEditorPane();
-    private final MarkdownRenderQueue markdownQueue;
-    private final JPanel highlightedMarkdown = new JPanel();
-    private final IdeCodeViewer markdownCodeViewer;
-    private final JTextArea process = area("processPreview");
-    private final DefaultListModel<Citation> citationModel = new DefaultListModel<>();
-    private final JList<Citation> citations = new JList<>(citationModel);
-    private final JButton openCitation = button("openCitation", "打开引用页");
-    private final JToggleButton processToggle = new JToggleButton("过程与思考 ▼", true);
-    private final JPanel processBody = new JPanel(new BorderLayout());
+    private final javax.swing.Timer autosave = new javax.swing.Timer(450, event -> saveDraft());
+    private final JButton history = button("historySessions", "◷");
+    private final JButton search = button("searchSessions", "⌕");
+    private final JButton settings = button("settings", "⚙");
+    private final ChatTimeline timeline;
+    private com.intellij.openapi.ui.popup.JBPopup popup;
+    private final MixedDraftEditor draft = new MixedDraftEditor();
+    private String shownDraftSession;
     private final ApplicationWorkspace applicationWorkspace;
-    private final JButton stop = new JButton("停止当前回答");
     private final JButton create = button("createSession", "新会话");
-    private final JButton open = button("openSession", "打开");
     private final JButton closeTab = button("closeTab", "关闭标签");
     private final JButton delete = button("deleteSession", "删除会话");
-    private final JButton saveDraft = button("saveDraft", "保存草稿");
     private final JButton submit = button("submitDraft", "发送");
-    private final JButton removeCapture = button("removeCapture", "移除代码组");
-    private final JButton retry = button("retryAttempt", "重试");
     private final JButton compact = button("compactSession", "整理历史");
     private final JButton recover = button("recoverSession", "恢复未保存");
     private final JLabel status = new JLabel("等待状态");
@@ -113,13 +79,9 @@ public final class CourseAssistantView implements AutoCloseable {
     private ProjectChatViewState projectState;
     private long applicationRevision = -1;
     private List<Notice> applicationNotices = List.of();
-    private boolean updatingTabs;
     private boolean updatingDraft;
-    private long renderEpoch;
-    private String captureRenderKey;
-    private String historyRenderKey;
     private volatile boolean closed;
-    private String latestAnswerSource;
+    private boolean closing;
 
     public CourseAssistantView(String projectInstanceId, SessionController sessions,
                                ApplicationController application) {
@@ -134,58 +96,37 @@ public final class CourseAssistantView implements AutoCloseable {
     public CourseAssistantView(String projectInstanceId, SessionController sessions,
                                ApplicationController application, CredentialUpdateSink credentials,
                                Project project) {
+        this(projectInstanceId, sessions, application, credentials, project, recoveryFor(project, sessions, projectInstanceId));
+    }
+
+    CourseAssistantView(String projectInstanceId, SessionController sessions, ApplicationController application,
+                        CredentialUpdateSink credentials, Project project, Map<String, String> recovery) {
+        this.recovery = recovery;
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("CourseAssistantView must be created on EDT");
         }
         this.projectInstanceId = Objects.requireNonNull(projectInstanceId, "projectInstanceId");
         this.sessions = Objects.requireNonNull(sessions, "sessions");
         Objects.requireNonNull(application, "application");
-        codeViewer = project == null ? null : new IdeCodeViewer(project);
-        historyCodeViewer = project == null ? null : new IdeCodeViewer(project);
-        markdownCodeViewer = project == null ? null : new IdeCodeViewer(project);
-        markdownQueue = new MarkdownRenderQueue(failure ->
-                status.setText("Markdown 渲染失败：" + failure.getClass().getSimpleName()));
+        timeline = new ChatTimeline(project, (id, citation) -> dispatch(new OpenCitation(meta(id), citation)));
+        autosave.setRepeats(false);
         applicationWorkspace = new ApplicationWorkspace(application, credentials, message -> {
             if (!closed) status.setText(message);
         }, () -> !closed);
 
-        tabs.setName("sessionTabs");
-        sessionList.setName("sessionList");
-        sessionList.setCellRenderer((list, value, index, selected, focused) -> {
-            var label = (JLabel) new javax.swing.DefaultListCellRenderer()
-                    .getListCellRendererComponent(list, value, index, selected, focused);
-            if (value != null) label.setText("会话：" + value.title() + " · " + value.lifecycle());
-            return label;
-        });
-        sessionList.addListSelectionListener(event -> updateActions());
-        captureList.setName("captureList");
-        captureList.setCellRenderer((list, value, index, selected, focused) -> {
-            var label = (JLabel) new javax.swing.DefaultListCellRenderer()
-                    .getListCellRendererComponent(list, value, index, selected, focused);
-            if (value != null) label.setText("捕获：" + value.captureId() + " · " + value.state());
-            return label;
-        });
-        captureList.addListSelectionListener(event -> updateActions());
         draft.setEditable(true);
         draft.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent event) { draftChanged(); }
             @Override public void removeUpdate(DocumentEvent event) { draftChanged(); }
             @Override public void changedUpdate(DocumentEvent event) { draftChanged(); }
         });
-        stop.setName("stopOperation");
-        stop.setEnabled(false);
-        stop.addActionListener(event -> stopActiveOperation());
         create.addActionListener(event -> createSession());
-        open.addActionListener(event -> openSelectedSession());
         closeTab.addActionListener(event -> {
             String id = selectedSessionId();
             if (id != null) dispatch(new CloseSessionTab(meta(id)));
         });
         delete.addActionListener(event -> deleteSelectedSession());
-        saveDraft.addActionListener(event -> saveDraft());
-        submit.addActionListener(event -> submitDraft());
-        removeCapture.addActionListener(event -> removeCapture());
-        retry.addActionListener(event -> retryLatest());
+        submit.addActionListener(event -> primaryAction());
         compact.addActionListener(event -> {
             String id = selectedSessionId();
             if (id != null) dispatch(new ManualCompact(meta(id)));
@@ -194,105 +135,47 @@ public final class CourseAssistantView implements AutoCloseable {
             String id = selectedSessionId();
             if (id != null) dispatch(new RecoverSession(meta(id)));
         });
-        tabs.addChangeListener(event -> {
-            if (updatingTabs || closed || projectState == null) return;
-            String selected = selectedSessionId();
-            if (selected == null) return;
-            showSession(selected);
-            if (!projectState.activeSessionId().filter(selected::equals).isPresent()) {
-                sessions.dispatch(new edu.courseassist.contract.ChatContracts.SelectSession(meta(selected)));
-            }
-        });
-
-        JPanel compose = new JPanel(new GridLayout(2, 1, 0, 8));
-        compose.add(section("草稿文字", draft));
-        JPanel code = new JPanel(new BorderLayout(4, 4));
-        code.add(new JScrollPane(captureList), BorderLayout.NORTH);
-        JTabbedPane codeTabs = new JTabbedPane();
-        if (codeViewer != null) {
-            highlightedCaptures.setLayout(new BoxLayout(highlightedCaptures, BoxLayout.Y_AXIS));
-            codeTabs.addTab("IDEA 高亮", new JScrollPane(highlightedCaptures));
+        JPanel top = new JPanel(new BorderLayout());
+        top.setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 10, 6, 8));
+        top.add(new JLabel("Course Assistant"), BorderLayout.WEST);
+        JPanel toolbar = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 4, 0));
+        create.setText("＋"); create.setToolTipText("新建会话");
+        history.setToolTipText("历史会话"); search.setToolTipText("搜索会话"); settings.setToolTipText("设置");
+        int iconNumber = 0;
+        for (JButton action : List.of(create, history, search, settings)) {
+            action.setText(""); action.setIcon(new ToolbarIcon(iconNumber++));
+            action.getAccessibleContext().setAccessibleName(action.getToolTipText());
+            action.setMargin(new java.awt.Insets(2, 2, 2, 2));
+            action.setPreferredSize(new java.awt.Dimension(34, 30)); toolbar.add(action);
         }
-        codeTabs.addTab("原始快照", section("只读代码组", capture));
-        if (historyCodeViewer != null) {
-            highlightedHistory.setLayout(new BoxLayout(highlightedHistory, BoxLayout.Y_AXIS));
-            codeTabs.addTab("历史代码高亮", new JScrollPane(highlightedHistory));
-        }
-        codeTabs.addTab("历史代码原文", section("已提交代码", historyCode));
-        code.add(codeTabs, BorderLayout.CENTER);
-        code.add(removeCapture, BorderLayout.SOUTH);
-        compose.add(code);
-        JPanel reply = new JPanel(new GridLayout(2, 1, 0, 8));
-        markdown.setName("markdownPreview");
-        markdown.setContentType("text/html");
-        markdown.setEditable(false);
-        JTabbedPane answerTabs = new JTabbedPane();
-        if (markdownCodeViewer == null) {
-            answerTabs.addTab("渲染", new JScrollPane(markdown));
-        } else {
-            highlightedMarkdown.setLayout(new BoxLayout(highlightedMarkdown, BoxLayout.Y_AXIS));
-            JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                    new JScrollPane(markdown), new JScrollPane(highlightedMarkdown));
-            split.setResizeWeight(0.7);
-            answerTabs.addTab("渲染与 IDEA 高亮", split);
-        }
-        answerTabs.addTab("完整回答档案", new JScrollPane(answer));
-        answerTabs.addTab("用户消息", new JScrollPane(historyQuestions));
-        JPanel answerSection = new JPanel(new BorderLayout());
-        answerSection.add(new JLabel("回答正文"), BorderLayout.NORTH);
-        answerSection.add(answerTabs, BorderLayout.CENTER);
-        copyAnswerSource.addActionListener(event -> {
-            if (latestAnswerSource != null) {
-                Toolkit.getDefaultToolkit().getSystemClipboard()
-                        .setContents(new StringSelection(latestAnswerSource), null);
-            }
-        });
-        answerSection.add(copyAnswerSource, BorderLayout.SOUTH);
-        reply.add(answerSection);
-        process.setFont(process.getFont().deriveFont(Math.max(10f, process.getFont().getSize2D() - 2f)));
-        citations.setName("citationList");
-        citations.setCellRenderer((list, value, index, selected, focused) -> {
-            var label = (JLabel) new javax.swing.DefaultListCellRenderer()
-                    .getListCellRendererComponent(list, value, index, selected, focused);
-            if (value != null) label.setText("资料：" + value.materialName() + " · PDF 第"
-                    + value.firstPhysicalPage() + (value.lastPhysicalPage() == value.firstPhysicalPage()
-                    ? "" : "-" + value.lastPhysicalPage()) + "页");
-            return label;
-        });
-        citations.addListSelectionListener(event -> updateActions());
-        openCitation.addActionListener(event -> openSelectedCitation());
-        processBody.add(new JScrollPane(process), BorderLayout.CENTER);
-        JPanel evidence = new JPanel(new BorderLayout());
-        evidence.add(new JScrollPane(citations), BorderLayout.CENTER);
-        evidence.add(openCitation, BorderLayout.SOUTH);
-        processBody.add(evidence, BorderLayout.EAST);
-        processToggle.addActionListener(event -> processBody.setVisible(processToggle.isSelected()));
-        JPanel processSection = new JPanel(new BorderLayout());
-        processSection.add(processToggle, BorderLayout.NORTH);
-        processSection.add(processBody, BorderLayout.CENTER);
-        reply.add(processSection);
-        JTabbedPane sections = new JTabbedPane();
-        sections.setName("workspaceSections");
-        sections.addTab("草稿与代码", compose);
-        sections.addTab("聊天回答", reply);
-        sections.addTab("全部会话", section("会话列表", sessionList));
-        sections.addTab("资料与配置", applicationWorkspace.component());
-
-        JPanel top = new JPanel(new BorderLayout(4, 4));
-        top.add(tabs, BorderLayout.NORTH);
-        JPanel toolbar = new JPanel(new GridLayout(0, 3, 4, 4));
-        for (JButton button : List.of(create, open, closeTab, delete, saveDraft, submit, retry, compact, recover)) {
-            toolbar.add(button);
-        }
-        top.add(toolbar, BorderLayout.CENTER);
+        history.addActionListener(event -> showSessions(false));
+        search.addActionListener(event -> showSessions(true));
+        settings.addActionListener(event -> showSettings());
+        top.add(toolbar, BorderLayout.EAST);
         root.add(top, BorderLayout.NORTH);
-        root.add(sections, BorderLayout.CENTER);
-        JPanel footer = new JPanel(new BorderLayout());
-        footer.add(status, BorderLayout.CENTER);
-        footer.add(stop, BorderLayout.EAST);
-        notices.setRows(3);
-        footer.add(new JScrollPane(notices), BorderLayout.SOUTH);
-        root.add(footer, BorderLayout.SOUTH);
+
+        JPanel composer = new JPanel(new BorderLayout(6, 6));
+        composer.setName("composer");
+        composer.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getColor("Separator.foreground")),
+                javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8)));
+        JScrollPane draftScroll = new JScrollPane(draft);
+        draftScroll.setBorder(null); draft.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        draft.setOpaque(false); draftScroll.getViewport().setOpaque(false); draftScroll.setOpaque(false);
+        composer.add(draftScroll, BorderLayout.CENTER);
+        JPanel bottom = new JPanel(new BorderLayout());
+        bottom.add(status, BorderLayout.CENTER); bottom.add(submit, BorderLayout.EAST);
+        composer.add(bottom, BorderLayout.SOUTH);
+        JPanel footer = new JPanel(new BorderLayout(0, 4));
+        notices.setRows(2); notices.setVisible(false);
+        footer.add(notices, BorderLayout.NORTH); footer.add(composer, BorderLayout.CENTER);
+        footer.setMinimumSize(new java.awt.Dimension(100, 150));
+        footer.setPreferredSize(new java.awt.Dimension(400, 230));
+        timeline.component().setMinimumSize(new java.awt.Dimension(100, 100));
+        javax.swing.JSplitPane split = new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT, timeline.component(), footer);
+        split.setName("chatDraftSplit"); split.setResizeWeight(1.0); split.setContinuousLayout(true);
+        split.setDividerSize(8); split.setBorder(null);
+        root.add(split, BorderLayout.CENTER);
         updateActions();
 
         sessionSubscription = sessions.observe(projectInstanceId, this::receiveProject);
@@ -306,20 +189,13 @@ public final class CourseAssistantView implements AutoCloseable {
         onEdt(() -> {
             if (closed || projectState != null && next.revision() < projectState.revision()) return;
             projectState = next;
+            recovery.keySet().removeIf(key -> next.sessions().stream().noneMatch(session ->
+                    session.lifecycle() == edu.courseassist.contract.ChatContracts.Lifecycle.LIVE && key.equals(recoveryKey(session.sessionId(), session.draft().draftId()))));
+            localDrafts.keySet().removeIf(id -> findSession(next, id) == null);
+            next.sessions().forEach(this::reconcileDraft);
+            if (closing) { finishCloseIfSettled(); return; }
             renderNotices();
             localDrafts.keySet().removeIf(id -> findSession(next, id) == null);
-            String selectedInList = sessionList.getSelectedValue() == null ? null : sessionList.getSelectedValue().sessionId();
-            sessionModel.clear();
-            next.sessions().forEach(sessionModel::addElement);
-            if (selectedInList != null) {
-                for (int i = 0; i < sessionModel.size(); i++) {
-                    if (selectedInList.equals(sessionModel.get(i).sessionId())) {
-                        sessionList.setSelectedIndex(i);
-                        break;
-                    }
-                }
-            }
-            updateTabs(next);
             String selected = selectedSessionId();
             if (selected != null) showSession(selected);
             else clearSession();
@@ -336,205 +212,54 @@ public final class CourseAssistantView implements AutoCloseable {
         });
     }
 
-    private void updateTabs(ProjectChatViewState state) {
-        updatingTabs = true;
-        try {
-            String previouslySelected = selectedSessionId();
-            tabs.removeAll();
-            for (String id : state.openSessionIds()) {
-                SessionViewState session = findSession(state, id);
-                if (session != null) tabs.addTab("会话：" + session.title(), tabIdentity(id));
+    private LocalDraft reconcileDraft(SessionViewState session) {
+        LocalDraft edit = localDrafts.get(session.sessionId());
+        if (edit == null || !edit.draftId.equals(session.draft().draftId())) {
+            edit = new LocalDraft(session.draft().draftId(), session.draft().revision(), session.draft().text(), session.draft().captureOffsets(),session.draft().captureOrder());
+            String restored = recovery.get(recoveryKey(session.sessionId(), session.draft().draftId()));
+            if (restored != null) { restoreDraft(edit,restored); edit.dirty = !edit.text.equals(session.draft().text()) || (!sameLayout(edit.offsets,session.draft().captureOffsets(),session.draft().captures(),edit.text.length()) || !edit.order.equals(session.draft().captureOrder())); }
+            localDrafts.put(session.sessionId(), edit);
+        } else if (session.draft().revision() > edit.baseRevision) {
+            edit.baseRevision = session.draft().revision();
+            if (!edit.dirty || edit.text.equals(session.draft().text()) && sameLayout(edit.offsets,session.draft().captureOffsets(),session.draft().captures(),edit.text.length()) && edit.order.equals(session.draft().captureOrder())) {
+                edit.text = session.draft().text(); edit.offsets = new HashMap<>(session.draft().captureOffsets()); edit.order=session.draft().captureOrder();
+                edit.dirty = false;
             }
-            String desired = state.activeSessionId().orElse(previouslySelected);
-            for (int i = 0; i < tabs.getTabCount(); i++) {
-                if (Objects.equals(desired, tabs.getComponentAt(i).getName())) {
-                    tabs.setSelectedIndex(i);
-                    break;
-                }
-            }
-        } finally {
-            updatingTabs = false;
         }
+        if (!edit.dirty) recovery.remove(recoveryKey(session.sessionId(), edit.draftId), rememberDraft(edit));
+        return edit;
     }
 
     private void showSession(String id) {
         SessionViewState session = findSession(projectState, id);
         if (session == null) { clearSession(); return; }
-        LocalDraft edit = localDrafts.get(id);
-        if (edit == null || !edit.draftId.equals(session.draft().draftId())) {
-            edit = new LocalDraft(session.draft().draftId(), session.draft().revision(), session.draft().text());
-            localDrafts.put(id, edit);
-        } else if (session.draft().revision() > edit.baseRevision) {
-            edit.baseRevision = session.draft().revision();
-            if (!edit.dirty || edit.text.equals(session.draft().text())) {
-                edit.text = session.draft().text();
-                edit.dirty = false;
-            }
-            edit.pending = false;
-        }
+        LocalDraft edit = reconcileDraft(session);
         updatingDraft = true;
         try {
-            if (!draft.getText().equals(edit.text)) draft.setText(edit.text);
+            String previousRecovery=rememberDraft(edit);
+            Map<String,Integer> beforeLayout=Map.copyOf(edit.offsets); var beforeOrder=edit.order;
+            edit.order=draft.incomingOrder(session.draft().captures(),edit.order,id.equals(shownDraftSession));
+            edit.offsets.keySet().removeIf(capture->session.draft().captures().stream().noneMatch(c->c.captureId().equals(capture)));
+            int insertion=id.equals(shownDraftSession)?Math.min(edit.text.length(),draft.textCaret()):edit.text.length();
+            for(var capture:session.draft().captures()) edit.offsets.putIfAbsent(capture.captureId(),insertion);
+            draft.render(edit.text,session.draft().captures(),edit.offsets,edit.order,capture -> {
+                var latest=findSession(projectState,id);
+                if(latest!=null)dispatch(new RemoveDraftCapture(meta(id),latest.draft().draftId(),latest.draft().revision(),capture));
+            });
+            if(!id.equals(shownDraftSession)) draft.setCaretPosition(draft.getDocument().getLength());
+            shownDraftSession=id;
+            edit.dirty=!edit.text.equals(session.draft().text()) || (!sameLayout(edit.offsets,session.draft().captureOffsets(),session.draft().captures(),edit.text.length()) || !edit.order.equals(session.draft().captureOrder()));
+            if(edit.dirty){recovery.put(recoveryKey(id,edit.draftId),rememberDraft(edit));if(!beforeLayout.equals(edit.offsets)||!beforeOrder.equals(edit.order))autosave.restart();}
+            else recovery.remove(recoveryKey(id,edit.draftId),previousRecovery);
         } finally {
             updatingDraft = false;
         }
         draft.setEditable(!edit.submitting && session.allowedActions().contains(SessionAction.EDIT_DRAFT));
-        StringBuilder codes = new StringBuilder();
-        String newCaptureKey = id + ":" + session.draft().draftId() + ":" + session.draft().captures().hashCode();
-        boolean rebuildHighlights = codeViewer != null && !newCaptureKey.equals(captureRenderKey);
-        if (rebuildHighlights) {
-            highlightedCaptures.removeAll();
-            codeViewer.clear();
-        }
-        String selectedCapture = captureList.getSelectedValue() == null ? null : captureList.getSelectedValue().captureId();
-        captureModel.clear();
-        for (DraftCapture item : session.draft().captures()) {
-            captureModel.addElement(item);
-            codes.append("捕获 ").append(item.captureId()).append(" · ").append(item.state()).append('\n');
-            if (item.state() == CaptureState.READY) {
-                item.captured().ifPresent(group -> {
-                    codes.append("选区:\n").append(group.start().selectedText()).append("\n\n");
-                    if (rebuildHighlights) addHighlighted("选区", group.start().selectedText());
-                    group.automaticContexts().forEach(context -> {
-                        codes.append(context.kind()).append(" · ").append(context.status()).append(":\n");
-                        context.text().ifPresent(codes::append);
-                        codes.append("\n\n");
-                        if (rebuildHighlights) context.text().ifPresent(value ->
-                                addHighlighted(context.kind().toString(), value));
-                    });
-                });
-            } else item.statusMessage().ifPresent(message -> codes.append(message).append('\n'));
-        }
-        if (rebuildHighlights) {
-            captureRenderKey = newCaptureKey;
-            highlightedCaptures.revalidate();
-            highlightedCaptures.repaint();
-        }
-        if (selectedCapture != null) {
-            for (int i = 0; i < captureModel.size(); i++) {
-                if (selectedCapture.equals(captureModel.get(i).captureId())) {
-                    captureList.setSelectedIndex(i);
-                    break;
-                }
-            }
-        }
-        capture.setText(codes.toString());
 
-        StringBuilder bodies = new StringBuilder();
-        StringBuilder steps = new StringBuilder();
-        StringBuilder questions = new StringBuilder();
-        StringBuilder committedCode = new StringBuilder();
-        latestAnswerSource = null;
-        String newHistoryKey = id + ":" + session.turns().stream()
-                .map(turn -> turn.userMessage().messageId()).toList().hashCode();
-        boolean rebuildHistory = historyCodeViewer != null && !newHistoryKey.equals(historyRenderKey);
-        if (rebuildHistory) {
-            highlightedHistory.removeAll();
-            historyCodeViewer.clear();
-        }
-        String selectedEvidence = citations.getSelectedValue() == null ? null : citations.getSelectedValue().evidenceId();
-        citationModel.clear();
-        for (TurnView turn : session.turns()) {
-            questions.append("提问 ").append(turn.turnId()).append(":\n");
-            for (MessagePart part : turn.userMessage().parts()) {
-                if (part instanceof TextPart textPart) {
-                    questions.append(textPart.text()).append("\n\n");
-                } else if (part instanceof CodePart codePart) {
-                    String label = codePart.kind() + " · " + codePart.source().fileRef();
-                    committedCode.append(label).append("\n").append(codePart.text()).append("\n\n");
-                    if (rebuildHistory) {
-                        highlightedHistory.add(new JLabel("代码：" + label));
-                        highlightedHistory.add(historyCodeViewer.create(codePart.text(),
-                                codePart.source().languageId()));
-                    }
-                }
-            }
-            for (AttemptView attempt : turn.attempts()) {
-                bodies.append("尝试 ").append(attempt.attemptId()).append(" · ").append(attempt.status()).append('\n');
-                for (BranchView branch : attempt.branches()) {
-                    bodies.append("分支 ").append(branch.branchId()).append(" · ").append(branch.status())
-                            .append(" · ").append(branch.basis().mode()).append(" / ")
-                            .append(branch.basis().retrievalStatus()).append('\n')
-                            .append(branch.basis().explanation()).append('\n');
-                    if (attempt.effectiveBranchId().filter(branch.branchId()::equals).isPresent()
-                            && branch.status() != edu.courseassist.contract.ChatContracts.BranchStatus.INVALIDATED) {
-                        branch.basis().citations().forEach(citationModel::addElement);
-                    }
-                    Optional<ModelStepView> displayed = displayedStep(attempt, branch);
-                    displayed.ifPresent(step -> bodies.append(step.status()).append(":\n")
-                            .append(step.markdown()).append("\n\n"));
-                    if (displayed.isPresent()) latestAnswerSource = displayed.orElseThrow().markdown();
-                    for (ModelStepView step : branch.steps()) {
-                        steps.append(step.stepId()).append(" · ").append(step.status()).append('\n');
-                        if (isToolStep(step) && !step.markdown().isEmpty()) {
-                            steps.append(step.markdown()).append('\n');
-                        }
-                        step.thinkingText().ifPresent(thinking -> steps.append(thinking).append('\n'));
-                        step.tools().forEach(tool -> {
-                            steps.append(tool.name()).append(" · ").append(tool.status()).append('\n');
-                            tool.observationText().ifPresent(observation -> steps.append(observation).append('\n'));
-                        });
-                    }
-                }
-            }
-        }
-        historyQuestions.setText(questions.toString());
-        historyCode.setText(committedCode.toString());
-        if (rebuildHistory) {
-            historyRenderKey = newHistoryKey;
-            highlightedHistory.revalidate();
-            highlightedHistory.repaint();
-        }
-        if (selectedEvidence != null) {
-            for (int i = 0; i < citationModel.size(); i++) {
-                if (selectedEvidence.equals(citationModel.get(i).evidenceId())) {
-                    citations.setSelectedIndex(i);
-                    break;
-                }
-            }
-        }
-        answer.setText(bodies.toString());
-        copyAnswerSource.setEnabled(latestAnswerSource != null);
-        markdownQueue.submit(bodies.toString(), markdownCodeViewer != null, ++renderEpoch, rendered -> {
-            markdown.setText(rendered.html());
-            if (markdownCodeViewer != null) {
-                highlightedMarkdown.removeAll();
-                markdownCodeViewer.clear();
-                int number = 1;
-                for (SafeMarkdown.CodeBlock block : rendered.codeBlocks()) {
-                    highlightedMarkdown.add(new JLabel("代码块 " + number++));
-                    highlightedMarkdown.add(markdownCodeViewer.create(block.source(), block.language()));
-                }
-                highlightedMarkdown.revalidate();
-                highlightedMarkdown.repaint();
-            }
-        });
-        process.setText(steps.toString());
+        timeline.show(session);
         status.setText("会话：" + session.title() + " · " + session.lifecycle()
-                + (session.writesBlocked() ? " · 写入受阻" : ""));
-        stop.setEnabled(session.activeOperation().isPresent()
-                && session.allowedActions().contains(edu.courseassist.contract.ChatContracts.SessionAction.STOP));
+                + (session.writesBlocked() ? " · 写入受阻" : "") + (edit.dirty ? " · 未保存草稿" : ""));
         updateActions();
-    }
-
-    private static Optional<ModelStepView> displayedStep(AttemptView attempt, BranchView branch) {
-        Optional<ModelStepView> finalStep = attempt.finalStepId().flatMap(id ->
-                branch.steps().stream().filter(step -> id.equals(step.stepId())).findFirst());
-        if (finalStep.isPresent()) return finalStep;
-        List<ModelStepView> steps = branch.steps();
-        if (steps.isEmpty() || isToolStep(steps.get(steps.size() - 1))) return Optional.empty();
-        return Optional.of(steps.get(steps.size() - 1));
-    }
-
-    private static boolean isToolStep(ModelStepView step) {
-        return step.status() == edu.courseassist.contract.ChatContracts.StepStatus.TOOL_CALLS_READY
-                || step.status() == edu.courseassist.contract.ChatContracts.StepStatus.TOOLS_RUNNING
-                || step.finishReason().filter("tool_calls"::equals).isPresent();
-    }
-
-    private void addHighlighted(String label, String source) {
-        highlightedCaptures.add(new JLabel(label));
-        highlightedCaptures.add(codeViewer.create(source, "java"));
     }
 
     private void stopActiveOperation() {
@@ -548,17 +273,9 @@ public final class CourseAssistantView implements AutoCloseable {
 
     private void createSession() {
         if (closed || projectState == null) return;
-        String title = JOptionPane.showInputDialog(root, "会话名称", "新会话");
-        if (title == null || title.isBlank()) return;
+        String title = "新会话 " + (projectState.sessions().size() + 1);
         dispatch(new CreateSession(new EventMeta(UUID.randomUUID().toString(), projectInstanceId,
                 Optional.empty()), title.strip()));
-    }
-
-    private void openSelectedSession() {
-        if (closed || projectState == null || sessionList.getSelectedValue() == null) return;
-        String id = sessionList.getSelectedValue().sessionId();
-        if (projectState.openSessionIds().contains(id)) dispatch(new edu.courseassist.contract.ChatContracts.SelectSession(meta(id)));
-        else dispatch(new OpenSessionTab(meta(id)));
     }
 
     private void deleteSelectedSession() {
@@ -583,34 +300,152 @@ public final class CourseAssistantView implements AutoCloseable {
         LocalDraft edit = localDrafts.get(id);
         SessionViewState session = findSession(projectState, id);
         if (edit == null || session == null) return;
-        edit.text = draft.getText();
-        edit.dirty = !edit.text.equals(session.draft().text());
+        String previousText = rememberDraft(edit);
+        edit.text = draft.getText(); edit.offsets = new HashMap<>(draft.captureOffsets()); edit.order=draft.captureOrder();
+        edit.dirty = !edit.text.equals(session.draft().text()) || (!sameLayout(edit.offsets,session.draft().captureOffsets(),session.draft().captures(),edit.text.length()) || !edit.order.equals(session.draft().captureOrder()));
+        if (edit.dirty) recovery.put(recoveryKey(id, edit.draftId), rememberDraft(edit));
+        else recovery.remove(recoveryKey(id, edit.draftId), previousText);
+        autosave.restart();
         updateActions();
     }
 
     private void saveDraft() {
-        String id = selectedSessionId();
+        for (String id : List.copyOf(localDrafts.keySet())) saveDraft(id);
+    }
+
+    private void saveDraft(String id) {
         if (id == null || projectState == null) return;
         SessionViewState session = findSession(projectState, id);
         LocalDraft edit = localDrafts.get(id);
-        if (session == null || edit == null || !edit.dirty || edit.pending
+        if (session == null || edit == null || !edit.dirty || edit.pending || edit.submitting
                 || !session.allowedActions().contains(SessionAction.EDIT_DRAFT)) return;
         edit.pending = true;
         updateActions();
         UpdateDraftText command = new UpdateDraftText(meta(id), edit.draftId,
-                session.draft().revision(), edit.text);
+                session.draft().revision(), edit.text, Optional.of(Map.copyOf(edit.offsets)),Optional.of(edit.order));
         sessions.dispatch(command).whenComplete((result, failure) -> onEdt(() -> {
             if (closed) return;
             LocalDraft current = localDrafts.get(id);
             if (current != edit) return;
+            edit.pending = false;
             if (failure != null || result.outcome() == Outcome.REJECTED) {
                 edit.pending = false;
                 showFeedback(result, failure);
             } else {
                 status.setText("草稿已接收，等待新状态确认");
             }
+            if (failure == null && result.outcome() == Outcome.APPLIED && edit.dirty && !edit.pending) {
+                if (closing) saveDraft(id); else autosave.restart();
+            }
+            if (closing) finishCloseIfSettled();
             updateActions();
         }));
+    }
+
+    private void primaryAction() {
+        String id = selectedSessionId();
+        SessionViewState session = id == null ? null : findSession(projectState, id);
+        if (session == null) return;
+        if (session.activeOperation().isPresent()) { stopActiveOperation(); return; }
+        LocalDraft edit = localDrafts.get(id);
+        if (edit == null || edit.pending || edit.submitting) return;
+        if (edit.text.isBlank() && session.draft().captures().isEmpty()) { retryLatest(); return; }
+        if (!session.allowedActions().contains(SessionAction.SUBMIT)) return;
+        autosave.stop();
+        if (!edit.dirty) { submitDraft(); return; }
+        edit.submitting = true;
+        String exact = edit.text;
+        draft.setEditable(false); updateActions();
+        sessions.dispatch(new UpdateDraftText(meta(id), edit.draftId, session.draft().revision(), exact, Optional.of(Map.copyOf(edit.offsets)),Optional.of(edit.order)))
+            .whenComplete((saved, failure) -> onEdt(() -> {
+                if (closed || localDrafts.get(id) != edit) return;
+                SessionViewState current = findSession(projectState, id);
+                if (failure != null || saved.outcome() == Outcome.REJECTED || current == null ||
+                        !current.draft().draftId().equals(edit.draftId) || !current.draft().text().equals(exact)) {
+                    edit.submitting = false; showFeedback(saved, failure);
+                    if (closing) { finishCloseIfSettled(); return; }
+                    if (id.equals(selectedSessionId())) showSession(id);
+                    return;
+                }
+                // Preserve original session identity even if the user opened another history item.
+                sessions.dispatch(new SubmitDraft(meta(id), edit.draftId, current.draft().revision()))
+                    .whenComplete((result, error) -> onEdt(() -> {
+                        if (closed) return;
+                        edit.submitting = false; showFeedback(result, error);
+                        if (closing) { finishCloseIfSettled(); return; }
+                        if (id.equals(selectedSessionId())) showSession(id);
+                    }));
+            }));
+    }
+
+    private static String retryLabel(SessionViewState session) {
+        var turns = session.turns();
+        if (!turns.isEmpty()) {
+            var attempts = turns.getLast().attempts();
+            if (!attempts.isEmpty()) {
+                var state = attempts.getLast().status();
+                if (state == edu.courseassist.contract.ChatContracts.AttemptStatus.STOPPED ||
+                        state == edu.courseassist.contract.ChatContracts.AttemptStatus.INTERRUPTED) return "继续生成";
+            }
+        }
+        return "重试";
+    }
+
+    private void showSessions(boolean searching) {
+        if (projectState == null) return;
+        JPanel content = new JPanel(new BorderLayout(6, 6));
+        var model = new DefaultListModel<SessionViewState>();
+        var list = new JList<SessionViewState>(model); list.setName("sessionList");
+        list.setCellRenderer((items, value, index, selected, focused) -> {
+            var label = (JLabel) new javax.swing.DefaultListCellRenderer().getListCellRendererComponent(items, value, index, selected, focused);
+            if (value != null) label.setText(value.title()); return label;
+        });
+        javax.swing.JTextField query = new javax.swing.JTextField(); query.setName("sessionSearch");
+        Runnable filter = () -> {
+            model.clear(); String needle = query.getText().strip().toLowerCase(java.util.Locale.ROOT);
+            projectState.sessions().stream().filter(s -> s.title().toLowerCase(java.util.Locale.ROOT).contains(needle) ||
+                s.turns().stream().flatMap(t -> t.userMessage().parts().stream()).anyMatch(p ->
+                    p instanceof TextPart t && t.text().toLowerCase(java.util.Locale.ROOT).contains(needle))).forEach(model::addElement);
+        };
+        query.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { filter.run(); }
+            public void removeUpdate(DocumentEvent e) { filter.run(); }
+            public void changedUpdate(DocumentEvent e) { filter.run(); }
+        });
+        if (searching) content.add(query, BorderLayout.NORTH);
+        filter.run(); content.add(new JScrollPane(list), BorderLayout.CENTER);
+        Runnable openChoice = () -> {
+            var chosen = list.getSelectedValue(); if (chosen == null) return;
+            if (popup != null) popup.cancel();
+            dispatch(new OpenSessionTab(meta(chosen.sessionId())));
+        };
+        list.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) { if (e.getButton() == 1) openChoice.run(); }
+        });
+        list.getInputMap().put(javax.swing.KeyStroke.getKeyStroke("ENTER"), "open");
+        list.getActionMap().put("open", new javax.swing.AbstractAction() {
+            public void actionPerformed(java.awt.event.ActionEvent e) { openChoice.run(); }
+        });
+        content.setPreferredSize(new java.awt.Dimension(searching ? 540 : 360, 420));
+        showPopup(content, searching ? query : list, searching ? search : history);
+    }
+
+    private void showSettings() {
+        JPanel content = new JPanel(new BorderLayout(6, 6));
+        content.add(applicationWorkspace.component(), BorderLayout.CENTER);
+        JPanel actions = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        actions.add(delete);
+        content.add(actions, BorderLayout.SOUTH);
+        content.setPreferredSize(new java.awt.Dimension(600, 450));
+        showPopup(content, applicationWorkspace.component(), settings);
+    }
+
+    private void showPopup(javax.swing.JComponent content, javax.swing.JComponent focus, JButton anchor) {
+        if (popup != null) popup.cancel();
+        popup = com.intellij.openapi.ui.popup.JBPopupFactory.getInstance().createComponentPopupBuilder(content, focus)
+                .setRequestFocus(true).setFocusable(true).setCancelOnClickOutside(true).setCancelOnOtherWindowOpen(true)
+                .setResizable(true).createPopup();
+        popup.showUnderneathOf(anchor);
     }
 
     private void submitDraft() {
@@ -630,19 +465,13 @@ public final class CourseAssistantView implements AutoCloseable {
                         edit.submitting = false;
                         showFeedback(result, failure);
                         if (id.equals(selectedSessionId())) showSession(id);
-                    } else status.setText("提交已接收，等待新草稿状态");
+                    } else {
+                        edit.submitting=false;
+                        if(id.equals(selectedSessionId()))showSession(id);
+                    }
+                    if (closing) finishCloseIfSettled();
                     updateActions();
                 }));
-    }
-
-    private void removeCapture() {
-        String id = selectedSessionId();
-        DraftCapture selected = captureList.getSelectedValue();
-        if (id == null || selected == null || projectState == null) return;
-        SessionViewState session = findSession(projectState, id);
-        if (session == null || !session.allowedActions().contains(SessionAction.REMOVE_CAPTURE)) return;
-        dispatch(new RemoveDraftCapture(meta(id), session.draft().draftId(),
-                session.draft().revision(), selected.captureId()));
     }
 
     private void retryLatest() {
@@ -657,35 +486,23 @@ public final class CourseAssistantView implements AutoCloseable {
         dispatch(new RetryAttempt(meta(id), turn.turnId(), attempt.attemptId()));
     }
 
-    private void openSelectedCitation() {
-        String id = selectedSessionId();
-        Citation citation = citations.getSelectedValue();
-        if (id != null && citation != null && projectState != null) {
-            dispatch(new OpenCitation(meta(id), citation));
-        }
-    }
-
     private void updateActions() {
         String id = selectedSessionId();
         SessionViewState session = id == null || projectState == null ? null : findSession(projectState, id);
         LocalDraft edit = id == null ? null : localDrafts.get(id);
         create.setEnabled(!closed && projectState != null);
-        open.setEnabled(!closed && sessionList.getSelectedValue() != null);
         closeTab.setEnabled(session != null && session.allowedActions().contains(SessionAction.CLOSE_TAB));
         delete.setEnabled(session != null && session.allowedActions().contains(SessionAction.DELETE));
-        saveDraft.setEnabled(session != null && edit != null && edit.dirty && !edit.pending
-                && session.allowedActions().contains(SessionAction.EDIT_DRAFT));
-        submit.setEnabled(session != null && edit != null && !edit.dirty && !edit.pending && !edit.submitting
-                && session.allowedActions().contains(SessionAction.SUBMIT));
-        removeCapture.setEnabled(session != null && captureList.getSelectedValue() != null
-                && session.allowedActions().contains(SessionAction.REMOVE_CAPTURE));
-        retry.setEnabled(session != null && session.allowedActions().contains(SessionAction.RETRY)
-                && !session.turns().isEmpty() && !session.turns().get(session.turns().size() - 1).attempts().isEmpty());
+        boolean running = session != null && session.activeOperation().isPresent();
+        boolean hasInput = edit != null && (!edit.text.isBlank() || !session.draft().captures().isEmpty());
+        boolean canRetry = session != null && session.allowedActions().contains(SessionAction.RETRY) && !session.turns().isEmpty();
+        submit.setText(running ? "■" : hasInput ? "↑" : canRetry ? retryLabel(session) : "↑");
+        submit.setToolTipText(running ? "暂停生成" : hasInput ? "发送" : canRetry ? retryLabel(session) : "发送");
+        submit.setEnabled(session != null && edit != null && !edit.submitting &&
+                (running ? session.allowedActions().contains(SessionAction.STOP) :
+                 hasInput ? !edit.pending && session.allowedActions().contains(SessionAction.SUBMIT) : canRetry));
         compact.setEnabled(session != null && session.allowedActions().contains(SessionAction.COMPACT));
         recover.setEnabled(session != null && session.allowedActions().contains(SessionAction.RECOVER));
-        openCitation.setEnabled(session != null && citations.getSelectedValue() != null);
-        stop.setEnabled(session != null && session.activeOperation().isPresent()
-                && session.allowedActions().contains(SessionAction.STOP));
     }
 
     private void dispatch(ViewEvent command) {
@@ -696,6 +513,7 @@ public final class CourseAssistantView implements AutoCloseable {
 
     private void showFeedback(CommandResult result, Throwable failure) {
         if (failure != null) status.setText("操作失败：" + failure.getClass().getSimpleName());
+        else if (result == null) status.setText("草稿状态尚未确认，请重试");
         else if (result.outcome() == Outcome.REJECTED) status.setText("操作未应用：" + result.rejection().orElseThrow());
         else status.setText("操作已应用");
     }
@@ -709,6 +527,7 @@ public final class CourseAssistantView implements AutoCloseable {
         }
         applicationNotices.forEach(notice -> appendNotice(text, notice));
         notices.setText(text.toString());
+        notices.setVisible(!text.isEmpty());
     }
 
     private static void appendNotice(StringBuilder text, Notice notice) {
@@ -720,13 +539,7 @@ public final class CourseAssistantView implements AutoCloseable {
     }
 
     private String selectedSessionId() {
-        return tabs.getSelectedComponent() == null ? null : tabs.getSelectedComponent().getName();
-    }
-
-    private static JPanel tabIdentity(String id) {
-        JPanel marker = new JPanel();
-        marker.setName(id);
-        return marker;
+        return projectState == null ? null : projectState.activeSessionId().orElse(null);
     }
 
     private static SessionViewState findSession(ProjectChatViewState state, String id) {
@@ -734,33 +547,28 @@ public final class CourseAssistantView implements AutoCloseable {
     }
 
     private void clearSession() {
+        timeline.clear();
         updatingDraft = true;
-        try { draft.setText(""); } finally { updatingDraft = false; }
+        try { draft.render("",List.of(),Map.of(),capture->{}); shownDraftSession=null; } finally { updatingDraft = false; }
         draft.setEditable(false);
-        captureModel.clear();
-        citationModel.clear();
-        if (codeViewer != null) {
-            highlightedCaptures.removeAll();
-            codeViewer.clear();
-            captureRenderKey = null;
-        }
-        capture.setText(""); answer.setText(""); process.setText("");
-        latestAnswerSource = null;
-        copyAnswerSource.setEnabled(false);
-        historyCode.setText(""); historyQuestions.setText("");
-        if (historyCodeViewer != null) {
-            highlightedHistory.removeAll();
-            historyCodeViewer.clear();
-            historyRenderKey = null;
-        }
-        renderEpoch++;
-        markdown.setText("");
-        if (markdownCodeViewer != null) {
-            highlightedMarkdown.removeAll();
-            markdownCodeViewer.clear();
-        }
         status.setText("没有打开的会话");
         updateActions();
+    }
+
+    private record ToolbarIcon(int kind) implements javax.swing.Icon {
+        public int getIconWidth() { return 20; }
+        public int getIconHeight() { return 20; }
+        public void paintIcon(java.awt.Component c, java.awt.Graphics graphics, int x, int y) {
+            java.awt.Graphics2D g = (java.awt.Graphics2D) graphics.create();
+            try {
+                g.translate(x, y); g.setColor(c.getForeground()); g.setStroke(new java.awt.BasicStroke(1.6f));
+                g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                if (kind == 0) { g.drawRoundRect(2, 2, 15, 13, 5, 5); g.drawLine(5, 15, 3, 18); g.drawLine(6, 8, 13, 8); g.drawLine(10, 5, 10, 12); }
+                else if (kind == 1) { g.drawArc(3, 3, 14, 14, 35, 300); g.drawLine(2, 3, 2, 8); g.drawLine(2, 8, 7, 8); g.drawLine(10, 5, 10, 10); g.drawLine(10, 10, 13, 12); }
+                else if (kind == 2) { g.drawOval(2, 2, 11, 11); g.drawLine(12, 12, 18, 18); }
+                else { g.drawOval(5, 5, 10, 10); g.drawOval(8, 8, 4, 4); for (int i=0;i<8;i++) { double a=i*Math.PI/4; g.drawLine(10+(int)(6*Math.cos(a)),10+(int)(6*Math.sin(a)),10+(int)(9*Math.cos(a)),10+(int)(9*Math.sin(a))); } }
+            } finally { g.dispose(); }
+        }
     }
 
     private static JButton button(String name, String label) {
@@ -769,21 +577,52 @@ public final class CourseAssistantView implements AutoCloseable {
         return value;
     }
 
-    private static JPanel section(String title, JList<?> body) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JLabel(title), BorderLayout.NORTH);
-        panel.add(new JScrollPane(body), BorderLayout.CENTER);
-        return panel;
+    private static String recoveryKey(String session, String draft) { return session + "\u0000" + draft; }
+    private static Map<String, String> recoveryFor(Project project, SessionController sessions, String instance) {
+        if (project == null) return new HashMap<>();
+        Map<String, String> value = project.getUserData(RECOVERY);
+        if (value == null) {
+            value = new HashMap<>(); project.putUserData(RECOVERY, value);
+            Map<String, String> owned = value;
+            ViewSubscription subscription = sessions.observe(instance, state -> onEdt(() ->
+                owned.keySet().removeIf(key -> state.sessions().stream().noneMatch(session ->
+                    session.lifecycle() == edu.courseassist.contract.ChatContracts.Lifecycle.LIVE &&
+                    key.equals(recoveryKey(session.sessionId(), session.draft().draftId()))))));
+            com.intellij.openapi.util.Disposer.register(project, () -> { subscription.close(); owned.clear(); });
+        }
+        return value;
+    }
+
+    private static boolean sameLayout(Map<String,Integer> a,Map<String,Integer> b,List<DraftCapture> captures,int length) {
+        return captures.stream().allMatch(c->a.getOrDefault(c.captureId(),length).equals(b.getOrDefault(c.captureId(),length)));
+    }
+    private static String rememberDraft(LocalDraft draft) {
+        if(draft.offsets.isEmpty())return draft.text;
+        var encoder=java.util.Base64.getEncoder();
+        StringBuilder out=new StringBuilder("\u0000F0_MIXED1:").append(encoder.encodeToString(draft.text.getBytes(java.nio.charset.StandardCharsets.UTF_8))).append('\n');
+        draft.order.forEach(id->out.append(encoder.encodeToString(id.getBytes(java.nio.charset.StandardCharsets.UTF_8))).append(':').append(draft.offsets.getOrDefault(id,draft.text.length())).append('\n'));
+        return out.toString();
+    }
+    private static void restoreDraft(LocalDraft draft,String source) {
+        if(!source.startsWith("\u0000F0_MIXED1:")){draft.text=source;return;}
+        String[] lines=source.substring(11).split("\n");var decoder=java.util.Base64.getDecoder();
+        draft.text=new String(decoder.decode(lines[0]),java.nio.charset.StandardCharsets.UTF_8);draft.offsets=new java.util.LinkedHashMap<>();
+        for(int i=1;i<lines.length;i++){int colon=lines[i].indexOf(':');draft.offsets.put(new String(decoder.decode(lines[i].substring(0,colon)),java.nio.charset.StandardCharsets.UTF_8),Integer.parseInt(lines[i].substring(colon+1)));}
+        draft.order=List.copyOf(draft.offsets.keySet());
     }
 
     private static final class LocalDraft {
         final String draftId;
         long baseRevision;
         String text;
+        Map<String,Integer> offsets;
+        List<String> order;
         boolean dirty;
         boolean pending;
         boolean submitting;
-        LocalDraft(String draftId, long baseRevision, String text) {
+        LocalDraft(String draftId, long baseRevision, String text, Map<String,Integer> offsets,List<String> order) {
+            this.order=List.copyOf(order);
+            this.offsets = new HashMap<>(offsets);
             this.draftId = draftId;
             this.baseRevision = baseRevision;
             this.text = text;
@@ -799,28 +638,35 @@ public final class CourseAssistantView implements AutoCloseable {
         return value;
     }
 
-    private static JPanel section(String title, JTextArea body) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JLabel(title), BorderLayout.NORTH);
-        panel.add(new JScrollPane(body), BorderLayout.CENTER);
-        return panel;
-    }
-
     private static void onEdt(Runnable action) {
         if (SwingUtilities.isEventDispatchThread()) action.run();
         else SwingUtilities.invokeLater(action);
     }
 
     @Override public void close() {
-        if (closed) return;
+        onEdt(() -> {
+            if (closed || closing) return;
+            closing = true;
+            autosave.stop();
+            if (popup != null) popup.cancel();
+            timeline.close();
+            applicationSubscription.close();
+            saveDraft();
+            finishCloseIfSettled();
+        });
+    }
+    private void finishCloseIfSettled() {
+        if (localDrafts.values().stream().anyMatch(edit -> edit.pending || edit.submitting)) return;
+        // Latest unsaved text remains in project-owned recovery until a matching durable
+        // snapshot confirms it, the draft is consumed, or the session is deleted.
+        if (localDrafts.values().stream().anyMatch(edit -> edit.dirty)) {
+            status.setText("草稿未保存：本项目内重新打开侧栏可恢复文字；退出 IDEA 前请先恢复保存");
+            if (com.intellij.openapi.application.ApplicationManager.getApplication() != null) {
+                com.intellij.notification.NotificationGroupManager.getInstance().getNotificationGroup("Course Assistant")
+                    .createNotification("草稿未保存", status.getText(), com.intellij.notification.NotificationType.WARNING).notify(null);
+            }
+        }
         closed = true;
         sessionSubscription.close();
-        applicationSubscription.close();
-        markdownQueue.close();
-        onEdt(() -> {
-            if (codeViewer != null) codeViewer.close();
-            if (historyCodeViewer != null) historyCodeViewer.close();
-            if (markdownCodeViewer != null) markdownCodeViewer.close();
-        });
     }
 }

@@ -45,6 +45,13 @@ final class IdeCodeViewer implements AutoCloseable {
         return editor.getComponent();
     }
 
+    void releaseInside(java.awt.Container parent) {
+        assertEdt();
+        editors.removeIf(entry -> {
+            if (!SwingUtilities.isDescendingFrom(entry.editor().getComponent(),parent)) return false;
+            EditorFactory.getInstance().releaseEditor(entry.editor()); return true;
+        });
+    }
     void clear() {
         assertEdt();
         for (Entry entry : editors) EditorFactory.getInstance().releaseEditor(entry.editor());
