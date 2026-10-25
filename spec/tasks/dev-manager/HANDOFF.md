@@ -288,3 +288,5 @@
 - https://github.com/nilesthump/IJ-Plugin-Java/pull/15
 
 独立All：dev-a 106 tests通过，dev-manager 146 tests通过；dev-c编译因main尚无ImportCoursePdfs/captureOffsets/captureOrder等契约而失败，按依赖阻塞如实保留草稿。完整集成树169 tests+IDE PASS与用户F0验收仍有效，但不冒充拆分分支单独验证。顺序：#13合入main→#14同步并补独立IdeSmoke→#14合入main→#15同步并全量验证。此轮只创建PR，未合并三份新PR；F2仍未开工。验证生成的安装ZIP已再次清理。
+
+合并前补测发现分拆IDE测试等待新UI自动保存，但当前main仍为手动保存UI，IntegrationViewChecks:44超时。测试现兼容已有saveDraft按钮，通过真实保存动作核验持久化/重开；UI PR落地后无该按钮，同一断言仍要求自动保存。未改生产UI或跳过持久化断言。待#13合入后统一重跑All+IdeSmoke。

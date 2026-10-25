@@ -39,7 +39,11 @@ final class IntegrationViewChecks {
             edt(() -> {
                 var root = window.get().getContentManager().getContent(0).getComponent();
                 ((javax.swing.text.JTextComponent) find(root, "draftPreview")).setText("integration draft preserved exactly\n");
-                // Debounced autosave must persist without a separate save button.
+                // During ordered integration main still has the explicit-save UI. Exercise
+                // its real action; after the UI PR lands there is no such button, so
+                // this same persistence/reopen assertion requires autosave instead.
+                Component save = find(root, "saveDraft");
+                if (save instanceof JButton button) button.doClick();
             });
             SessionTestEnvironment.await(() -> sessions.snapshot(service.projectInstanceId()).sessions().stream()
                     .anyMatch(s -> s.sessionId().equals(session) && s.draft().text().equals("integration draft preserved exactly\n")));
