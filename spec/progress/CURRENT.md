@@ -243,3 +243,5 @@ PR #18 已在最新 head validation/scope 成功、独立检查闭合后合入 m
 G1 已通过 PR #19 合入 main `1ec4b9412d8c70b20a404da6c9a499d82bae1654`；最新 head 的 validation/scope 成功，本地 dev-manager 已同步核验。用户授权下两组 G2/G3，只提交一个 PR。项目内双入口定位、同版完整快照、严格候选构造、单次子生成与父预算/取消、失败隔离及重试边界已实现。最终统一 All+IdeSmoke 退出0，196项/34套件无失败错误跳过，本机 IDEA PASS；独立检查闭合。当前 LOCAL_VERIFIED，未提前宣称 main DONE。
 
 具体实现/验证/限制见 [G23_IMPLEMENTATION](../tasks/dev-manager/F2/G23_IMPLEMENTATION.md) 和 [F2 状态](../tasks/dev-manager/F2/STATUS.md)。不创建新分支，不改 hooks/范围政策，不触碰 F0 成员旧实现；G4–G6 和真实 Diff/Undo/源码应用不在本轮范围。无付费调用，架构未冻结。
+
+G2/G3 唯一交付入口：[PR #20](https://github.com/nilesthump/IJ-Plugin-Java/pull/20)，dev-manager → main，实现提交52fd92f。已推送，远端validation运行中、scope待上游完成；未合并，不标main DONE。连接器创建403后使用已登录CLI成功，未读取或落盘凭据。
