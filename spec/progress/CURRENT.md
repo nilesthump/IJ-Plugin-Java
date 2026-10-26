@@ -258,3 +258,5 @@ G2/G3 唯一交付入口：[PR #20](https://github.com/nilesthump/IJ-Plugin-Java
 G2/G3 已通过 PR #20 合入 main 4de5417并核验；本轮用户授权下两组 G4/G5，只提交并合并一个 PR。已实现真实只读并排 Diff、两个本地审核按钮、准确版本的 Document 应用/命名 Undo、独立磁盘/后续状态核对、重新审核及本地回执恢复。最终统一All+IdeSmoke退出0：209 tests / 35 suites，失败/错误/跳过均0，本机IU-262.10968.63/JBR25.0.4 PASS；独立Standards/Spec与最终增量检查闭合。
 
 行为、失败修复、包哈希及准确证据见 [G4/G5实现](../tasks/dev-manager/F2/G45_IMPLEMENTATION.md) / [F2状态](../tasks/dev-manager/F2/STATUS.md)。当前LOCAL_VERIFIED，本交付PR最新validation/scope成功、main合入并核验后G4/G5才DONE。固定dev-manager保留；G6未开始，人工视觉/真实API未执行，架构未冻结。
+
+交付入口：[PR #21](https://github.com/nilesthump/IJ-Plugin-Java/pull/21)，dev-manager → main；实现提交1578f23已推送，工作区干净。仅此一个PR。下一条：核验最新head的validation/scope，成功后合并并fetch/快进核验，保留固定分支。本PR满足这些条件后G4/G5为DONE；否则保持待集成。G6未开始，人工F2/真实API继续NOT_RUN。
