@@ -99,3 +99,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope 
 独立存储/生命周期/上下文检查及契约/工具检查均0遗留。修正并补测：未知应用结果的新commandId去重；同一事实快照验证checkpoint投影；重复批准命令固定内容；单会话恢复不失效另一session预览；真实H2重开原文保留且不恢复批准。
 
 实际行为与后续边界见 G1_IMPLEMENTATION.md。此次只交付G0/G1，G2–G6 NOT_STARTED。真实API、原生Diff/Undo、实际源码应用、人工F2验收 NOT_RUN；无付费调用，不宣称F2产品可用或架构冻结。
+
+## PR #20 合并门禁修复（2026-10-26）
+
+用户已授权“本次合并”，覆盖此前只提交不合并的当轮限制。首次远端run40309275683失败：196项中取消测试预期STOPPED、实际LIMITED。保留完整日志，已用11秒观察延迟确定性证明期限先结束导致停止被拒绝的路径；不据原日志宣称唯一根因。
+
+只修改测试夹具可配置期限（默认10秒不变），该单个取消用例设2分钟，保留11秒延迟和全部原断言，新增停止必须APPLIED。生产代码、业务期限及门禁不变。修复后统一All退出0，34 suites / 196 tests，失败/错误/跳过0；日志tmp/f2-g23-cancel-green-all.log。独立增量检查无阻断。此次纯测试修复未重跑IdeSmoke；先前同生产代码本机IDE PASS证据仍独立保留。
+
+修复继续推送同一PR #20，待最新head validation/scope成功后合并并fetch核验；保留dev-manager，不新增PR或开展G4–G6。

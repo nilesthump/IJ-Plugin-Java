@@ -125,6 +125,7 @@ class CodeEditToolsTest {
     }
     @Test void stopDuringChildRetainsArchiveButExcludesPrefixFromFutureContext()throws Exception {
         try(var e=new SessionTestEnvironment(root)) {
+            e.generationTimeout=java.time.Duration.ofMinutes(2);
             String session=open(e);AtomicInteger parent=new AtomicInteger(),child=new AtomicInteger(),canceled=new AtomicInteger();
             var entered=new CountDownLatch(1);Model normal=model(parent,child,patch(),false,false);
             e.model.set((request,listener)->{
@@ -135,7 +136,10 @@ class CodeEditToolsTest {
             String owner=e.sessions.snapshot("i").projectId();
             SessionTestEnvironment.await(()->e.repository.history(owner,"i",session).stream().flatMap(t->t.attempts().stream()).flatMap(a->a.branches().stream()).flatMap(b->b.steps().stream()).anyMatch(s->s.body().contains("incomplete-child-sentinel")));
             var op=e.view("i",session).activeOperation().orElseThrow();
-            e.dispatch(new StopOperation(e.meta("i",session),op.operationId()));e.idle("i",session);
+            // Reproduce observation/user latency beyond the fixture's ordinary 10-second deadline.
+            // This scenario tests explicit cancellation, independently of the deadline-limit tests.
+            Thread.sleep(11_000);
+            assertEquals(Outcome.APPLIED,e.dispatch(new StopOperation(e.meta("i",session),op.operationId())).outcome());e.idle("i",session);
             String project=e.sessions.snapshot("i").projectId();var history=e.repository.history(project,"i",session);var attempt=history.getFirst().attempts().getLast();
             assertEquals(AttemptStatus.STOPPED,attempt.status());assertTrue(canceled.get()>0);assertEquals(1,child.get());
             assertTrue(e.repository.edits().views(project,"i",session).isEmpty());

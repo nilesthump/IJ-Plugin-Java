@@ -31,3 +31,11 @@
 真实 IDEA 检查覆盖源码模块归属、重名/重载/嵌套类、完整前像、未保存 Document、旧选区失效、文字冲突、生命周期撤销、真实 DumbModeTask 索引未就绪，以及 257 个源文件触发的截断结果。没有确定性复现采集中写竞争、会话切换或真正项目关闭竞争；不把旧选区版本测试扩大成这些结论。真实服务、人工 F2 交互、原生 Diff/Undo/源码应用仍 NOT_RUN。
 
 最终统一 All + IdeSmoke 退出 0，34 suites / 196 tests，失败/错误/跳过均 0；check/FixtureSmoke/buildPlugin 通过，真实本机 IU-262.10968.63 / JBR25.0.4 result.json 为 PASS（日志 tmp/f2-g23-final.log）。独立检查及增量复核无阻断遗留。G2/G3 为 LOCAL_VERIFIED；单 PR 最新 validation/scope、main 合入核验仍是交付 DONE 条件。
+
+## PR #20 首次 CI 失败与取消测试隔离
+
+CI run 40309275683 在 head acf3203 上运行196项，仅 stopDuringChildRetainsArchiveButExcludesPrefixFromFutureContext 预期 STOPPED、实际 LIMITED；完整失败日志 tmp/f2-g23-ci-failed.log 保留。原用例等待耐久前缀后才发停止，没有断言停止是否被接受，与夹具10秒生成期限存在竞争。
+
+确定性红测在已保存前缀后延迟11秒，再断言停止APPLIED，实际返回REJECTED（tmp/f2-g23-cancel-red.log）。这证明与CI结果一致的期限竞争路径，不宣称原日志足以确定唯一根因。
+
+仅测试夹具增加可配置 generationTimeout，默认仍10秒；该单个显式取消用例在启用前设2分钟，保留11秒延迟、原STOPPED/单订阅/取消句柄/无候选/档案保留/未来上下文隔离断言，并要求停止命令APPLIED。生产期限、实现和门禁不变。独立增量检查无阻断；修复后统一All结果见状态/交接，原IDE通过证据与本次未重跑分别记录。

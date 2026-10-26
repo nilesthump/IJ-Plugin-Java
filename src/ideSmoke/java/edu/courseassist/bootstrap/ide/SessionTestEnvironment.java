@@ -40,6 +40,8 @@ public final class SessionTestEnvironment implements AutoCloseable {
         public synchronized void write(CredentialUpdate.Slot slot,char[] value){char[] old=secrets.put(slot,value.clone());if(old!=null)Arrays.fill(old,'\0');}
     };
     public ContextPlanner.Settings context=new ContextPlanner.Settings(180000,150000,1024,1,8000,Duration.ofSeconds(5),"synthetic-summary");
+    /** Test-only deadline, captured when enabling. Cancellation tests must not race the deadline. */
+    public Duration generationTimeout=Duration.ofSeconds(10);
     public ErrorPolicy policy=ErrorPolicy.DEVELOPMENT;
     public SessionTestEnvironment(Path root) throws Exception {
         this(root, request -> { throw new UnsupportedOperationException("No PDF adapter in session test"); });
@@ -53,7 +55,7 @@ public final class SessionTestEnvironment implements AutoCloseable {
         courses.initialize().get(10,TimeUnit.SECONDS);repository=new SessionRepository(store,runtime);
         app=new ApplicationCoordinator(new ApplicationRepository(store),runtime,courses,vault,(profiles,v)->new RuntimeResources((request,listener)->{
             requests.add(request);return model.get().subscribe(request,listener);},embeddings,new Settings(space,new Processing("synthetic",100,10),new IndexSettings(2,8,1.5f,1.2f)),
-                new SearchSettings(2,.5f),new Limits(6,8,16000,32000,200000,1024,Duration.ofSeconds(10),1),context,ReactContext.utf8Budget(),policy,transportsClosed::incrementAndGet),workers,observerErrors::add);
+                new SearchSettings(2,.5f),new Limits(6,8,16000,32000,200000,1024,generationTimeout,1),context,ReactContext.utf8Budget(),policy,transportsClosed::incrementAndGet),workers,observerErrors::add);
         sessions=new SessionCoordinator(repository,runtime,courses,task->{if(pauseGeneration.get())pendingStarts.add(task);else workers.execute(task);},app::resources,observerErrors::add);app.sessions(sessions);
         sessions.initialize().toCompletableFuture().get(10,TimeUnit.SECONDS);app.initialize().toCompletableFuture().get(10,TimeUnit.SECONDS);
     }
