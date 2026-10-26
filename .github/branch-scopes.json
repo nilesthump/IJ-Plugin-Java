@@ -1,10 +1,55 @@
 {
-  "branches": ["main", "dev-manager", "dev-a", "dev-b", "dev-c"],
+  "branches": [
+    "main",
+    "dev-manager",
+    "dev-a",
+    "dev-b",
+    "dev-c"
+  ],
   "pullRequestBase": "main",
   "owners": {
-    "dev-a": ["src/main/java/edu/courseassist/editor/", "src/test/java/edu/courseassist/editor/", "spec/tasks/dev-a/"],
-    "dev-b": ["src/main/java/edu/courseassist/pdf/", "src/test/java/edu/courseassist/pdf/", "src/test/resources/pdf/", "spec/tasks/dev-b/"],
-    "dev-c": ["src/main/java/edu/courseassist/ui/", "src/test/java/edu/courseassist/ui/", "src/test/resources/ui/", "spec/tasks/dev-c/"]
+    "dev-a": [
+      "src/main/java/edu/courseassist/editor/",
+      "src/test/java/edu/courseassist/editor/",
+      "spec/tasks/dev-a/"
+    ],
+    "dev-b": [
+      "src/main/java/edu/courseassist/pdf/",
+      "src/test/java/edu/courseassist/pdf/",
+      "src/test/resources/pdf/",
+      "spec/tasks/dev-b/"
+    ],
+    "dev-c": [
+      "src/main/java/edu/courseassist/ui/",
+      "src/test/java/edu/courseassist/ui/",
+      "src/test/resources/ui/",
+      "spec/tasks/dev-c/"
+    ]
   },
-  "managerExcluded": ["src/main/java/edu/courseassist/editor/", "src/test/java/edu/courseassist/editor/", "src/main/java/edu/courseassist/pdf/", "src/test/java/edu/courseassist/pdf/", "src/test/resources/pdf/", "src/main/java/edu/courseassist/ui/", "src/test/java/edu/courseassist/ui/", "src/test/resources/ui/", "spec/tasks/dev-a/", "spec/tasks/dev-b/", "spec/tasks/dev-c/"]
+  "managerExcluded": [
+    "src/main/java/edu/courseassist/editor/",
+    "src/test/java/edu/courseassist/editor/",
+    "src/main/java/edu/courseassist/pdf/",
+    "src/test/java/edu/courseassist/pdf/",
+    "src/test/resources/pdf/",
+    "src/main/java/edu/courseassist/ui/",
+    "src/test/java/edu/courseassist/ui/",
+    "src/test/resources/ui/",
+    "spec/tasks/dev-a/",
+    "spec/tasks/dev-b/",
+    "spec/tasks/dev-c/"
+  ],
+  "managerExceptions": {
+    "prefixes": [
+      "src/main/java/edu/courseassist/editor/f2/",
+      "src/test/java/edu/courseassist/editor/f2/",
+      "src/main/java/edu/courseassist/ui/f2/",
+      "src/test/java/edu/courseassist/ui/f2/"
+    ],
+    "files": [
+      "src/main/java/edu/courseassist/ui/CourseAssistantView.java",
+      "src/main/java/edu/courseassist/ui/ChatTimeline.java",
+      "src/test/java/edu/courseassist/ui/CourseAssistantViewTest.java"
+    ]
+  }
 }
