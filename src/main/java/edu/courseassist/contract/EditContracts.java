@@ -33,8 +33,9 @@ public final class EditContracts {
     public record TargetQuery(String pathHint, String classHint, String methodHint, List<String> parameterHints) {
         public TargetQuery { Objects.requireNonNull(pathHint); Objects.requireNonNull(classHint); Objects.requireNonNull(methodHint); parameterHints=List.copyOf(parameterHints); }
     }
-    public record Target(String fileRef, String relativePath, String module, String signature) {
-        public Target { requireId(fileRef,"file"); requireId(relativePath,"path"); Objects.requireNonNull(module); Objects.requireNonNull(signature); }
+    public record Target(String fileRef, String relativePath, String module, String signature, String fileIdentity) {
+        public Target(String fileRef,String relativePath,String module,String signature){this(fileRef,relativePath,module,signature,"");}
+        public Target { requireId(fileRef,"file"); requireId(relativePath,"path"); Objects.requireNonNull(module); Objects.requireNonNull(signature); fileIdentity=fileIdentity==null?"":fileIdentity; }
     }
     /** Zero-based UTF-16 offsets, start inclusive/end exclusive. */
     public record Span(int start, int end) {

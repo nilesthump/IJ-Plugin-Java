@@ -17,6 +17,11 @@ public final class ToolBoundary {
     public interface EditTools {
         boolean supports(Capability capability);
         CompletableFuture<String> execute(Capability capability,Identity identity,String branchId,Call call,BooleanSupplier permitted);
+        default Optional<List<ToolDefinition>> definitions(){return Optional.empty();}
+        default boolean validate(Call call){return false;}
+        default CompletableFuture<String> execute(Capability capability,Identity identity,String branchId,Call call,BooleanSupplier permitted,java.util.function.Function<Request,String> generate) {
+            return execute(capability,identity,branchId,call,permitted);
+        }
     }
     private static final JsonMapper JSON=JsonMapper.builder()
             .enable(tools.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
@@ -35,6 +40,7 @@ public final class ToolBoundary {
     public List<ToolDefinition> definitions(boolean courseAvailable) {
         List<ToolDefinition> result=new ArrayList<>();
         if(courseAvailable)result.addAll(CourseTools.DEFINITIONS);
+        if(edits.isPresent()&&edits.get().definitions().isPresent()) {result.addAll(edits.get().definitions().get());return List.copyOf(result);}
         for(Capability kind:List.of(Capability.TARGET,Capability.PROPOSAL))if(edits.filter(e->e.supports(kind)).isPresent()) {
             String name=kind==Capability.TARGET?"resolveEditTarget":"proposeCodeEdit";
             result.add(new ToolDefinition(name,"Use an existing host-bound F2 reference",ReactContext.json(Map.of(
@@ -50,6 +56,7 @@ public final class ToolBoundary {
             if(call.name().equals("readCourseEvidence")&&!suppliedEvidence.contains(argument))throw new ProtocolFailure("Evidence ref was not supplied to this branch");
         } else {
             if(edits.filter(e->e.supports(kind)).isEmpty())throw new ProtocolFailure("F2 capability unavailable");
+            if(edits.get().validate(call))return;
             var node=JSON.readTree(call.arguments());
             if(!node.isObject()||node.size()!=1||!node.hasNonNull("ref")||!node.get("ref").isString()||node.get("ref").asString().isBlank())
                 throw new ProtocolFailure("Invalid complete F2 tool arguments");
@@ -57,10 +64,13 @@ public final class ToolBoundary {
     }
     /** Original exceptions/cancellation propagate; only the owner may isolate COURSE failures. */
     public CompletableFuture<Result> execute(Identity identity,String branch,Call call,BooleanSupplier permitted) {
+        return execute(identity,branch,call,permitted,request->{throw new ProtocolFailure("Child generation unavailable");});
+    }
+    public CompletableFuture<Result> execute(Identity identity,String branch,Call call,BooleanSupplier permitted,java.util.function.Function<Request,String> generate) {
         Capability kind=capability(call.name());
         if(kind!=Capability.COURSE)
             return edits.orElseThrow(()->new ProtocolFailure("F2 capability unavailable"))
-                    .execute(kind,identity,branch,call,permitted).thenApply(body->new Result(body,List.of()));
+                    .execute(kind,identity,branch,call,permitted,generate).thenApply(body->new Result(body,List.of()));
         String argument=CourseTools.argument(call);
         CompletableFuture<List<Evidence>> result=call.name().equals("searchCourse")?courses.search(argument,permitted):courses.read(argument).thenApply(List::of);
         return result.thenApply(evidence->new Result(ReactContext.json(evidence),evidence));

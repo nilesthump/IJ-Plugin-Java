@@ -19,6 +19,7 @@ import java.util.function.*;
 /** Commands have one short local order; model/summary waits use separate workers. Views own only
  * subscriptions. Route reservations are memory-only and checked again inside first INSERT. */
 public final class SessionCoordinator implements SessionController, SelectionSink, AutoCloseable {
+    @FunctionalInterface public interface EditTargets { EditTargetPort bind(Identity identity,Input input,BooleanSupplier permitted); }
     private final SessionRepository repository;
     private final RuntimeGate runtime;
     private final CourseLibrary courses;
@@ -36,6 +37,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
     private volatile boolean closed;
     private static final class ProjectState {
         volatile Binding binding; final String instance; final Supplier<CodeCapturePort> capture;
+        Optional<EditTargets> edits=Optional.empty();
         final AtomicBoolean open=new AtomicBoolean(true);
         volatile ProjectChatViewState view;
         final List<Consumer<ProjectChatViewState>> observers=new CopyOnWriteArrayList<>();
@@ -59,6 +61,9 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         return command(()->{repository.initialize();for(Binding b:repository.bindings())repository.recover(b.projectId(),b.instance());return null;});
     }
     public CompletionStage<Binding> open(Location location,String instance,Supplier<CodeCapturePort> capture,boolean asNew) {
+        return open(location,instance,capture,asNew,Optional.empty());
+    }
+    public CompletionStage<Binding> open(Location location,String instance,Supplier<CodeCapturePort> capture,boolean asNew,Optional<EditTargets> edits) {
         return command(()->{if(projects.containsKey(instance))throw new IllegalStateException("Instance already open");
             for(Binding existing:repository.bindings())if(existing.instance().isPresent()&&existing.location().directoryKey().equals(location.directoryKey())) {
                 ProjectState old=projects.get(existing.instance().get());
@@ -67,7 +72,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
                     repository.recover(existing.projectId(),existing.instance());projects.remove(old.instance,old);
                 }
             }
-            Binding b=repository.open(location,instance,asNew);ProjectState p=new ProjectState(b,instance,capture);projects.put(instance,p);refresh(p);return b;});
+            Binding b=repository.open(location,instance,asNew);ProjectState p=new ProjectState(b,instance,capture);p.edits=edits;projects.put(instance,p);refresh(p);return b;});
     }
     public CompletionStage<Binding> associate(String instance,String source,long sourceRevision,long targetRevision) {
         return command(()->{ProjectState p=project(instance);Binding b=repository.associate(p.binding.projectId(),instance,source,sourceRevision,targetRevision);p.binding=b;refresh(p);return b;});
@@ -257,7 +262,9 @@ public final class SessionCoordinator implements SessionController, SelectionSin
             Input input=history.stream().flatMap(t->t.attempts().stream()).filter(a->a.identity().equals(i)).findFirst().orElseThrow().input();
             CourseTools tools=new CourseTools(Objects.requireNonNull(lease),configured.embeddings(),configured.search());
             if(!allowed(run))throw new CancellationException("Operation revoked before start");
-            run.job=new ReactEngine(configured.model(),repository.react(),workers,configured.budget()).start(i,input,history,tools,
+            boolean originalSubmission=history.stream().anyMatch(turn->!turn.attempts().isEmpty()&&turn.attempts().getFirst().identity().equals(i));
+            Optional<ToolBoundary.EditTools> edits=originalSubmission?project(i.projectInstanceId()).edits.map(factory->new edu.courseassist.core.edit.CodeEditTools(i,input,factory.bind(i,input,()->allowed(run)),repository.edits(),configured.limits().outputTokens())):Optional.empty();
+            run.job=new ReactEngine(configured.model(),repository.react(),workers,configured.budget(),edits).start(i,input,history,tools,
                     configured.limits(),configured.policy(),()->allowed(run),snapshot->{
                         ProjectState p=projects.get(i.projectInstanceId());
                         if(p!=null&&p.open.get()&&runs.get(i.operationId())==run) {

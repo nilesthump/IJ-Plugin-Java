@@ -1,3 +1,16 @@
+# 当前 G2/G3 单 PR 交付（2026-10-26）
+
+唯一负责人：用户本人；分支 dev-manager，基线 main `1ec4b9412d8c70b20a404da6c9a499d82bae1654`。G0/G1 已经 PR #18/#19 合入核验；此前待合入记录为历史。用户授权下两组 G2/G3，只提交一个 PR；G4–G6 不展开，架构未冻结。
+
+G2/G3 实现和本地验证完成，当前 LOCAL_VERIFIED / AWAITING_PR。最终 All + IdeSmoke 退出 0，34 suites / 196 tests，失败/错误/跳过均 0；本机 IU-262.10968.63 / JBR25.0.4 的 result.json 为 PASS。行为、有限参数、失败修复及未执行项见 [G23_IMPLEMENTATION](G23_IMPLEMENTATION.md)。不得提前记 main DONE。
+
+命令：powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\IJ-Plugin-Java\tmp\gradle-user-home'。
+
+原始日志保留在 tmp/f2-g23-baseline.log、tmp/f2-g23-first.log、tmp/f2-g23-tests.log、tmp/f2-g23-second.log、tmp/f2-g23-third.log、tmp/f2-g23-fourth.log；最终运行 tmp/f2-g23-final.log。既有基线和每轮 JUnit/打包结果与单独 IDE 失败分开记录。独立代码复核原三项（跨降级重复生成、稳定文件身份、零参数重载）已修复并闭合；最终运行证据已核验，独立增量复核无阻断遗留。
+
+下一条：最终 All/IDE 和独立检查已闭合，执行范围检查、提交推送既有 dev-manager，仅创建一个目标 main 的 PR。新 PR 未合入前保持待集成。真实付费 API、人工 F2、Diff/审核 UI、Undo/源码应用未执行。
+
+## 以前的记录（原时点状态）
 
 # 当前 F2 状态（2026-10-26）
 

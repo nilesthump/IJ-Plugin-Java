@@ -77,4 +77,22 @@ class ToolBoundaryTest {
             assertEquals(0,h.queries.get());
         }
     }
+    @Test void childBudgetIsCheckedBeforeSubscriptionAndChildOutputSharesParentLimit() throws Exception {
+        for(boolean inputLimit:List.of(true,false))try(var h=new ReactTestEnvironment(root.resolve("child-"+inputLimit),false)) {
+            AtomicInteger children=new AtomicInteger();
+            var edits=new ToolBoundary.EditTools() {
+                public boolean supports(ToolBoundary.Capability c){return c==ToolBoundary.Capability.PROPOSAL;}
+                public CompletableFuture<String> execute(ToolBoundary.Capability c,Identity i,String b,Call call,BooleanSupplier permitted){throw new AssertionError("Missing owner");}
+                public CompletableFuture<String> execute(ToolBoundary.Capability c,Identity i,String b,Call call,BooleanSupplier permitted,java.util.function.Function<Request,String> child) {
+                    return CompletableFuture.completedFuture(child.apply(new Request(List.of(Message.text("user","child")),List.of(),1024)));
+                }
+            };
+            Model model=(request,listener)->{if(request.tools().isEmpty()){children.incrementAndGet();finish(listener,"x".repeat(32001));}
+                else{listener.frame(new ToolDelta(0,"p","proposeCodeEdit","{\"ref\":\"host\"}"));listener.frame(new End("tool_calls"));listener.complete();}return ()->{};};
+            var job=new ReactEngine(model,h.journal,h.workers,request->inputLimit&&request.tools().isEmpty()?Long.MAX_VALUE:1,Optional.of(edits))
+                    .start(h.identity,h.input,List.of(),h.tools(),LIMITS,ErrorPolicy.PRODUCT,()->true,h.views::add);
+            assertThrows(Exception.class,()->h.done(job));assertEquals(AttemptStatus.LIMITED,job.snapshot().status());
+            assertEquals(inputLimit?0:1,children.get());assertTrue(job.retrievalFailures().isEmpty());
+        }
+    }
 }

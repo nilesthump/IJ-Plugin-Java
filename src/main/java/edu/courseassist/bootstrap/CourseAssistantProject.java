@@ -41,7 +41,9 @@ public final class CourseAssistantProject implements Disposable {
             binding=application.tasks().submit(()->{
                 if(project.getBasePath()==null)throw new IllegalStateException("Project has no local directory");
                 return ProjectLocations.read(Path.of(project.getBasePath()));
-            }).thenCompose(location->application.controllers().thenCompose(c->c.sessions().open(location,projectInstanceId,this::codeCapture,asNew)).toCompletableFuture());
+            }).thenCompose(location->application.controllers().thenCompose(c->c.sessions().open(location,projectInstanceId,this::codeCapture,asNew,
+                    java.util.Optional.of((identity,input,permitted)->new edu.courseassist.editor.f2.JavaEditTargetPort(project,projectInstanceId,
+                            input.code().stream().filter(part->part.kind()==edu.courseassist.contract.ChatContracts.PartKind.SELECTION).toList(),permitted)))).toCompletableFuture());
         }
         return binding.copy();
     }

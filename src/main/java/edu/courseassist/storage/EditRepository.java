@@ -31,12 +31,42 @@ public final class EditRepository {
                 s.execute("CREATE TABLE IF NOT EXISTS ca_edit_preview(id VARCHAR PRIMARY KEY, session_id VARCHAR NOT NULL REFERENCES ca_session(id) ON DELETE CASCADE, proposal_id VARCHAR NOT NULL REFERENCES ca_edit_artifact(id) ON DELETE CASCADE, payload CLOB NOT NULL)");
                 s.execute("CREATE TABLE IF NOT EXISTS ca_edit_apply(id VARCHAR PRIMARY KEY, session_id VARCHAR NOT NULL REFERENCES ca_session(id) ON DELETE CASCADE, proposal_id VARCHAR NOT NULL UNIQUE REFERENCES ca_edit_artifact(id) ON DELETE CASCADE, identity_json CLOB NOT NULL, receipt_json CLOB NOT NULL, preview_json CLOB NOT NULL)");
                 s.execute("CREATE TABLE IF NOT EXISTS ca_edit_command(session_id VARCHAR NOT NULL REFERENCES ca_session(id) ON DELETE CASCADE, id VARCHAR NOT NULL, signature CLOB NOT NULL, result_json CLOB NOT NULL, PRIMARY KEY(session_id,id))");
+                s.execute("CREATE TABLE IF NOT EXISTS ca_edit_generation(session_id VARCHAR NOT NULL REFERENCES ca_session(id) ON DELETE CASCADE, request_id VARCHAR NOT NULL, turn_id VARCHAR NOT NULL, snapshot_json CLOB NOT NULL, observation CLOB NOT NULL, PRIMARY KEY(session_id,request_id))");
+                s.execute("CREATE TABLE IF NOT EXISTS ca_edit_snapshot(id VARCHAR PRIMARY KEY, session_id VARCHAR NOT NULL REFERENCES ca_session(id) ON DELETE CASCADE, branch_id VARCHAR NOT NULL, payload CLOB NOT NULL)");
             }
             return null;
         }).join();
     }
     public static Identity identity(Origin o) {return new Identity(o.projectId(),o.instanceId(),o.sessionId(),o.turnId(),o.operationId(),o.attemptId(),o.epoch());}
     public static Origin origin(Identity i) {return new Origin(i.projectId(),i.projectInstanceId(),i.sessionId(),i.turnId(),i.attemptId(),i.operationId(),i.runtimeEpoch());}
+    public void capture(EditSnapshot snapshot,String branch) {
+        store.transaction(c->{var o=snapshot.request().origin();sessions.guard(c,identity(o),ReactRepository.Access.LIVE_WRITE);
+            Snapshot parent=sessions.react().read(c,identity(o)).orElseThrow();
+            if(parent.status()!=AttemptStatus.RUNNING||parent.branches().stream().noneMatch(b->b.id().equals(branch)&&b.status()==BranchStatus.ACTIVE))throw new CancellationException("Capture branch revoked");
+            try(var q=c.prepareStatement("INSERT INTO ca_edit_snapshot VALUES(?,?,?,?)")) {
+                q.setString(1,snapshot.snapshotId());q.setString(2,o.sessionId());q.setString(3,branch);q.setString(4,json.writeValueAsString(snapshot));q.executeUpdate();
+            }return null;
+        }).join();
+    }
+    /** Reserve before subscription. Even failed/interrupted requests retain their once-only identity. */
+    public Optional<String> reserveGeneration(EditSnapshot snapshot) {
+        return store.transaction(c->{var o=snapshot.request().origin();sessions.guard(c,identity(o),ReactRepository.Access.LIVE_WRITE);
+            try(var q=c.prepareStatement("SELECT observation FROM ca_edit_generation WHERE session_id=? AND request_id=?")) {
+                q.setString(1,o.sessionId());q.setString(2,snapshot.request().requestId());try(var r=q.executeQuery()){if(r.next())return Optional.of(r.getString(1));}
+            }
+            try(var q=c.prepareStatement("INSERT INTO ca_edit_generation VALUES(?,?,?,?,?)")) {
+                q.setString(1,o.sessionId());q.setString(2,snapshot.request().requestId());q.setString(3,o.turnId());q.setString(4,json.writeValueAsString(snapshot));q.setString(5,"{\"status\":\"RESERVED_OR_INTERRUPTED\"}");q.executeUpdate();
+            }return Optional.<String>empty();
+        }).join();
+    }
+    public void generationResult(EditSnapshot snapshot,String observation) {
+        store.transaction(c->{var o=snapshot.request().origin();sessions.guard(c,identity(o),ReactRepository.Access.LIVE_WRITE);
+            try(var q=c.prepareStatement("UPDATE ca_edit_generation SET observation=? WHERE session_id=? AND request_id=?")) {
+                q.setString(1,observation);q.setString(2,o.sessionId());q.setString(3,snapshot.request().requestId());
+                if(q.executeUpdate()!=1)throw new IllegalStateException("Missing generation reservation");
+            }return null;
+        }).join();
+    }
     public EditProposal stage(EditProposal proposal) {
         return store.transaction(c->{
             var source=proposal.snapshot().request().origin();

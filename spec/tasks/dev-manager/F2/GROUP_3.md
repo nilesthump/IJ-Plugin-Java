@@ -1,6 +1,6 @@
 # F2-G3：受控候选生成与ReAct接入
 
-负责人：用户本人。依赖：G2通过。状态：NOT_STARTED。
+负责人：用户本人。依赖：G2 定位基础已验证。状态：LOCAL_VERIFIED，与 G2 统一单 PR，验证及交付见 [STATUS](STATUS.md) / [实际实现](G23_IMPLEMENTATION.md)。
 
 ## 工作项
 

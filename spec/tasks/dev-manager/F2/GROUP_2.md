@@ -1,6 +1,6 @@
 # F2-G2：双入口定位与固定快照
 
-负责人：用户本人。依赖：G1通过。状态：NOT_STARTED。
+负责人：用户本人。依赖：G1 已经 PR #19 合入核验。状态：LOCAL_VERIFIED，当前验证及单 PR 交付见 [STATUS](STATUS.md) / [实际实现](G23_IMPLEMENTATION.md)。
 
 ## 工作项
 

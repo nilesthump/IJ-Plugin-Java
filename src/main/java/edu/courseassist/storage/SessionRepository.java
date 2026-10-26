@@ -190,6 +190,8 @@ public final class SessionRepository {
                 Turn original=turns.stream().filter(t->t.id().equals(e.turnId())).findFirst().orElseThrow(()->new Rejected(Rejection.INVALID_TARGET));
                 if(original.attempts().isEmpty()||!original.attempts().getLast().attemptId().equals(e.previousAttemptId())) throw new Rejected(Rejection.INVALID_TARGET);
                 Snapshot previous=react.read(c,original.attempts().getLast()).orElseThrow();
+                if(previous.branches().stream().flatMap(b->b.steps().stream()).flatMap(step->step.tools().stream())
+                        .anyMatch(t->t.call().name().equals("resolveEditTarget")||t.call().name().equals("proposeCodeEdit")))throw new Rejected(Rejection.INVALID_TARGET);
                 if(previous.status()==AttemptStatus.RUNNING||previous.status()==AttemptStatus.SUCCEEDED) throw new Rejected(Rejection.INVALID_TARGET);
                 turn=original.id(); input=original.input();
             } else if(!(event instanceof ManualCompact)) throw new Rejected(Rejection.INVALID_INPUT);

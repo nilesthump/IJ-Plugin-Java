@@ -237,3 +237,9 @@ PR #18 已在最新 head validation/scope 成功、独立检查闭合后合入 m
 ## F2 G1 本地验证通过（2026-10-26）
 
 契约/独立存储/本地审核事件/APPLY基础/工具能力分离已实现；最终统一All+IdeSmoke退出0，187 tests/33 suites零失败，本机IU-262.10968.63/JBR25.0.4 PASS，两路独立检查闭合。此交付PR最新validation/scope成功、合入main并核验后G1 DONE；此前LOCAL_VERIFIED。G2–G6未开始，真实Diff/Undo/API/人工F2验收未执行。详细行为和证据见[F2状态](../tasks/dev-manager/F2/STATUS.md)。
+
+## F2 G2/G3 单 PR 开发（2026-10-26）
+
+G1 已通过 PR #19 合入 main `1ec4b9412d8c70b20a404da6c9a499d82bae1654`；最新 head 的 validation/scope 成功，本地 dev-manager 已同步核验。用户授权下两组 G2/G3，只提交一个 PR。项目内双入口定位、同版完整快照、严格候选构造、单次子生成与父预算/取消、失败隔离及重试边界已实现。最终统一 All+IdeSmoke 退出0，196项/34套件无失败错误跳过，本机 IDEA PASS；独立检查闭合。当前 LOCAL_VERIFIED，未提前宣称 main DONE。
+
+具体实现/验证/限制见 [G23_IMPLEMENTATION](../tasks/dev-manager/F2/G23_IMPLEMENTATION.md) 和 [F2 状态](../tasks/dev-manager/F2/STATUS.md)。不创建新分支，不改 hooks/范围政策，不触碰 F0 成员旧实现；G4–G6 和真实 Diff/Undo/源码应用不在本轮范围。无付费调用，架构未冻结。
