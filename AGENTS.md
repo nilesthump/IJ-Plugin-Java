@@ -1,6 +1,6 @@
-# F0 development entry
+# F0 / F2 development entry
 
-本仓库只开发 F0。先阅读，再实现当前分支任务；不要扩大功能或创建新分支。
+保留已验收 F0，按授权顺序开发 F2。先阅读，再实现当前分支任务；不要扩大功能或创建新分支。F2 全部由用户本人负责，沿用 dev-manager；先完成 G0 治理合入核验，再进入 G1。
 
 ## 按顺序读取
 
@@ -29,3 +29,5 @@
 ## 架构状态与修改
 
 公开仓库的实施入口为 `BASELINE.md` 与 `F0_DEVELOPMENT_PLAN.md`；原始附件、需求答复与讨论 `WORKING.json` 由负责人在本地保留，不公开、不要求成员克隆读取。原协调者为 `codex-f0-coordinator`，工作区 `H:/IJ-Plugin-Java`；不得据公开方案伪造已确认决策、正式候选或冻结状态。架构变更先在自己的任务里提出，负责人协调并回填公开方案与契约。初始化不等于完整 P0、正式冻结或产品验收。
+
+F2 任务继续读 spec/architecture/F2_DEVELOPMENT_PLAN.md、spec/tasks/dev-manager/F2/README.md、STATUS.md、HANDOFF.md 和当前组；精确写入例外见 WRITE_SCOPE.md。

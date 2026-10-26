@@ -330,3 +330,11 @@
 本轮PR前统一验证命令：powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -LocalIdePath 'H:\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\IJ-Plugin-Java\tmp\gradle-user-home'，退出0；30 suites / 169 tests，失败/错误/跳过均0，check/buildPlugin通过。仅现有工程回归，F2实现仍NOT_STARTED；本轮IdeSmoke、真实API与F2产品场景NOT_RUN。
 
 发布独立核对无阻断；提交前机检核验精确19文件、范围、空白与敏感模式。当前正在提交推送/创建PR，远端CI和实际URL由本地发布回执另记；本轮不合并、不修改门禁或业务。
+
+## G0 实施与验证（2026-10-26）
+
+用户已明确授权精确治理提案。实施范围见 G0_DECISIONS.md：四个F2子目录与三个UI接线文件；保留原managerExcluded、hooks、固定五分支和main可信检查。当前阶段 LOCAL_VERIFIED / AWAITING_PR，不标记DONE；G1仍NOT_STARTED。
+
+node scripts/testing/scope-policy.test.cjs：22项本地检查通过、20项可信工作流表达式一致；包含相似名称拒绝、其他成员目录拒绝、main拒绝及重命名旧端拒绝。原始结果 tmp/f2-scope-figVz7/results.json。
+统一 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -LocalIdePath 'H:\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\IJ-Plugin-Java\tmp\gradle-user-home' 退出0，日志 tmp/f2-g0/validation.log。F0 test任务UP-TO-DATE，既有169项报告不作为本轮重新执行。F2产品/IDE/API未执行。
+下一步：独立检查闭合后独立治理PR，经最新head validation/scope成功、main合入核验并同步，才能开始G1。

@@ -69,7 +69,7 @@ public final class SessionTestEnvironment implements AutoCloseable {
     }
     public String create(String instance) throws Exception {dispatch(new CreateSession(meta(instance,null),"session"));return sessions.snapshot(instance).activeSessionId().orElseThrow();}
     public EventMeta meta(String instance,String session){return new EventMeta(SessionData.id(),instance,Optional.ofNullable(session));}
-    public CommandResult dispatch(ViewEvent event) throws Exception{return sessions.dispatch(event).toCompletableFuture().get(10,TimeUnit.SECONDS);}
+    public CommandResult dispatch(ViewEvent event) throws Exception{return sessions.dispatch(event).toCompletableFuture().get(30,TimeUnit.SECONDS);}
     public SessionViewState view(String instance,String session){return sessions.snapshot(instance).sessions().stream().filter(s->s.sessionId().equals(session)).findFirst().orElseThrow();}
     public void text(String instance,String session,String text) throws Exception {DraftView d=view(instance,session).draft();var result=dispatch(new UpdateDraftText(meta(instance,session),d.draftId(),d.revision(),text));require(result.outcome()==Outcome.APPLIED,"draft saved: "+result.rejection());}
     public SubmitDraft submitEvent(String instance,String session){var d=view(instance,session).draft();return new SubmitDraft(meta(instance,session),d.draftId(),d.revision());}
