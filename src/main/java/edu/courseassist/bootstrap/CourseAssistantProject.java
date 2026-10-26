@@ -43,7 +43,10 @@ public final class CourseAssistantProject implements Disposable {
                 return ProjectLocations.read(Path.of(project.getBasePath()));
             }).thenCompose(location->application.controllers().thenCompose(c->c.sessions().open(location,projectInstanceId,this::codeCapture,asNew,
                     java.util.Optional.of((identity,input,permitted)->new edu.courseassist.editor.f2.JavaEditTargetPort(project,projectInstanceId,
-                            input.code().stream().filter(part->part.kind()==edu.courseassist.contract.ChatContracts.PartKind.SELECTION).toList(),permitted)))).toCompletableFuture());
+                            input.code().stream().filter(part->part.kind()==edu.courseassist.contract.ChatContracts.PartKind.SELECTION).toList(),permitted))))
+                    .thenCompose(opened->application.controllers().thenCompose(c->c.sessions().attachEditHost(projectInstanceId,
+                            new edu.courseassist.core.session.SessionCoordinator.EditHost(new edu.courseassist.ui.f2.NativeEditPreviewPort(project),
+                                    new edu.courseassist.editor.f2.JavaEditApplyPort(project,projectInstanceId)))).thenApply(ignored->opened)).toCompletableFuture());
         }
         return binding.copy();
     }

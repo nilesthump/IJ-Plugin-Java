@@ -4,6 +4,7 @@ import edu.courseassist.contract.*;
 import edu.courseassist.contract.ChatContracts.*;
 import edu.courseassist.contract.CaptureContracts.*;
 import edu.courseassist.contract.CommonContracts.*;
+import edu.courseassist.contract.EditContracts.*;
 import edu.courseassist.core.RuntimeGate;
 import edu.courseassist.core.corpus.CourseLibrary;
 import edu.courseassist.core.react.*;
@@ -20,6 +21,27 @@ import java.util.function.*;
  * subscriptions. Route reservations are memory-only and checked again inside first INSERT. */
 public final class SessionCoordinator implements SessionController, SelectionSink, AutoCloseable {
     @FunctionalInterface public interface EditTargets { EditTargetPort bind(Identity identity,Input input,BooleanSupplier permitted); }
+    public record EditHost(EditPreviewPort preview,EditApplyPort apply) {}
+    private final Map<String,EditHost> editHosts=new ConcurrentHashMap<>();
+    private final Map<String,ApplyRun> applying=new ConcurrentHashMap<>();
+    private final Map<String,ApplyReceipt> pendingReceipts=new ConcurrentHashMap<>();
+    private final Map<String,ApplyRequest> pendingApplies=new ConcurrentHashMap<>();
+    private record DisplayBinding(String instance,String session,ProposalRef proposal,EditPreviewPort.Display display) {}
+    private final Map<String,DisplayBinding> editDisplays=new ConcurrentHashMap<>();
+    private record PreviewOpening(String instance,String session,AtomicBoolean permitted) {}
+    private final Map<String,PreviewOpening> openingPreviews=new ConcurrentHashMap<>();
+    private void revokePreviews(Predicate<PreviewOpening> predicate){openingPreviews.values().stream().filter(predicate).forEach(o->o.permitted().set(false));}
+    private static final class ApplyRun {
+        final ApplyRequest request;final BooleanSupplier live;
+        boolean permitted=true;
+        CompletableFuture<ApplyReceipt> completion;
+        ApplyRun(ApplyRequest request,BooleanSupplier live){this.request=request;this.live=live;}
+        synchronized boolean commit(Runnable write){if(!permitted||!live.getAsBoolean())return false;write.run();return true;}
+        synchronized void revoke(){permitted=false;}
+    }
+    public CompletionStage<Void> attachEditHost(String instance,EditHost host) {
+        return command(()->{project(instance);if(editHosts.putIfAbsent(instance,host)!=null)throw new IllegalStateException("F2 host already attached");return null;});
+    }
     private final SessionRepository repository;
     private final RuntimeGate runtime;
     private final CourseLibrary courses;
@@ -69,7 +91,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
                 ProjectState old=projects.get(existing.instance().get());
                 if(old!=null&&!old.open.get()) {
                     for(State s:repository.states(existing.projectId(),old.instance))if(s.lifecycle()==Lifecycle.LIVE&&blocked.contains(s.id()))restore(old,s.id());
-                    repository.recover(existing.projectId(),existing.instance());projects.remove(old.instance,old);
+                    repository.recover(existing.projectId(),existing.instance());projects.remove(old.instance,old);editHosts.remove(old.instance);
                 }
             }
             Binding b=repository.open(location,instance,asNew);ProjectState p=new ProjectState(b,instance,capture);p.edits=edits;projects.put(instance,p);refresh(p);return b;});
@@ -84,6 +106,8 @@ public final class SessionCoordinator implements SessionController, SelectionSin
     public CompletionStage<Void> closeProject(String instance) {
         ProjectState p=projects.get(instance);if(p==null)return CompletableFuture.completedFuture(null);
         p.open.set(false);revokeReservations(instance,Optional.empty());
+        revokePreviews(o->o.instance().equals(instance));
+        applying.values().stream().filter(r->r.request.operation().instanceId().equals(instance)).forEach(ApplyRun::revoke);
         runs.values().stream().filter(r->r.operation.identity().projectInstanceId().equals(instance)).forEach(Run::cancel);
         return command(()->{
             settle(p.binding.projectId(),Optional.of(instance));
@@ -91,15 +115,20 @@ public final class SessionCoordinator implements SessionController, SelectionSin
                 p.observers.clear();throw new Rejected(Rejection.UNSAVED_STATE);
             }
             repository.recover(p.binding.projectId(),Optional.of(instance));
-            p.observers.clear();projects.remove(instance,p);return null;
+            p.observers.clear();projects.remove(instance,p);editHosts.remove(instance);return null;
         });
     }
     /** Revoke synchronously, then coordinate local snapshots; never wait for remote acknowledgement. */
     public CompletionStage<Void> stopAll() {
         runs.values().forEach(Run::cancel);
+        revokePreviews(o->true);
+        applying.values().forEach(ApplyRun::revoke);
         return command(()->{for(ProjectState p:projects.values()){settle(p.binding.projectId(),Optional.empty());refresh(p);}return null;});
     }
     private void settle(String project,Optional<String> instance) {
+        for(var run:List.copyOf(applying.values()))if(run.request.operation().projectId().equals(project)
+                &&instance.map(i->i.equals(run.request.operation().instanceId())).orElse(true)){run.revoke();finishApply(run);}
+        editDisplays.values().stream().filter(d->instance.map(d.instance()::equals).orElse(true)).forEach(d->d.display().close());
         repository.settleEdits(project,instance);
         for(Run run:List.copyOf(runs.values())) {
             Identity i=run.operation.identity();if(!i.projectId().equals(project)||instance.isPresent()&&!instance.get().equals(i.projectInstanceId()))continue;
@@ -135,6 +164,10 @@ public final class SessionCoordinator implements SessionController, SelectionSin
     }
     @Override public CompletionStage<CommandResult> dispatch(ViewEvent event) {
         if(event instanceof DeleteSession)revokeReservations(event.meta().projectInstanceId(),event.meta().sessionId());
+        if(event instanceof DeleteSession)revokePreviews(o->o.instance().equals(event.meta().projectInstanceId())&&event.meta().sessionId().filter(o.session()::equals).isPresent());
+        if(event instanceof DeleteSession||event instanceof StopOperation)applying.values().stream()
+                .filter(r->r.request.operation().instanceId().equals(event.meta().projectInstanceId())&&event.meta().sessionId().filter(r.request.operation().sessionId()::equals).isPresent()
+                        &&(!(event instanceof StopOperation stop)||stop.operationId().equals(r.request.applyId()))).forEach(ApplyRun::revoke);
         return command(()->{
             ProjectState p;
             try {p=project(event.meta().projectInstanceId());}
@@ -165,15 +198,60 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         String project=p.binding.projectId(),instance=p.instance;var meta=event.meta();String target=meta.sessionId().orElse("");
         if(blocked.contains(target)&&(event instanceof UpdateDraftText||event instanceof RemoveDraftCapture))
             throw new Rejected(Rejection.UNSAVED_STATE);
-        // G1 has no Diff or apply adapter. Never reserve/consume/launch generation here.
-        if(event instanceof OpenEditPreview||event instanceof ApproveEditProposal) {
-            repository.history(project,instance,target);
-            throw new Rejected(Rejection.NOT_SUPPORTED);
+        if(event instanceof OpenEditPreview e) {
+            var host=editHost(instance);
+            var proposal=repository.edits().load(project,instance,target,e.proposal());
+            var view=repository.edits().views(project,instance,target).stream().filter(v->v.proposal().equals(e.proposal())).findFirst().orElseThrow();
+            String displayId=SessionData.id();var opening=new PreviewOpening(instance,target,new AtomicBoolean(true));openingPreviews.put(displayId,opening);
+            CompletionStage<EditPreviewPort.Display> opened;
+            try{opened=host.preview().open(proposal);}catch(RuntimeException failure){openingPreviews.remove(displayId);throw failure;}
+            opened.whenComplete((display,error)->{
+                if(closed){if(display!=null)display.close();return;}
+                command(()->{
+                openingPreviews.remove(displayId);
+                boolean live;
+                try {live=opening.permitted().get()&&p.open.get()&&repository.states(project,instance).stream().anyMatch(s->s.id().equals(target)&&s.lifecycle()==Lifecycle.LIVE);}
+                catch(RuntimeException failure){if(display!=null)display.close();observerFailures.accept(ReactEngine.unwrap(failure));return null;}
+                if(!live){if(display!=null)display.close();return null;}
+                if(error!=null){if(!ReactEngine.isCancellation(ReactEngine.unwrap(error)))failures.put(target,ReactEngine.unwrap(error));refresh(p);return null;}
+                editDisplays.put(displayId,new DisplayBinding(instance,target,e.proposal(),display));
+                display.whenClosed(()->command(()->{editDisplays.remove(displayId);return null;}));
+                try {
+                    project(instance);
+                    if(view.review()!=ReviewState.REVIEWABLE&&view.review()!=ReviewState.INVALIDATED)return null;
+                    long stamp=host.apply().validate(proposal).toCompletableFuture().join();
+                    var token=repository.edits().displayed(project,instance,target,e.proposal(),stamp);
+                    display.enable(token,decision->dispatch(decision.approve()
+                            ?new ApproveEditProposal(new EventMeta(decision.commandId(),instance,Optional.of(target)),decision.preview())
+                            :new RejectEditProposal(new EventMeta(decision.commandId(),instance,Optional.of(target)),decision.preview())),
+                            ()->command(()->{editDisplays.remove(displayId);repository.edits().dismiss(token);return null;}));
+                }catch(RuntimeException failure){display.close();if(!ReactEngine.isCancellation(ReactEngine.unwrap(failure)))failures.put(target,ReactEngine.unwrap(failure));if(p.open.get())refresh(p);}
+                return null;
+                }).whenComplete((ignored,failure)->{if(failure!=null){if(display!=null)display.close();observerFailures.accept(ReactEngine.unwrap(failure));}});
+            });
+            return new CommandResult(meta.commandId(),Outcome.APPLIED,p.view.revision(),Optional.empty(),Optional.empty());
         }
-        if(event instanceof RejectEditProposal e)return repository.edits().reject(project,meta,e.preview());
+        if(event instanceof ApproveEditProposal e)return approve(p,e);
+        if(event instanceof InspectEditApplication e) {
+            var request=repository.edits().applications(project,instance,target).stream().filter(r->r.proposal().ref().equals(e.proposal())).findFirst().orElseThrow(()->new Rejected(Rejection.INVALID_TARGET));
+            if(applying.containsKey(request.applyId()))throw new Rejected(Rejection.BUSY);
+            var known=repository.edits().views(project,instance,target).stream().filter(v->v.proposal().equals(e.proposal())).findFirst().orElseThrow().receipt();
+            if(pendingApplies.containsKey(request.applyId())||known.filter(r->r.state()==ApplyState.OUTCOME_UNKNOWN||r.state()==ApplyState.RECEIPT_PENDING).isPresent()) {
+                restore(p,target);
+                return new CommandResult(meta.commandId(),Outcome.APPLIED,p.view.revision()+1,Optional.empty(),Optional.of(request.applyId()));
+            }
+            var observation=editHost(instance).apply().inspect(request,known).toCompletableFuture().join();
+            observation.ifPresent(r->repository.edits().observed(project,instance,target,r));
+            return new CommandResult(meta.commandId(),Outcome.APPLIED,p.view.revision()+1,Optional.empty(),Optional.of(request.applyId()));
+        }
+        if(event instanceof RejectEditProposal e) {
+            var result=repository.edits().reject(project,meta,e.preview());
+            closeProposalDisplays(e.preview().proposal());return result;
+        }
         if(event instanceof RecoverSession)restore(p,target);
         else if(event instanceof CreateSession e)repository.create(project,instance,SessionData.id(),e.title(),SessionData.emptyDraft());
         else if(event instanceof DeleteSession) {
+            for(var run:List.copyOf(applying.values()))if(run.request.operation().sessionId().equals(target)){run.revoke();finishApply(run);}
             Optional<State> found=repository.states(project,instance).stream().filter(s->s.id().equals(target)).findFirst();
             if(found.isPresent()) {
                 repository.fenceDelete(project,instance,target);
@@ -185,6 +263,11 @@ public final class SessionCoordinator implements SessionController, SelectionSin
                 catch(RuntimeException failure){try{repository.deletionFailed(project,instance,target);refresh(p);}catch(RuntimeException mark){failure.addSuppressed(mark);}throw failure;}
             }
             failures.remove(target);blocked.remove(target);unsavedDrafts.remove(target);reservations.entrySet().removeIf(e->e.getValue().ticket.targetSessionId().equals(target));
+            for(var entry:List.copyOf(pendingApplies.entrySet()))if(entry.getValue().operation().sessionId().equals(target)) {
+                pendingApplies.remove(entry.getKey());pendingReceipts.remove(entry.getKey());
+            }
+            editDisplays.values().stream().filter(d->d.session().equals(target)).forEach(d->d.display().close());
+            var host=editHosts.get(instance);if(host!=null)host.apply().forgetSession(target);
         } else if(event instanceof UpdateDraftText e)repository.edit(project,instance,target,s->{
             SessionRepository.requireDraft(s.draft(),e.draftId(),e.expectedDraftRevision());
             return s.change(new DraftView(s.draft().draftId(),s.draft().revision()+1,e.text(),s.draft().captures(),SaveState.SAVED,placements(e,s.draft()),e.captureOrder().orElse(s.draft().captureOrder())),s.turns(),s.operation());
@@ -209,6 +292,10 @@ public final class SessionCoordinator implements SessionController, SelectionSin
             catch(RuntimeException error){if(lease!=null)lease.close();markBlocked(run.operation.identity(),error);throw error;}
             return submission.result();
         } else if(event instanceof StopOperation e) {
+            ApplyRun edit=applying.get(e.operationId());
+            if(edit!=null&&edit.request.operation().sessionId().equals(target)&&edit.request.operation().instanceId().equals(instance)) {
+                edit.revoke();finishApply(edit);return new CommandResult(meta.commandId(),Outcome.APPLIED,p.view.revision()+1,Optional.empty(),Optional.of(e.operationId()));
+            }
             // Validate ownership before looking up a globally indexed running operation.
             State state=repository.states(project,instance).stream().filter(s->s.id().equals(target)).findFirst().orElseThrow(()->new Rejected(Rejection.SESSION_DELETED));
             Run run=runs.get(e.operationId());
@@ -232,6 +319,51 @@ public final class SessionCoordinator implements SessionController, SelectionSin
             repository.tabs(project,instance,tabs,active);
         }
         return new CommandResult(meta.commandId(),Outcome.APPLIED,p.view.revision()+1,Optional.empty(),Optional.empty());
+    }
+    private EditHost editHost(String instance) {var host=editHosts.get(instance);if(host==null)throw new Rejected(Rejection.NOT_SUPPORTED);return host;}
+    private void closeProposalDisplays(ProposalRef ref){editDisplays.values().stream().filter(d->d.proposal().equals(ref)).forEach(d->d.display().close());}
+    private CommandResult approve(ProjectState p,ApproveEditProposal event) {
+        String project=p.binding.projectId(),session=event.meta().sessionId().orElseThrow();var host=editHost(p.instance);
+        var current=repository.edits().views(project,p.instance,session).stream().filter(v->v.proposal().equals(event.preview().proposal())).findFirst().orElseThrow(()->new Rejected(Rejection.INVALID_TARGET));
+        // De-duplication precedes current Document validation, busy and epoch checks.
+        if(current.receipt().isEmpty()) {
+            repository.edits().validatePreview(project,event.meta(),event.preview());
+            if(blocked.contains(session))throw new Rejected(Rejection.UNSAVED_STATE);
+            var proposal=repository.edits().load(project,p.instance,session,event.preview().proposal());
+            try {long stamp=host.apply().validate(proposal).toCompletableFuture().join();if(stamp!=event.preview().documentStamp())throw new IllegalStateException("Document changed since Diff display");}
+            catch(RuntimeException failure){repository.edits().invalidate(project,p.instance,session,proposal.ref());closeProposalDisplays(proposal.ref());failures.put(session,ReactEngine.unwrap(failure));throw new Rejected(Rejection.STALE_REVISION);}
+        }
+        var request=repository.edits().beginApply(project,event.meta(),event.preview(),runtime.snapshot().epoch());
+        closeProposalDisplays(request.proposal().ref());
+        var receipt=repository.edits().views(project,p.instance,session).stream().filter(v->v.proposal().equals(request.proposal().ref())).findFirst().orElseThrow().receipt().orElseThrow();
+        if(receipt.state()==ApplyState.INTENT&&!applying.containsKey(request.applyId())) {
+            ApplyRun run=new ApplyRun(request,()->p.open.get()&&runtime.isCurrent(request.operation().epoch())&&!closed);
+            applying.put(request.applyId(),run);
+            try {
+                repository.edits().applying(request);
+                run.completion=host.apply().apply(request,run::commit).toCompletableFuture();
+            }catch(RuntimeException failure){run.completion=CompletableFuture.failedFuture(new EditApplyPort.NotApplied(failure));}
+            run.completion.whenComplete((r,error)->command(()->{
+                finishApply(run);
+                if(p.open.get())try{refresh(p);}catch(RuntimeException readFailure){markBlocked(edu.courseassist.storage.EditRepository.identity(request.operation()),ReactEngine.unwrap(readFailure));publishFailure(p,session);}
+                return null;
+            }));
+        }
+        return new CommandResult(event.meta().commandId(),Outcome.APPLIED,p.view.revision()+1,Optional.empty(),Optional.of(request.applyId()));
+    }
+    private void finishApply(ApplyRun run) {
+        if(applying.get(run.request.applyId())!=run)return;
+        ApplyReceipt result;
+        try {result=run.completion.join();}
+        catch(RuntimeException failure) {
+            Throwable cause=ReactEngine.unwrap(failure);failures.put(run.request.operation().sessionId(),cause);
+            result=new ApplyReceipt(run.request.applyId(),run.request.proposal().ref(),cause instanceof EditApplyPort.NotApplied?ApplyState.FAILED_NOT_APPLIED:ApplyState.OUTCOME_UNKNOWN,DiskState.UNKNOWN,Optional.empty());
+        }
+        try {repository.edits().outcome(run.request,result);}
+        catch(RuntimeException saveFailure){
+            pendingApplies.put(run.request.applyId(),run.request);pendingReceipts.put(run.request.applyId(),result);
+            markBlocked(edu.courseassist.storage.EditRepository.identity(run.request.operation()),ReactEngine.unwrap(saveFailure));
+        }finally{applying.remove(run.request.applyId(),run);}
     }
     private static Map<String,Integer> placements(UpdateDraftText event,DraftView draft) {
         if(event.captureOrder().isPresent()) {
@@ -391,7 +523,18 @@ public final class SessionCoordinator implements SessionController, SelectionSin
     private void restore(ProjectState p,String session) {
         String instance=p.instance;
         if(runs.values().stream().anyMatch(r->r.operation.identity().sessionId().equals(session)))throw new Rejected(Rejection.BUSY);
+        if(applying.values().stream().anyMatch(r->r.request.operation().sessionId().equals(session)))throw new Rejected(Rejection.BUSY);
         Optional<Snapshot> snapshot=overlays.values().stream().filter(s->s.identity().sessionId().equals(session)).findFirst().map(SessionCoordinator::interrupted);
+        EditHost host=editHosts.get(instance);
+        if(host!=null)for(var request:repository.edits().applications(p.binding.projectId(),instance,session)) {
+            ApplyReceipt receipt=pendingReceipts.get(request.applyId());
+            if(receipt!=null) {repository.edits().reconcile(p.binding.projectId(),instance,request,receipt);pendingReceipts.remove(request.applyId());pendingApplies.remove(request.applyId());}
+            var known=repository.edits().views(p.binding.projectId(),instance,session).stream().filter(v->v.proposal().equals(request.proposal().ref())).findFirst().orElseThrow().receipt();
+            if(known.filter(r->r.state()==ApplyState.OUTCOME_UNKNOWN||r.state()==ApplyState.RECEIPT_PENDING).isPresent()) {
+                var observed=host.apply().inspect(request,known).toCompletableFuture().join();
+                if(observed.isPresent())repository.edits().observed(p.binding.projectId(),instance,session,observed.get());
+            }
+        }
         repository.recoverSession(p.binding.projectId(),instance,session,snapshot);
         DraftView draft=unsavedDrafts.get(session);
         if(draft!=null)repository.edit(p.binding.projectId(),instance,session,s->{
@@ -419,7 +562,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
             else actions.add(SessionAction.RECOVER);
             List<Notice> notices=new ArrayList<>(s.notices());if(failures.containsKey(s.id())&&notices.isEmpty())notices.add(SessionData.notice("TASK_FAILED","操作失败，请查看任务状态后重试",s.id(),null));
             sessions.add(new SessionViewState(s.id(),s.title(),s.revision(),s.lifecycle(),unsavedDrafts.getOrDefault(s.id(),s.draft()),turns,s.operation().map(o->new ActiveOperation(o.identity().operationId(),o.kind(),
-                    o.kind()==OperationKind.GENERATE?Optional.of(o.identity().attemptId()):Optional.empty())),failed,actions,notices));
+                    o.kind()==OperationKind.GENERATE?Optional.of(o.identity().attemptId()):Optional.empty())),failed,actions,notices,repository.edits().views(s.projectId(),p.instance,s.id())));
         }
         long revision=p.view==null?0:p.view.revision()+1;
         p.view=new ProjectChatViewState(b.projectId(),p.instance,revision,sessions,b.tabs(),b.active(),List.of());
@@ -431,7 +574,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         if(!p.open.get()||p.view==null)return;var old=p.view;
         var sessions=old.sessions().stream().map(s->s.sessionId().equals(session)?new SessionViewState(s.sessionId(),s.title(),s.revision()+1,s.lifecycle(),
                 unsavedDrafts.getOrDefault(session,new DraftView(s.draft().draftId(),s.draft().revision(),s.draft().text(),s.draft().captures(),SaveState.FAILED,s.draft().captureOffsets(),s.draft().captureOrder())),s.turns(),s.activeOperation(),true,
-                Set.of(SessionAction.CLOSE_TAB,SessionAction.DELETE,SessionAction.RECOVER),List.of(SessionData.notice("UNSAVED_STATE","保存失败，请恢复后再发送",session,null))):s).toList();
+                Set.of(SessionAction.CLOSE_TAB,SessionAction.DELETE,SessionAction.RECOVER),List.of(SessionData.notice("UNSAVED_STATE","保存失败，请恢复后再发送",session,null)),s.editProposals()):s).toList();
         p.view=new ProjectChatViewState(old.projectId(),p.instance,old.revision()+1,sessions,old.openSessionIds(),old.activeSessionId(),old.notices());
         for(var observer:p.observers)deliver(observer,p.view);
     }
@@ -442,5 +585,5 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         try{commands.execute(()->{try{future.complete(work.call());}catch(Throwable failure){future.completeExceptionally(ReactEngine.unwrap(failure));}});}
         catch(RuntimeException failure){future.completeExceptionally(failure);}return future;
     }
-    @Override public void close(){closed=true;projects.values().forEach(p->p.open.set(false));reservations.values().forEach(r->r.valid.set(false));runs.values().forEach(Run::cancel);commands.shutdown();}
+    @Override public void close(){closed=true;projects.values().forEach(p->p.open.set(false));reservations.values().forEach(r->r.valid.set(false));runs.values().forEach(Run::cancel);applying.values().forEach(ApplyRun::revoke);editDisplays.values().forEach(d->d.display().close());commands.shutdown();}
 }

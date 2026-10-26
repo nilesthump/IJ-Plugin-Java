@@ -1,6 +1,6 @@
 # F2-G4：原生Diff与两个本地审核按钮
 
-负责人：用户本人。依赖：G3通过。状态：NOT_STARTED。
+负责人：用户本人。依赖：G3通过。状态：LOCAL_VERIFIED；本交付PR门禁成功、main合入核验后DONE。
 
 ## 工作项
 

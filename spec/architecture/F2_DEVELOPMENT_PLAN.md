@@ -135,3 +135,7 @@ Diff左右为固定只读before/after，不绑定可直接编辑的live Document
 2026-10-25读取的[Documents](https://plugins.jetbrains.com/docs/intellij/documents.html)支持Document内存文本、命令与Undo；[PSI Files](https://plugins.jetbrains.com/docs/intellij/psi-files.html)说明项目作用域PSI与文件查找；[Threading Model](https://plugins.jetbrains.com/docs/intellij/threading-model.html)约束模型访问锁和EDT；[IDEA Diff Viewer](https://www.jetbrains.com/help/idea/differences-viewer.html)说明侧对比及可编辑本地内容。只读副本+显式宿主批准是基于这些能力的本方案设计，不是官方对本插件的保证。
 
 本机仍仅验证实际安装版本，当前既有基线为IU-262.10968.63；未来升级重新读取product-info并同步构建/CI，不承诺其他版本。官方网页和合成模型不能替代本机Diff/Undo/脏文档/取消竞争证据。
+
+## F2 G4/G5 实施入口（2026-10-26）
+
+G0–G3 已经各自门禁及 main 合入核验；G2/G3 的 PR #20 合并提交为 4de5417。用户本轮授权 G4/G5 集中一个 PR 提交并合并。原生只读 Diff、本地审核、准确 Document 应用/Undo 与回执恢复的实际行为见 [G4/G5 实现](../tasks/dev-manager/F2/G45_IMPLEMENTATION.md)，验证与 main 交付状态见 [F2 状态](../tasks/dev-manager/F2/STATUS.md)。旧“未实现Diff/应用”是先前组时点，不作为当前事实；G6 不展开，架构未冻结。

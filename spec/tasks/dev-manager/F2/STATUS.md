@@ -1,3 +1,16 @@
+# 当前 G4/G5 单 PR 交付（2026-10-26）
+
+唯一负责人：用户本人；既有 dev-manager，基线 main `4de5417ef81cd3e409c5721b1eb0a8d508ff3443`。G0–G3 已合入核验（G2/G3 为 PR #20）。用户授权 G4/G5 统一一个 PR 提交并合并；G6 未开始，架构未冻结。
+
+阶段 LOCAL_VERIFIED / AWAITING_CI（本PR成功合入并核验后G4/G5 DONE）。最终统一 All+IdeSmoke 退出0：35 suites / 209 tests，失败/错误/跳过均0；本机 IU-262.10968.63 / JBR25.0.4 的 result.json 为 PASS。新增13项审核/应用/恢复JUnit及真实IDE原生Diff、准确应用/Undo/保存/拒写场景。两路独立Standards/Spec检查及最后恢复增量检查均无遗留。具体行为、各轮失败/修复与层次限制见 [G45_IMPLEMENTATION](G45_IMPLEMENTATION.md)。
+
+准确命令：powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\IJ-Plugin-Java\tmp\gradle-user-home'。最后日志 `tmp/f2-g45-delivery-final.log`；本地原始证据 `spec/architecture/evidence/f2-g45-local-validation-2026-10-26.json`。先前成功批次不覆盖其后的修复，结论仅以最后交付运行计。
+
+安装包 `build/distributions/IJ-Plugin-Java-0.1.0-dev.zip`，79967508 bytes，SHA256 `17defe73bb9977fd576e16a4fcba64e1ae8adc86aeb3311051b397189b144772`。
+
+交付入口：[PR #21](https://github.com/nilesthump/IJ-Plugin-Java/pull/21)，dev-manager → main；实现提交1578f23已推送，工作区干净。仅此一个PR。下一条：核验最新head的validation/scope，成功后合并并fetch/快进核验，保留固定分支。本PR满足这些条件后G4/G5为DONE；否则保持待集成。G6未开始，人工F2/真实API继续NOT_RUN。
+
+## 此前记录（保留原时点状态）
 # 当前 G2/G3 单 PR 交付（2026-10-26）
 
 唯一负责人：用户本人；分支 dev-manager，基线 main `1ec4b9412d8c70b20a404da6c9a499d82bae1654`。G0/G1 已经 PR #18/#19 合入核验；此前待合入记录为历史。用户授权下两组 G2/G3，只提交一个 PR；G4–G6 不展开，架构未冻结。

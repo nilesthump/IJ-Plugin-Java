@@ -53,7 +53,10 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
                     "registered-editor-action-Java-PSI-durable-three-part-capture",
                     "F2-project-source-roots-ambiguous-overload-nested-class-unsaved-document-stale-selection",
                     "F2-real-dumb-mode-and-bounded-incomplete-search",
-                    "F2-SpringAI-loopback-parent-child-protocol-guarded-H2-candidate"],
+                    "F2-SpringAI-loopback-parent-child-protocol-guarded-H2-candidate",
+                    "F2-native-readonly-two-sided-Diff-exact-hashes-no-live-document-write",
+                    "F2-local-buttons-zero-model-embedding-draft-mutation",
+                    "F2-dirty-Document-exact-apply-named-Undo-redo-normal-save-observation-drift-rename-rejection"],
                     "limitations":["headless IDE command; no visual interaction", "synthetic loopback HTTP only",
                     "synthetic models/embeddings; no human visual acceptance or real provider validation"]}
                     """.formatted(Instant.now(), ApplicationInfo.getInstance().getBuild().asString(),
@@ -149,6 +152,7 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
         EditorIntegrationChecks.run(scratch.resolve("editor-integration"));
         F2TargetChecks.run(scratch.resolve("f2-targets"));
         F2GenerationChecks.run(scratch.resolve("f2-generation"));
+        F2ReviewApplyChecks.run(scratch.resolve("f2-review-apply"));
         // Explicitly verify the service's disposal boundary before normal IDE shutdown repeats it.
         application.dispose();
         application.shutdownCompletion().get(20,TimeUnit.SECONDS);

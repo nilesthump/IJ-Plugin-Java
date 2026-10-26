@@ -111,7 +111,7 @@ public final class EditRepository {
     }
     public List<ProposalView> views(String project,String instance,String session) {
         return store.transaction(c->{sessions.live(c,project,instance,session,true);List<ProposalView> out=new ArrayList<>();
-            for(var p:artifacts(c,session))out.add(new ProposalView(p.ref(),review(c,p.proposalId()),receipt(c,p.proposalId())));
+            for(var p:artifacts(c,session))out.add(new ProposalView(p.ref(),review(c,p.proposalId()),receipt(c,p.proposalId()),p.snapshot().target().relativePath()));
             return List.copyOf(out);
         }).join();
     }
@@ -129,21 +129,75 @@ public final class EditRepository {
         EditProposal p=artifact(c,session,ref.proposalId());
         if(!p.ref().equals(ref))throw new Rejected(Rejection.STALE_REVISION);
         Origin source=p.snapshot().request().origin();
-        if(!source.projectId().equals(project)||!source.instanceId().equals(instance))throw new Rejected(Rejection.PROJECT_CLOSED);
+        if(!source.projectId().equals(project))throw new Rejected(Rejection.PROJECT_CLOSED);
         Snapshot parent=sessions.react().read(c,identity(source)).orElseThrow();
         if(!parent.eligible()||!parent.effectiveBranchId().equals(p.branchId()))throw new Rejected(Rejection.INVALID_TARGET);
+        if(parent.branches().stream().filter(b->b.id().equals(p.branchId())&&b.status()!=BranchStatus.INVALIDATED)
+                .flatMap(b->b.steps().stream()).flatMap(s->s.tools().stream()).noneMatch(t->t.status()==ToolStatus.SUCCEEDED
+                        &&t.call().id().equals(p.toolCallId())&&t.call().name().equals("proposeCodeEdit")))throw new Rejected(Rejection.INVALID_TARGET);
         return p;
     }
     /** Host calls this only after the real read-only Diff was displayed and revalidated. */
     public PreviewToken displayed(String project,String instance,String session,ProposalRef ref) {
+        var p=load(project,instance,session,ref);
+        if(!p.snapshot().request().origin().instanceId().equals(instance))throw new Rejected(Rejection.PROJECT_CLOSED);
+        return displayed(project,instance,session,ref,p.snapshot().documentStamp());
+    }
+    /** Fresh viewer plus host validation of the same full before; old tokens stay revoked. */
+    public PreviewToken displayed(String project,String instance,String session,ProposalRef ref,long documentStamp) {
         return store.transaction(c->{
             EditProposal p=require(c,project,instance,session,ref);
-            if(review(c,p.proposalId())!=ReviewState.REVIEWABLE)throw new Rejected(Rejection.INVALID_TARGET);
-            PreviewToken token=new PreviewToken(SessionData.id(),ref,instance);
+            var state=review(c,p.proposalId());
+            if((state!=ReviewState.REVIEWABLE&&state!=ReviewState.INVALIDATED)||receipt(c,p.proposalId()).isPresent())throw new Rejected(Rejection.INVALID_TARGET);
+            setReview(c,p.proposalId(),ReviewState.REVIEWABLE);
+            PreviewToken token=new PreviewToken(SessionData.id(),ref,instance,documentStamp);
             try(var q=c.prepareStatement("INSERT INTO ca_edit_preview VALUES(?,?,?,?)")){
                 q.setString(1,token.tokenId());q.setString(2,session);q.setString(3,p.proposalId());q.setString(4,json.writeValueAsString(token));q.executeUpdate();
             }
             return token;
+        }).join();
+    }
+    public void dismiss(PreviewToken token) {
+        store.transaction(c->{try(var q=c.prepareStatement("DELETE FROM ca_edit_preview WHERE id=?")){q.setString(1,token.tokenId());q.executeUpdate();}return null;}).join();
+    }
+    public void invalidate(String project,String instance,String session,ProposalRef ref) {
+        store.transaction(c->{require(c,project,instance,session,ref);
+            if(review(c,ref.proposalId())==ReviewState.REVIEWABLE)setReview(c,ref.proposalId(),ReviewState.INVALIDATED);return null;}).join();
+    }
+    public List<ApplyRequest> applications(String project,String instance,String session) {
+        return store.transaction(c->{sessions.live(c,project,instance,session,true);List<ApplyRequest> result=new ArrayList<>();
+            for(var p:artifacts(c,session)) {var r=receipt(c,p.proposalId());if(r.isPresent())result.add(application(c,session,r.get().applyId()));}
+            return List.copyOf(result);
+        }).join();
+    }
+    /** Observation only: accepts host evidence, does not reserve a slot or authorize another write. */
+    public void observed(String project,String instance,String session,ApplyReceipt result) {
+        store.transaction(c->{State root=sessions.live(c,project,instance,session,true);
+            var request=application(c,session,result.applyId());
+            if(!request.proposal().ref().equals(result.proposal())||result.state()!=ApplyState.APPLIED_TO_DOCUMENT)throw new Rejected(Rejection.INVALID_INPUT);
+            boolean previouslyUnknown=unresolved(c,session);
+            writeReceipt(c,result);
+            boolean unknown=unresolved(c,session);
+            sessions.put(c,new State(root.id(),root.projectId(),root.title(),root.revision()+1,root.lifecycle(),unknown||(root.blocked()&&!previouslyUnknown),
+                    root.draft(),root.turns(),root.operation(),unknown?root.notices():List.of()));return null;
+        }).join();
+    }
+    /** A coordinator-held execution receipt may outlive lifecycle slot settlement. This only
+     * records that exact execution's observed outcome; it never authorizes or repeats a write. */
+    public void reconcile(String project,String instance,ApplyRequest request,ApplyReceipt result) {
+        store.transaction(c->{String session=request.operation().sessionId();State root=sessions.live(c,project,instance,session,true);
+            if(!application(c,session,request.applyId()).equals(request)||!result.applyId().equals(request.applyId())
+                    ||!result.proposal().equals(request.proposal().ref())||result.state()==ApplyState.INTENT||result.state()==ApplyState.APPLYING)
+                throw new Rejected(Rejection.INVALID_INPUT);
+            var old=receipt(c,request.proposal().proposalId()).orElseThrow();
+            if(old.state()==ApplyState.APPLIED_TO_DOCUMENT||old.state()==ApplyState.FAILED_NOT_APPLIED) {
+                if(!old.equals(result))throw new Rejected(Rejection.OPERATION_TERMINATED);return null;
+            }
+            if(root.operation().isPresent()&&!root.operation().get().identity().equals(identity(request.operation())))throw new Rejected(Rejection.BUSY);
+            writeReceipt(c,result);if(result.state()==ApplyState.FAILED_NOT_APPLIED)setReview(c,request.proposal().proposalId(),ReviewState.INVALIDATED);
+            boolean unknown=unresolved(c,session);
+            sessions.put(c,new State(root.id(),root.projectId(),root.title(),root.revision()+1,root.lifecycle(),unknown,
+                    root.draft(),root.turns(),Optional.empty(),unknown?List.of(SessionData.notice("EDIT_OUTCOME_UNKNOWN","代码应用结果待核对，不能自动重放",session,request.applyId())):List.of()));return null;
         }).join();
     }
     private EditProposal displayed(Connection c,String project,EventMeta meta,PreviewToken token) throws SQLException {
@@ -152,6 +206,9 @@ public final class EditRepository {
         if(!token.instanceId().equals(meta.projectInstanceId()))throw new Rejected(Rejection.PROJECT_CLOSED);
         requireStoredPreview(c,session,token);
         return p;
+    }
+    public void validatePreview(String project,EventMeta meta,PreviewToken token) {
+        store.transaction(c->{var p=displayed(c,project,meta,token);if(review(c,p.proposalId())!=ReviewState.REVIEWABLE)throw new Rejected(Rejection.INVALID_TARGET);return null;}).join();
     }
     private void requireStoredPreview(Connection c,String session,PreviewToken token) throws SQLException {
         try(var q=c.prepareStatement("SELECT payload FROM ca_edit_preview WHERE id=? AND session_id=? AND proposal_id=?")){
@@ -185,7 +242,7 @@ public final class EditRepository {
             var prior=receipt(c,token.proposal().proposalId());
             if(prior.isPresent()) {
                 EditProposal existing=artifact(c,session,token.proposal().proposalId());
-                if(!existing.ref().equals(token.proposal())||!existing.snapshot().request().origin().instanceId().equals(meta.projectInstanceId()))
+                if(!existing.ref().equals(token.proposal())||!application(c,session,prior.get().applyId()).operation().instanceId().equals(meta.projectInstanceId()))
                     throw new Rejected(Rejection.STALE_REVISION);
                 // Replay reads the durable record even while unresolved; it never reacquires a slot.
                 try(var q=c.prepareStatement("SELECT preview_json FROM ca_edit_apply WHERE id=? AND session_id=?")) {
@@ -197,6 +254,7 @@ public final class EditRepository {
             }
             EditProposal p=displayed(c,project,meta,token);
             if(review(c,p.proposalId())!=ReviewState.REVIEWABLE)throw new Rejected(Rejection.INVALID_TARGET);
+            if(root.blocked())throw new Rejected(Rejection.UNSAVED_STATE);
             if(root.operation().isPresent())throw new Rejected(Rejection.BUSY);
             if(!sessions.currentEpoch(epoch))throw new Rejected(Rejection.PLUGIN_OFF);
             String applyId=SessionData.id();Origin source=p.snapshot().request().origin();
@@ -208,7 +266,7 @@ public final class EditRepository {
             setReview(c,p.proposalId(),ReviewState.APPROVED);
             State next=root.change(root.draft(),root.turns(),Optional.of(new Operation(op,OperationKind.APPLY)));sessions.put(c,next);
             remember(c,meta,signature,new CommandResult(meta.commandId(),Outcome.APPLIED,next.revision(),Optional.empty(),Optional.of(applyId)));
-            return new ApplyRequest(applyId,origin(op),p);
+            return new ApplyRequest(applyId,origin(op),p,token.documentStamp());
         }).join();
     }
     /** Reserve durable APPLYING under its own current operation/epoch before any future IDE write. */
@@ -224,7 +282,8 @@ public final class EditRepository {
         store.transaction(c->{
             Identity op=identity(request.operation());
             // A late observed result may be recorded after cancellation, never after root deletion.
-            sessions.guard(c,op,ReactRepository.Access.COORDINATOR_TERMINAL);
+            State heldRoot=sessions.state(c,op.projectId(),op.sessionId());
+            if(heldRoot.lifecycle()!=Lifecycle.LIVE||heldRoot.operation().isEmpty()||!heldRoot.operation().get().identity().equals(op))throw new CancellationException("Apply operation revoked/deleted");
             if(!application(c,op.sessionId(),request.applyId()).equals(request)||!result.applyId().equals(request.applyId())
                     ||!result.proposal().equals(request.proposal().ref())||result.state()==ApplyState.INTENT||result.state()==ApplyState.APPLYING)
                 throw new Rejected(Rejection.INVALID_INPUT);
@@ -233,6 +292,7 @@ public final class EditRepository {
                 throw new Rejected(Rejection.OPERATION_TERMINATED);
             writeReceipt(c,result);
             State root=sessions.state(c,op.projectId(),op.sessionId());
+            if(result.state()==ApplyState.FAILED_NOT_APPLIED)setReview(c,request.proposal().proposalId(),ReviewState.INVALIDATED);
             boolean unresolved=unresolved(result.state());
             sessions.put(c,new State(root.id(),root.projectId(),root.title(),root.revision()+1,root.lifecycle(),unresolved,
                     root.draft(),root.turns(),Optional.empty(),unresolved?List.of(SessionData.notice("EDIT_OUTCOME_UNKNOWN","代码应用结果待核对，不能自动重放",root.id(),op.operationId())):List.of()));
@@ -248,6 +308,8 @@ public final class EditRepository {
             var receipt=receipt(c,p.proposalId());
             if(receipt.isPresent()&&(receipt.get().state()==ApplyState.INTENT||receipt.get().state()==ApplyState.APPLYING))
                 writeReceipt(c,new ApplyReceipt(receipt.get().applyId(),p.ref(),ApplyState.OUTCOME_UNKNOWN,DiskState.UNKNOWN,Optional.empty()));
+            else if(receipt.isPresent()&&receipt.get().state()==ApplyState.APPLIED_TO_DOCUMENT)
+                writeReceipt(c,new ApplyReceipt(receipt.get().applyId(),p.ref(),ApplyState.APPLIED_TO_DOCUMENT,DiskState.UNKNOWN,receipt.get().documentStamp(),DocumentState.UNKNOWN));
         }
     }
     boolean unresolved(Connection c,String session) throws SQLException {
@@ -266,10 +328,10 @@ public final class EditRepository {
         return List.copyOf(result);
     }
     private ApplyRequest application(Connection c,String session,String applyId) throws SQLException {
-        try(var q=c.prepareStatement("SELECT proposal_id,identity_json FROM ca_edit_apply WHERE id=? AND session_id=?")){
+        try(var q=c.prepareStatement("SELECT proposal_id,identity_json,preview_json FROM ca_edit_apply WHERE id=? AND session_id=?")){
             q.setString(1,applyId);q.setString(2,session);try(var r=q.executeQuery()){
                 if(!r.next())throw new Rejected(Rejection.INVALID_TARGET);
-                return new ApplyRequest(applyId,origin(json.readValue(r.getString(2),Identity.class)),artifact(c,session,r.getString(1)));
+                return new ApplyRequest(applyId,origin(json.readValue(r.getString(2),Identity.class)),artifact(c,session,r.getString(1)),json.readValue(r.getString(3),PreviewToken.class).documentStamp());
             }
         }
     }

@@ -220,3 +220,13 @@ ToolBoundary 固定课程/目标/候选能力，默认无 F2 adapter，不暴露
 完整同版 Document before 与范围先独立持久化到 ca_edit_snapshot。CodeEditTools 只允许 attempt 首次分支解析；课程降级不得重新采集/生成。ca_edit_generation 在子订阅前预留宿主逻辑请求，重复 callId 变化/并发/失败不触发重订阅；原始指令不可被工具参数替换。
 
 子生成由父唯一 ReAct 所有者驱动，tools=[]，共享超时/取消/步骤与累计输出限制，完整子输入先预算。严格精确替换只构造独立 after，零项目写入；子正文保留档案但不进入 branch.protocol。父有效耐久成功才提升候选。已使用 F2 的 attempt 不可重试；其余旧 F0 retry 不开放 F2，新 draft 才重新生成。Diff/审核 UI/实际应用仍留 G4/G5。实现参数、验证及限制见 [G2/G3 实现](../tasks/dev-manager/F2/G23_IMPLEMENTATION.md)。
+
+## F2 G4/G5 实际接线（2026-10-26）
+
+Project 服务装配 NativeEditPreviewPort / JavaEditApplyPort。`SessionViewState.editProposals` 为独立本地投影；旧十参构造保留。时间线只发送 OpenEditPreview 或新的 InspectEditApplication；宿主原生 Diff 的准确两个按钮发送 ApproveEditProposal / RejectEditProposal，不复用草稿提交或重试。
+
+EditPreviewPort.open 的完成值为 Display，只有实际只读双侧 viewer 确认后才完成；whenClosed 管生命周期，enable(token,decisions,dismissed) 启用本地按钮。PreviewToken 新增本次完整 before 验证的 documentStamp；ApplyRequest 携带该 stamp，保留历史构造。EditApplyPort.validate 返回当前准确 stamp，apply 接收仅本地内存 WritePermit，命名 IDE 写命令内最终校验后执行原 after。inspect 及带耐久回执的只读 inspect 不授权写入；forgetSession 清进程内私有观察。
+
+ApplyReceipt 新增兼容 DocumentState；历史 APPLIED_TO_DOCUMENT、当前观察和 DiskState 不合并，旧 JSON 缺字段按 UNKNOWN 处理。单个 applyId 的重复命令在 busy/epoch/当前源码校验之前返回原结果。意图失败不执行，未知或回执待保存阻塞；恢复只核对/补记且不得重放。重新打开项目时旧批准撤销，精确 before/身份重新验证并重新 Diff 后才发当前实例/stamp 的新 token；父成功、有效分支及实际成功候选工具来源仍须共同成立。
+
+所有 viewer（包括拒绝态归档）和未完成预览均绑定生命周期。停用/关闭/删除撤销迟到回调，删除清私有记录和诊断，不回滚用户文件。具体行为、真实验证与限制见 [G4/G5 实现](../tasks/dev-manager/F2/G45_IMPLEMENTATION.md)。旧文中“尚无Diff/apply adapter”仅为 G1/G3 时点状态。

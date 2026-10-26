@@ -109,6 +109,9 @@ public final class CourseAssistantView implements AutoCloseable {
         this.sessions = Objects.requireNonNull(sessions, "sessions");
         Objects.requireNonNull(application, "application");
         timeline = new ChatTimeline(project, (id, citation) -> dispatch(new OpenCitation(meta(id), citation)));
+        timeline.editAction((id,proposal)->dispatch(proposal.receipt().isPresent()
+                ?new edu.courseassist.contract.ChatContracts.InspectEditApplication(meta(id),proposal.proposal())
+                :new edu.courseassist.contract.ChatContracts.OpenEditPreview(meta(id),proposal.proposal())));
         autosave.setRepeats(false);
         applicationWorkspace = new ApplicationWorkspace(application, credentials, message -> {
             if (!closed) status.setText(message);
