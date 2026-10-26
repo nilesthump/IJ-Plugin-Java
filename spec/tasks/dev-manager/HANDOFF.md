@@ -299,3 +299,34 @@
 #13、#14 已通过门禁合入。#15 的169项CI中，dedupPrecedesBusyAndRevisionAndNewDraftSurvives在BUSY断言读取空rejection失败；本地169项及IDE通过。独立分析发现该用例保持模型未完成，却依赖真实10秒预算；慢runner可能在断言前结束旧attempt。这是与日志一致的测试竞争路径，日志未记录终态，不能断言唯一根因。
 
 该用例改用现有pauseGeneration：先暂停启动、预约操作，核验去重/BUSY/新草稿/单turn且请求数0，再恢复并核验唯一请求、持久成功和旧revision拒绝。生产实现、预算和断言资格不放宽。修复只从dev-manager PR到main，再供dev-c同步；F2实现未开始。统一All退出0：146 tests、失败/错误/跳过0；日志tmp/f0-split-publication/manager-deterministic-validation.log。独立复核确认暂停先于React计时，所有原断言保留。IDE此次纯测试变更不重跑，前次证据仍独立保留。
+
+## F2 无选区文字定位讨论（2026-10-25）
+
+- 用户原文为本地user-turn-074：允许不选中代码，用文字指出待修改文件/类/方法与预期行为。新增[双入口主图](../../architecture/evidence/f2-code-edit-main-2026-10-25.md)，定位/采集和候选生成另绘，DISCUSSION引用并登记来源哈希；不将具体工具算法或单文件/整份批准提案写成已确认实现。
+- 唯一精确目标直接采集真实Document，无额外强制定位确认；重名、重载、未找到、查询不完整分别说明和追问。无选区快照在解析/采集成功时固定，原提交不改；仅有旧F0片段仍需补齐同版完整before。Diff与批准应用流程保留，旧批准不得转移到重新解析出的其他目标。
+- 7份新增图文/原文内容、137项来源唯一性/哈希、三组图文一致及Git忽略/未跟踪检查通过，WORKING哈希不变；统一scripts/validate.ps1 -Scope Repository退出0。F2实现、All、IDE/API与外部渲染本轮NOT_RUN。现有暂存产品差异、分支及PR均未操作。
+
+## F2 关键约束及审核按钮确认（2026-10-25）
+
+- 用户原文user-turn-075确认此前三个关键约束，并明确“同意并应用”“拒绝”两个按钮均不进入ReAct；只有用户再次draft发送才重入。[确认记录与小图](../../architecture/evidence/f2-review-buttons-2026-10-25.md)已由DISCUSSION引用并登记来源哈希。拒绝/过期/失败不自动重新生成或提交draft；实现细节与文字替代按钮协议未自动确认。
+- 3份新增原文/图文/图源内容与哈希、140项来源唯一性、图文一致及Git忽略/未跟踪检查通过，WORKING哈希不变；统一scripts/validate.ps1 -Scope Repository退出0。仅记录设计确认，F2实现、All、IDE/API及外部渲染NOT_RUN；现有产品暂存、分支与PR不操作。
+
+
+## F0 合入完成（2026-10-25）
+
+#13、#14已合入；#15暴露合成生成时限与BUSY测试竞争，负责人补充#16确定性测试修复并通过门禁合入，随后#15同步、169项全量测试通过、validation/scope通过后合入。最终main为8fac78899ecffb612f3af9904d220faf1646f692，合并树与本地最终测试树完全一致；IDE证据对应相同产品与IDE检查源码。所有固定分支保留，主工作区dev-manager已快进同步；F2讨论增量原样保留，实现NOT_STARTED。此前CI失败保留记录，未绕过检查。详见本地忽略证据evidence/f0-merge-receipt-2026-10-25.json及tmp/f0-split-publication/c-final-evidence.json。本条为本地交接回执，未另行提交。
+
+## F2方案和个人任务组生成（2026-10-25）
+
+- 用户要求生成F2方案/任务组，全部由用户本人负责；本地user-turn-076保存原文。新增[开发方案](../../architecture/F2_DEVELOPMENT_PLAN.md)、[契约提案](../../contracts/F2_API_PROPOSAL.md)与[个人任务包](F2/README.md)，共G0–G6七组串行，不向成员分派。
+- 推荐既有dev-manager集中交付；G0先处理F0-only入口及精确F2路径/可信门禁。此轮不改AGENTS、机检、hooks、CI、构建依赖、实际API或业务，不创建分支/PR，不变更WORKING。单文件/整份批准等技术建议未伪称全部确认。
+- 两路独立文档检查闭合，三项修正为REVIEWABLE候选准入、审核不要求已释放父operation、同逻辑请求换callId/失败后不重复生成。统一Repository退出0；13份新文档、17个本地链接及4处导航内容/范围检查通过。首次BASELINE换行空白与一次核验脚本解析失败修正后复核，记录保留。
+- 当前F2产品实现NOT_STARTED；All、F2 IDE/API及人工验收NOT_RUN。下一条进入F2/GROUP_0；F0历史验收与合入结论继续有效，不拿历史169项测试冒充F2验证。本轮未提交/推送。
+
+## F2方案文档PR发布准备（2026-10-25）
+
+用户授权提交推送本批19份公开规划/入口/任务状态文档，使用既有dev-manager→main，保留固定分支。原始答复、DISCUSSION、WORKING及本地evidence继续忽略，不入提交。
+
+本轮PR前统一验证命令：powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -LocalIdePath 'H:\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\IJ-Plugin-Java\tmp\gradle-user-home'，退出0；30 suites / 169 tests，失败/错误/跳过均0，check/buildPlugin通过。仅现有工程回归，F2实现仍NOT_STARTED；本轮IdeSmoke、真实API与F2产品场景NOT_RUN。
+
+发布独立核对无阻断；提交前机检核验精确19文件、范围、空白与敏感模式。当前正在提交推送/创建PR，远端CI和实际URL由本地发布回执另记；本轮不合并、不修改门禁或业务。

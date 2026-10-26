@@ -223,3 +223,9 @@ dev-manager 已同步 origin/main `fb425c9`，其中成员 editor/pdf/ui 均已�
 - https://github.com/nilesthump/IJ-Plugin-Java/pull/15
 
 独立All：dev-a 106 tests通过，dev-manager 146 tests通过；dev-c编译因main尚无ImportCoursePdfs/captureOffsets/captureOrder等契约而失败，按依赖阻塞如实保留草稿。完整集成树169 tests+IDE PASS与用户F0验收仍有效，但不冒充拆分分支单独验证。顺序：#13合入main→#14同步并补独立IdeSmoke→#14合入main→#15同步并全量验证。此轮只创建PR，未合并三份新PR；F2仍未开工。验证生成的安装ZIP已再次清理。
+
+## F2方案与个人任务组（2026-10-25）
+
+本轮生成[F2开发方案](../architecture/F2_DEVELOPMENT_PLAN.md)、[契约提案](../contracts/F2_API_PROPOSAL.md)与[本人顺序任务G0–G6](../tasks/dev-manager/F2/README.md)。所有F2任务归用户本人，产品实现NOT_STARTED，未正式冻结。本地dev-manager/origin-main为8fac788；F0已验收及合入沿用既有交付记录，本轮不重跑历史产品验收。
+
+先G0对齐F0-only入口及精确F2写入范围，现行门禁不在本轮修改。两个审核按钮“同意并应用”“拒绝”均本地处理，只有用户再次draft发送重入ReAct；其余技术建议明确列为提案。文档生成验证与未执行边界见F2状态，不代表F2功能可用。
