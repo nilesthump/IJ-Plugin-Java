@@ -20,7 +20,7 @@ public final class ChatContracts {
 
     public enum Lifecycle { LIVE, DELETING, DELETE_FAILED }
     public enum CaptureState { PENDING, READY, FAILED, RECAPTURE_REQUIRED }
-    public enum OperationKind { GENERATE, COMPACT }
+    public enum OperationKind { GENERATE, COMPACT, APPLY }
     public enum AttemptStatus { RUNNING, SAVING, SUCCEEDED, STOPPED, INTERRUPTED, LIMITED, FAILED }
     public enum BranchStatus { ACTIVE, COMPLETED, INVALIDATED }
     public enum StepStatus { STREAMING, TOOL_CALLS_READY, TOOLS_RUNNING, FINISHED, INCOMPLETE }
@@ -235,7 +235,7 @@ public final class ChatContracts {
 
     public sealed interface ViewEvent permits CreateSession, SelectSession, UpdateDraftText, SubmitDraft,
             CloseSessionTab, OpenSessionTab, DeleteSession, RemoveDraftCapture, StopOperation, RetryAttempt,
-            ManualCompact, ReorderTabs, OpenCitation, RecoverSession { EventMeta meta(); }
+            ManualCompact, ReorderTabs, OpenCitation, RecoverSession, OpenEditPreview, ApproveEditProposal, RejectEditProposal { EventMeta meta(); }
 
     private static void target(EventMeta meta) {
         if (Objects.requireNonNull(meta, "meta").sessionId().isEmpty()) {
@@ -243,6 +243,15 @@ public final class ChatContracts {
         }
     }
 
+    public record OpenEditPreview(EventMeta meta, EditContracts.ProposalRef proposal) implements ViewEvent {
+        public OpenEditPreview { target(meta); Objects.requireNonNull(proposal); }
+    }
+    public record ApproveEditProposal(EventMeta meta, EditContracts.PreviewToken preview) implements ViewEvent {
+        public ApproveEditProposal { target(meta); Objects.requireNonNull(preview); }
+    }
+    public record RejectEditProposal(EventMeta meta, EditContracts.PreviewToken preview) implements ViewEvent {
+        public RejectEditProposal { target(meta); Objects.requireNonNull(preview); }
+    }
     public record CreateSession(EventMeta meta, String title) implements ViewEvent {
         public CreateSession {
             Objects.requireNonNull(meta, "meta"); Objects.requireNonNull(title, "title");

@@ -338,3 +338,8 @@
 node scripts/testing/scope-policy.test.cjs：22项本地检查通过、20项可信工作流表达式一致；包含相似名称拒绝、其他成员目录拒绝、main拒绝及重命名旧端拒绝。原始结果 tmp/f2-scope-figVz7/results.json。
 统一 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -LocalIdePath 'H:\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\IJ-Plugin-Java\tmp\gradle-user-home' 退出0，日志 tmp/f2-g0/validation.log。F0 test任务UP-TO-DATE，既有169项报告不作为本轮重新执行。F2产品/IDE/API未执行。
 下一步：独立检查闭合后独立治理PR，经最新head validation/scope成功、main合入核验并同步，才能开始G1。
+## F2 前两组交付（2026-10-26）
+
+G0 DONE：PR #18，main 0eecc0e，最新validation/scope成功并已fetch核验。G1 LOCAL_VERIFIED，详见[F2实现](F2/G1_IMPLEMENTATION.md)、[状态](F2/STATUS.md)、[交接](F2/HANDOFF.md)。
+
+最终统一All+IdeSmoke退出0，187 tests/33 suites，失败错误跳过0；本机IU-262.10968.63/JBR25.0.4 PASS；两路独立检查闭合。完整日志tmp/f2-g1/delivery-validation.log。本交付PR还须最新validation/scope成功、main合入及核验才能记G1 DONE。G2–G6及真实Diff/Undo/API/人工验收未执行。

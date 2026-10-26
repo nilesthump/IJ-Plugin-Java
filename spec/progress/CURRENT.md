@@ -229,3 +229,11 @@ dev-manager 已同步 origin/main `fb425c9`，其中成员 editor/pdf/ui 均已�
 本轮生成[F2开发方案](../architecture/F2_DEVELOPMENT_PLAN.md)、[契约提案](../contracts/F2_API_PROPOSAL.md)与[本人顺序任务G0–G6](../tasks/dev-manager/F2/README.md)。所有F2任务归用户本人，产品实现NOT_STARTED，未正式冻结。本地dev-manager/origin-main为8fac788；F0已验收及合入沿用既有交付记录，本轮不重跑历史产品验收。
 
 先G0对齐F0-only入口及精确F2写入范围，现行门禁不在本轮修改。两个审核按钮“同意并应用”“拒绝”均本地处理，只有用户再次draft发送重入ReAct；其余技术建议明确列为提案。文档生成验证与未执行边界见F2状态，不代表F2功能可用。
+
+## F2 G0 治理完成（2026-10-26）
+
+PR #18 已在最新 head validation/scope 成功、独立检查闭合后合入 main 0eecc0e，并已同步核验。四个F2目录及三个UI文件精确例外生效，其他成员限制不变。G1正在实施，详见 [F2状态](../tasks/dev-manager/F2/STATUS.md)；G2–G6未开始，架构未冻结。
+
+## F2 G1 本地验证通过（2026-10-26）
+
+契约/独立存储/本地审核事件/APPLY基础/工具能力分离已实现；最终统一All+IdeSmoke退出0，187 tests/33 suites零失败，本机IU-262.10968.63/JBR25.0.4 PASS，两路独立检查闭合。此交付PR最新validation/scope成功、合入main并核验后G1 DONE；此前LOCAL_VERIFIED。G2–G6未开始，真实Diff/Undo/API/人工F2验收未执行。详细行为和证据见[F2状态](../tasks/dev-manager/F2/STATUS.md)。
