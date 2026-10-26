@@ -30,3 +30,8 @@ node scripts/testing/scope-policy.test.cjs：22项本地检查通过、20项可�
 统一 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -LocalIdePath 'H:\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\IJ-Plugin-Java\tmp\gradle-user-home' 退出0，日志 tmp/f2-g0/validation.log。F0 test任务UP-TO-DATE，既有169项报告不作为本轮重新执行。F2产品/IDE/API未执行。
 下一步：独立检查闭合后独立治理PR，经最新head validation/scope成功、main合入核验并同步，才能开始G1。
 独立只读检查：g0_review 核对精确授权、排除项保留、本地/CI一致、重命名双端及可信main来源，无阻断；git diff --check通过。
+
+### G0 CI 测试观察边界修复
+首次CI run 40287327107：169 tests中1项失败，ContextPlannerTest重复摘要在SessionTestEnvironment.dispatch的10秒get超时，没有业务断言失败。保留失败，不推定远端变慢的唯一根因。
+新增真实H2写线程延迟11秒后执行UpdateDraftText的回归，原夹具确定性在同一位置TimeoutException（tmp/f2-g0/observation-red.log）。仅将夹具dispatch观察窗口对齐既有idle的30秒；模型业务10秒时限不变。修复后统一All退出0，31 suites/170 tests，失败错误跳过0（tmp/f2-g0/observation-green-all.log）。独立检查无阻断。
+37项既有Git策略操作回归通过（tmp/bootstrap-git-tests/run-7c64bef6b75c450aa67be8dc5576ba83/results.json）。G0仍待最新head门禁；G1未开始。
