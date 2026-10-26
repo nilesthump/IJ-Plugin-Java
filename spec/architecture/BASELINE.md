@@ -40,3 +40,7 @@
 ## F2 G0/G1 实施入口（2026-10-26）
 
 用户已授权前两组及精确治理提案。G0 PR #18已合入并核验，原F0-only限制按新授权更新；目录例外见WRITE_SCOPE及F2/G0_DECISIONS。G1契约/存储/能力基础正在验证，实际边界见[F2/G1实现](../tasks/dev-manager/F2/G1_IMPLEMENTATION.md)与[API](../contracts/API.md)。定位、Diff、实际应用仍未实现；不声明冻结。
+
+## F2 G2/G3 实施入口（2026-10-26）
+
+G1 已通过 PR #19 合入 main `1ec4b94` 并核验。用户授权接下来的 G2/G3 统一一个 PR，现已实现项目内定位/同版快照、严格候选生成及唯一 ReAct 接线，验证与交付状态见 [F2 状态](../tasks/dev-manager/F2/STATUS.md) / [G2/G3 实现](../tasks/dev-manager/F2/G23_IMPLEMENTATION.md)。前段未实现定位属于 G1 时点。保留已验收 F0；Diff/审核 UI、实际应用和 Undo 属 G4/G5，不在本轮完成声明内，不声明冻结。

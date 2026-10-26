@@ -50,7 +50,10 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
                     "native-directory-identity-same-volume-move-copy-isolation",
                     "registered-PDF-reader-real-three-page-file","registered-editor-action-port",
                     "production-ToolWindow-controller-draft-save-reopen",
-                    "registered-editor-action-Java-PSI-durable-three-part-capture"],
+                    "registered-editor-action-Java-PSI-durable-three-part-capture",
+                    "F2-project-source-roots-ambiguous-overload-nested-class-unsaved-document-stale-selection",
+                    "F2-real-dumb-mode-and-bounded-incomplete-search",
+                    "F2-SpringAI-loopback-parent-child-protocol-guarded-H2-candidate"],
                     "limitations":["headless IDE command; no visual interaction", "synthetic loopback HTTP only",
                     "synthetic models/embeddings; no human visual acceptance or real provider validation"]}
                     """.formatted(Instant.now(), ApplicationInfo.getInstance().getBuild().asString(),
@@ -144,6 +147,8 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
             });
         }
         EditorIntegrationChecks.run(scratch.resolve("editor-integration"));
+        F2TargetChecks.run(scratch.resolve("f2-targets"));
+        F2GenerationChecks.run(scratch.resolve("f2-generation"));
         // Explicitly verify the service's disposal boundary before normal IDE shutdown repeats it.
         application.dispose();
         application.shutdownCompletion().get(20,TimeUnit.SECONDS);

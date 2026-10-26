@@ -237,3 +237,19 @@ PR #18 已在最新 head validation/scope 成功、独立检查闭合后合入 m
 ## F2 G1 本地验证通过（2026-10-26）
 
 契约/独立存储/本地审核事件/APPLY基础/工具能力分离已实现；最终统一All+IdeSmoke退出0，187 tests/33 suites零失败，本机IU-262.10968.63/JBR25.0.4 PASS，两路独立检查闭合。此交付PR最新validation/scope成功、合入main并核验后G1 DONE；此前LOCAL_VERIFIED。G2–G6未开始，真实Diff/Undo/API/人工F2验收未执行。详细行为和证据见[F2状态](../tasks/dev-manager/F2/STATUS.md)。
+
+## F2 G2/G3 单 PR 开发（2026-10-26）
+
+G1 已通过 PR #19 合入 main `1ec4b9412d8c70b20a404da6c9a499d82bae1654`；最新 head 的 validation/scope 成功，本地 dev-manager 已同步核验。用户授权下两组 G2/G3，只提交一个 PR。项目内双入口定位、同版完整快照、严格候选构造、单次子生成与父预算/取消、失败隔离及重试边界已实现。最终统一 All+IdeSmoke 退出0，196项/34套件无失败错误跳过，本机 IDEA PASS；独立检查闭合。当前 LOCAL_VERIFIED，未提前宣称 main DONE。
+
+具体实现/验证/限制见 [G23_IMPLEMENTATION](../tasks/dev-manager/F2/G23_IMPLEMENTATION.md) 和 [F2 状态](../tasks/dev-manager/F2/STATUS.md)。不创建新分支，不改 hooks/范围政策，不触碰 F0 成员旧实现；G4–G6 和真实 Diff/Undo/源码应用不在本轮范围。无付费调用，架构未冻结。
+
+G2/G3 唯一交付入口：[PR #20](https://github.com/nilesthump/IJ-Plugin-Java/pull/20)，dev-manager → main，实现提交52fd92f。已推送，远端validation运行中、scope待上游完成；未合并，不标main DONE。连接器创建403后使用已登录CLI成功，未读取或落盘凭据。
+
+## PR #20 合并门禁修复（2026-10-26）
+
+用户已授权“本次合并”，覆盖此前只提交不合并的当轮限制。首次远端run40309275683失败：196项中取消测试预期STOPPED、实际LIMITED。保留完整日志，已用11秒观察延迟确定性证明期限先结束导致停止被拒绝的路径；不据原日志宣称唯一根因。
+
+只修改测试夹具可配置期限（默认10秒不变），该单个取消用例设2分钟，保留11秒延迟和全部原断言，新增停止必须APPLIED。生产代码、业务期限及门禁不变。修复后统一All退出0，34 suites / 196 tests，失败/错误/跳过0；日志tmp/f2-g23-cancel-green-all.log。独立增量检查无阻断。此次纯测试修复未重跑IdeSmoke；先前同生产代码本机IDE PASS证据仍独立保留。
+
+修复继续推送同一PR #20，待最新head validation/scope成功后合并并fetch核验；保留dev-manager，不新增PR或开展G4–G6。

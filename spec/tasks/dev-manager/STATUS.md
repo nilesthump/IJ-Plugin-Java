@@ -345,3 +345,9 @@ node scripts/testing/scope-policy.test.cjs：22项本地检查通过、20项可�
 G0 DONE：PR #18，main 0eecc0e，最新validation/scope成功并已fetch核验。G1 LOCAL_VERIFIED，详见[F2实现](F2/G1_IMPLEMENTATION.md)、[状态](F2/STATUS.md)、[交接](F2/HANDOFF.md)。
 
 最终统一All+IdeSmoke退出0，187 tests/33 suites，失败错误跳过0；本机IU-262.10968.63/JBR25.0.4 PASS；两路独立检查闭合。完整日志tmp/f2-g1/delivery-validation.log。本交付PR还须最新validation/scope成功、main合入及核验才能记G1 DONE。G2–G6及真实Diff/Undo/API/人工验收未执行。
+
+## F2 G2/G3 单 PR 本地交付（2026-10-26）
+
+基线 G1 PR #19/main 1ec4b94 已核验；用户授权接下来的G2/G3统一一个PR。双入口项目源码定位、完整同版Document/VFS身份、独立快照/生成预留、单次受控候选与父ReAct预算/取消、严格补丁/父资格及重试隔离已实现。最终统一All+IdeSmoke退出0，196 tests/34 suites零失败错误跳过，本机IU-262.10968.63/JBR25.0.4 PASS；独立检查闭合。详见[F2实现](F2/G23_IMPLEMENTATION.md)、[状态](F2/STATUS.md)、[交接](F2/HANDOFF.md)。
+
+保留各轮IDE测试夹具失败与修复；没有付费调用，真实Diff/Undo/源码应用/人工F2仍NOT_RUN。沿用dev-manager，未改hooks或权限范围，G4–G6不实施。单PR最新validation/scope及main合入核验前保持LOCAL_VERIFIED，不提前标DONE。

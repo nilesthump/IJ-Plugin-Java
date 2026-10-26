@@ -212,3 +212,11 @@ EditRepository 由 SessionRepository 拥有，同一 H2 writer 上建立独立 s
 APPLY 意图/结果分开记录，独立 operation 和稳定 applyId 去重；回执区分 INTENT/APPLYING/APPLIED_TO_DOCUMENT/FAILED_NOT_APPLIED/OUTCOME_UNKNOWN/RECEIPT_PENDING 及 UNKNOWN/UNSAVED/SAVED 磁盘状态。重启/停用不自动重放；未知结果维持阻塞，普通恢复不得清除，实际核验适配留 G5。会话删除级联清全部 F2 私有记录，迟到写拒绝。
 
 ToolBoundary 固定课程/目标/候选能力，默认无 F2 adapter，不暴露应用工具。实际目标定位、候选子生成、Diff、Undo/写命令及真实服务均不在 G1 完成声明内。本地状态事实进入未来上下文与 checkpoint 指纹，但候选原文和未完成生成不会因此进入模型。
+
+## F2 G2/G3 实际接线（2026-10-26）
+
+生产 Project 服务为原项目/实例注入 JavaEditTargetPort，原始 SubmitDraft 的 ReAct 开放 resolveEditTarget(path,class,method,parameters) 和 proposeCodeEdit(ref)。`f()` 指明确零参数；`f` 与空参数列表指参数未知。选区取原提交冻结 CodePart，文字不能改绑其目标。源码仅来自项目内 source roots，明确返回 UNIQUE/AMBIGUOUS/NOT_FOUND/NOT_READY/INCOMPLETE/STALE。Target 增加兼容可缺的 fileIdentity；生产快照保留独立 VFS id，旧缺失值不授权应用。
+
+完整同版 Document before 与范围先独立持久化到 ca_edit_snapshot。CodeEditTools 只允许 attempt 首次分支解析；课程降级不得重新采集/生成。ca_edit_generation 在子订阅前预留宿主逻辑请求，重复 callId 变化/并发/失败不触发重订阅；原始指令不可被工具参数替换。
+
+子生成由父唯一 ReAct 所有者驱动，tools=[]，共享超时/取消/步骤与累计输出限制，完整子输入先预算。严格精确替换只构造独立 after，零项目写入；子正文保留档案但不进入 branch.protocol。父有效耐久成功才提升候选。已使用 F2 的 attempt 不可重试；其余旧 F0 retry 不开放 F2，新 draft 才重新生成。Diff/审核 UI/实际应用仍留 G4/G5。实现参数、验证及限制见 [G2/G3 实现](../tasks/dev-manager/F2/G23_IMPLEMENTATION.md)。

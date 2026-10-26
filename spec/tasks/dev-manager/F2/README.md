@@ -32,3 +32,7 @@ F2所有任务由用户本人负责。先读F2/STATUS和HANDOFF，从GROUP_0的�
 任何候选必须完整、父有效分支正常且耐久后才可审核。批准绑定Diff展示版本；应用复验当前Document并支持Undo，Document与磁盘保存分开报告。
 保持F0混排输入、身份/单槽、课程降级、停止/中断资格、摘要与删除语义。统一验证，记录真实通过/失败/未执行。
 ```
+
+## 当前执行更正（2026-10-26）
+
+G0/G1 已通过 PR #18/#19 合入并核验；旧 NOT_STARTED 表为规划初始状态。用户授权下两组 G2/G3 合在一个 dev-manager→main PR。最终 All+IdeSmoke 196 项/34套件及本机 IDEA 通过，独立检查闭合，当前 LOCAL_VERIFIED。实施与边界见 [G23_IMPLEMENTATION](G23_IMPLEMENTATION.md)，准确交付状态见 STATUS/HANDOFF。G4–G6 不在本次授权范围。

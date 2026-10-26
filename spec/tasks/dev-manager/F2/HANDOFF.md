@@ -1,3 +1,16 @@
+# 当前 G2/G3 单 PR 交付（2026-10-26）
+
+唯一负责人：用户本人；分支 dev-manager，基线 main `1ec4b9412d8c70b20a404da6c9a499d82bae1654`。G0/G1 已经 PR #18/#19 合入核验；此前待合入记录为历史。用户授权下两组 G2/G3，只提交一个 PR；G4–G6 不展开，架构未冻结。
+
+G2/G3 实现和本地验证完成，当前 LOCAL_VERIFIED / AWAITING_CI；唯一交付 [PR #20](https://github.com/nilesthump/IJ-Plugin-Java/pull/20)，dev-manager → main，尚未合并。最终 All + IdeSmoke 退出 0，34 suites / 196 tests，失败/错误/跳过均 0；本机 IU-262.10968.63 / JBR25.0.4 的 result.json 为 PASS。行为、有限参数、失败修复及未执行项见 [G23_IMPLEMENTATION](G23_IMPLEMENTATION.md)。不得提前记 main DONE。
+
+命令：powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\IJ-Plugin-Java\tmp\gradle-user-home'。
+
+原始日志保留在 tmp/f2-g23-baseline.log、tmp/f2-g23-first.log、tmp/f2-g23-tests.log、tmp/f2-g23-second.log、tmp/f2-g23-third.log、tmp/f2-g23-fourth.log；最终运行 tmp/f2-g23-final.log。既有基线和每轮 JUnit/打包结果与单独 IDE 失败分开记录。独立代码复核原三项（跨降级重复生成、稳定文件身份、零参数重载）已修复并闭合；最终运行证据已核验，独立增量复核无阻断遗留。
+
+下一条：最终 All/IDE、独立检查及28文件暂存范围检查已闭合；实现提交 52fd92f 已推送并创建唯一 PR #20。下一步核验最新 head 的 validation/scope；本轮只提交 PR，不合并。新 PR 未合入前保持待集成。真实付费 API、人工 F2、Diff/审核 UI、Undo/源码应用未执行。
+
+## 以前的记录（原时点状态）
 
 # 当前 F2 状态（2026-10-26）
 
@@ -70,3 +83,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope 
 独立存储/生命周期/上下文检查及契约/工具检查均0遗留。修正并补测：未知应用结果的新commandId去重；同一事实快照验证checkpoint投影；重复批准命令固定内容；单会话恢复不失效另一session预览；真实H2重开原文保留且不恢复批准。
 
 实际行为与后续边界见 G1_IMPLEMENTATION.md。此次只交付G0/G1，G2–G6 NOT_STARTED。真实API、原生Diff/Undo、实际源码应用、人工F2验收 NOT_RUN；无付费调用，不宣称F2产品可用或架构冻结。
+
+## PR #20 合并门禁修复（2026-10-26）
+
+用户已授权“本次合并”，覆盖此前只提交不合并的当轮限制。首次远端run40309275683失败：196项中取消测试预期STOPPED、实际LIMITED。保留完整日志，已用11秒观察延迟确定性证明期限先结束导致停止被拒绝的路径；不据原日志宣称唯一根因。
+
+只修改测试夹具可配置期限（默认10秒不变），该单个取消用例设2分钟，保留11秒延迟和全部原断言，新增停止必须APPLIED。生产代码、业务期限及门禁不变。修复后统一All退出0，34 suites / 196 tests，失败/错误/跳过0；日志tmp/f2-g23-cancel-green-all.log。独立增量检查无阻断。此次纯测试修复未重跑IdeSmoke；先前同生产代码本机IDE PASS证据仍独立保留。
+
+修复继续推送同一PR #20，待最新head validation/scope成功后合并并fetch核验；保留dev-manager，不新增PR或开展G4–G6。
