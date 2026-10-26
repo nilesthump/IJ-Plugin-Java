@@ -15,6 +15,7 @@ public final class EditContracts {
     public enum ReviewState { STAGED, REVIEWABLE, APPROVED, REJECTED, INVALIDATED }
     public enum ApplyState { INTENT, APPLYING, APPLIED_TO_DOCUMENT, FAILED_NOT_APPLIED, OUTCOME_UNKNOWN, RECEIPT_PENDING }
     public enum DiskState { UNKNOWN, UNSAVED, SAVED }
+    public enum DocumentState { UNKNOWN, APPLIED, UNDONE, CHANGED }
     public record Origin(String projectId, String instanceId, String sessionId, String turnId,
                          String attemptId, String operationId, long epoch) {
         public Origin {
@@ -73,24 +74,31 @@ public final class EditContracts {
         public ProposalRef { requireId(proposalId,"proposal"); requireRevision(revision); requireId(beforeHash,"before hash"); requireId(afterHash,"after hash"); }
     }
     /** Issued by the host only after a real viewer displays this exact immutable pair. */
-    public record PreviewToken(String tokenId, ProposalRef proposal, String instanceId) {
-        public PreviewToken { requireId(tokenId,"preview"); Objects.requireNonNull(proposal); requireId(instanceId,"instance"); }
+    public record PreviewToken(String tokenId, ProposalRef proposal, String instanceId,long documentStamp) {
+        public PreviewToken(String tokenId,ProposalRef proposal,String instanceId){this(tokenId,proposal,instanceId,0);}
+        public PreviewToken { requireId(tokenId,"preview"); Objects.requireNonNull(proposal); requireId(instanceId,"instance");requireRevision(documentStamp); }
     }
-    public record ProposalView(ProposalRef proposal, ReviewState review, Optional<ApplyReceipt> receipt) {
-        public ProposalView { Objects.requireNonNull(proposal); Objects.requireNonNull(review); receipt=Objects.requireNonNull(receipt); }
+    public record ProposalView(ProposalRef proposal, ReviewState review, Optional<ApplyReceipt> receipt,String targetPath) {
+        public ProposalView(ProposalRef proposal,ReviewState review,Optional<ApplyReceipt> receipt){this(proposal,review,receipt,"");}
+        public ProposalView { Objects.requireNonNull(proposal); Objects.requireNonNull(review); receipt=Objects.requireNonNull(receipt);Objects.requireNonNull(targetPath); }
     }
     public record ReviewDecision(String commandId, PreviewToken preview, boolean approve) {
         public ReviewDecision { requireId(commandId,"command"); Objects.requireNonNull(preview); }
     }
     /** Host-created after durable approval/intent. Never exposed as a model tool. */
-    public record ApplyRequest(String applyId, Origin operation, EditProposal proposal) {
-        public ApplyRequest { requireId(applyId,"apply"); Objects.requireNonNull(operation); Objects.requireNonNull(proposal); }
+    public record ApplyRequest(String applyId, Origin operation, EditProposal proposal,long documentStamp) {
+        public ApplyRequest(String applyId,Origin operation,EditProposal proposal){this(applyId,operation,proposal,proposal.snapshot().documentStamp());}
+        public ApplyRequest { requireId(applyId,"apply"); Objects.requireNonNull(operation); Objects.requireNonNull(proposal);requireRevision(documentStamp); }
     }
     public record ApplyReceipt(String applyId, ProposalRef proposal, ApplyState state, DiskState disk,
-                               Optional<Long> documentStamp) {
+                               Optional<Long> documentStamp, DocumentState documentState) {
+        public ApplyReceipt(String applyId, ProposalRef proposal, ApplyState state, DiskState disk, Optional<Long> stamp) {
+            this(applyId,proposal,state,disk,stamp,state==ApplyState.APPLIED_TO_DOCUMENT?DocumentState.APPLIED:DocumentState.UNKNOWN);
+        }
         public ApplyReceipt {
             requireId(applyId,"apply"); Objects.requireNonNull(proposal); Objects.requireNonNull(state); Objects.requireNonNull(disk);
             documentStamp=Objects.requireNonNull(documentStamp); documentStamp.ifPresent(CommonContracts::requireRevision);
+            documentState=documentState==null?DocumentState.UNKNOWN:documentState;
             if(state==ApplyState.APPLIED_TO_DOCUMENT&&documentStamp.isEmpty())throw new IllegalArgumentException("Applied result needs observed stamp");
             if(state!=ApplyState.APPLIED_TO_DOCUMENT&&disk!=DiskState.UNKNOWN)throw new IllegalArgumentException("No observed disk result");
         }

@@ -36,3 +36,7 @@ F2所有任务由用户本人负责。先读F2/STATUS和HANDOFF，从GROUP_0的�
 ## 当前执行更正（2026-10-26）
 
 G0/G1 已通过 PR #18/#19 合入并核验；旧 NOT_STARTED 表为规划初始状态。用户授权下两组 G2/G3 合在一个 dev-manager→main PR。最终 All+IdeSmoke 196 项/34套件及本机 IDEA 通过，独立检查闭合，当前 LOCAL_VERIFIED。实施与边界见 [G23_IMPLEMENTATION](G23_IMPLEMENTATION.md)，准确交付状态见 STATUS/HANDOFF。G4–G6 不在本次授权范围。
+
+## G4/G5 当前执行（2026-10-26）
+
+G2/G3 已通过 PR #20 合入 main 4de5417并核验。用户本轮授权 G4/G5 统一一个 PR 提交并合并；早前“G4–G6 不在本轮范围”属于上一轮状态。实现与验证见 [G45_IMPLEMENTATION](G45_IMPLEMENTATION.md)，以 STATUS/HANDOFF 的最新记录为准；G6 仍未开始，架构未冻结。

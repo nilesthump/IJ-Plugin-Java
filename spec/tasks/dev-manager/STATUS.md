@@ -351,3 +351,6 @@ G0 DONE：PR #18，main 0eecc0e，最新validation/scope成功并已fetch核验�
 基线 G1 PR #19/main 1ec4b94 已核验；用户授权接下来的G2/G3统一一个PR。双入口项目源码定位、完整同版Document/VFS身份、独立快照/生成预留、单次受控候选与父ReAct预算/取消、严格补丁/父资格及重试隔离已实现。最终统一All+IdeSmoke退出0，196 tests/34 suites零失败错误跳过，本机IU-262.10968.63/JBR25.0.4 PASS；独立检查闭合。详见[F2实现](F2/G23_IMPLEMENTATION.md)、[状态](F2/STATUS.md)、[交接](F2/HANDOFF.md)。
 
 保留各轮IDE测试夹具失败与修复；没有付费调用，真实Diff/Undo/源码应用/人工F2仍NOT_RUN。沿用dev-manager，未改hooks或权限范围，G4–G6不实施。单PR最新validation/scope及main合入核验前保持LOCAL_VERIFIED，不提前标DONE。
+## F2 G4/G5 本地验证与单PR交付（2026-10-26）
+
+用户授权下两组统一一个PR提交并合并。基线main 4de5417（PR20），沿用dev-manager。最终统一All+IdeSmoke退出0：209项/35套件无失败错误跳过，本机IDE PASS；独立两路及最终恢复增量检查闭合。真实Diff、本地审核、准确应用/Undo及回执恢复已经接线。详细行为、命令/失败修复及包哈希见 [F2/G45_IMPLEMENTATION](F2/G45_IMPLEMENTATION.md) 与 [F2/STATUS](F2/STATUS.md)。当前LOCAL_VERIFIED，只有本交付PR最新validation/scope通过、main合入核验后G4/G5才DONE；G6不展开，人工F2/真实API未执行，架构未冻结。

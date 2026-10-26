@@ -44,3 +44,7 @@
 ## F2 G2/G3 实施入口（2026-10-26）
 
 G1 已通过 PR #19 合入 main `1ec4b94` 并核验。用户授权接下来的 G2/G3 统一一个 PR，现已实现项目内定位/同版快照、严格候选生成及唯一 ReAct 接线，验证与交付状态见 [F2 状态](../tasks/dev-manager/F2/STATUS.md) / [G2/G3 实现](../tasks/dev-manager/F2/G23_IMPLEMENTATION.md)。前段未实现定位属于 G1 时点。保留已验收 F0；Diff/审核 UI、实际应用和 Undo 属 G4/G5，不在本轮完成声明内，不声明冻结。
+
+## F2 G4/G5 实施入口（2026-10-26）
+
+G0–G3 已经各自门禁及 main 合入核验；G2/G3 的 PR #20 合并提交为 4de5417。用户本轮授权 G4/G5 集中一个 PR 提交并合并。原生只读 Diff、本地审核、准确 Document 应用/Undo 与回执恢复的实际行为见 [G4/G5 实现](../tasks/dev-manager/F2/G45_IMPLEMENTATION.md)，验证与 main 交付状态见 [F2 状态](../tasks/dev-manager/F2/STATUS.md)。旧“未实现Diff/应用”是先前组时点，不作为当前事实；G6 不展开，架构未冻结。

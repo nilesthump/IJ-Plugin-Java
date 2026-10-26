@@ -202,12 +202,18 @@ public final class ChatContracts {
 
     public record SessionViewState(String sessionId, String title, long revision, Lifecycle lifecycle,
                                    DraftView draft, List<TurnView> turns, Optional<ActiveOperation> activeOperation,
-                                   boolean writesBlocked, Set<SessionAction> allowedActions, List<Notice> notices) {
+                                   boolean writesBlocked, Set<SessionAction> allowedActions, List<Notice> notices,
+                                   List<EditContracts.ProposalView> editProposals) {
+        public SessionViewState(String sessionId,String title,long revision,Lifecycle lifecycle,DraftView draft,List<TurnView> turns,
+                                Optional<ActiveOperation> activeOperation,boolean writesBlocked,Set<SessionAction> allowedActions,List<Notice> notices) {
+            this(sessionId,title,revision,lifecycle,draft,turns,activeOperation,writesBlocked,allowedActions,notices,List.of());
+        }
         public SessionViewState {
             requireId(sessionId, "sessionId"); Objects.requireNonNull(title, "title"); requireRevision(revision);
             Objects.requireNonNull(lifecycle, "lifecycle"); Objects.requireNonNull(draft, "draft"); turns = List.copyOf(turns);
             activeOperation = Objects.requireNonNull(activeOperation, "activeOperation");
             allowedActions = Set.copyOf(allowedActions); notices = List.copyOf(notices);
+            editProposals=List.copyOf(editProposals);
         }
     }
 
@@ -235,7 +241,10 @@ public final class ChatContracts {
 
     public sealed interface ViewEvent permits CreateSession, SelectSession, UpdateDraftText, SubmitDraft,
             CloseSessionTab, OpenSessionTab, DeleteSession, RemoveDraftCapture, StopOperation, RetryAttempt,
-            ManualCompact, ReorderTabs, OpenCitation, RecoverSession, OpenEditPreview, ApproveEditProposal, RejectEditProposal { EventMeta meta(); }
+            ManualCompact, ReorderTabs, OpenCitation, RecoverSession, OpenEditPreview, ApproveEditProposal, RejectEditProposal, InspectEditApplication { EventMeta meta(); }
+    public record InspectEditApplication(EventMeta meta,EditContracts.ProposalRef proposal) implements ViewEvent {
+        public InspectEditApplication { target(meta);Objects.requireNonNull(proposal); }
+    }
 
     private static void target(EventMeta meta) {
         if (Objects.requireNonNull(meta, "meta").sessionId().isEmpty()) {

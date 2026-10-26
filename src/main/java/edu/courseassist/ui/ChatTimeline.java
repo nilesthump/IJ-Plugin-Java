@@ -14,6 +14,8 @@ import org.commonmark.renderer.html.HtmlRenderer;
 
 /** One chronological transcript. Raw message/step sources remain in the controller archive. */
 final class ChatTimeline implements AutoCloseable {
+    private java.util.function.BiConsumer<String,edu.courseassist.contract.EditContracts.ProposalView> editAction=(session,proposal)->{};
+    void editAction(java.util.function.BiConsumer<String,edu.courseassist.contract.EditContracts.ProposalView> action){editAction=action;}
     private final JPanel rows = new TranscriptPanel();
     private final JScrollPane scroll = new JScrollPane(rows);
     private final JPanel root = new JPanel(new BorderLayout());
@@ -149,6 +151,21 @@ final class ChatTimeline implements AutoCloseable {
                 result.add(new Row(false, attempt.attemptId() + ":" + branch.branchId(), state, process.toString(), answer, refs));
             }
         }
+        for(var proposal:session.editProposals()) {
+            String state="Java 修改 · "+proposal.targetPath()+" · "+switch(proposal.review()) {
+                case STAGED->"等待生成完成";case REVIEWABLE->"待审核";case APPROVED->"已批准";case REJECTED->"已拒绝";case INVALIDATED->"需重新核对并查看 Diff";
+            };
+            if(proposal.receipt().isPresent()) {
+                var receipt=proposal.receipt().get();
+                state+=" · "+switch(receipt.state()) {
+                    case INTENT,APPLYING->"应用中";case APPLIED_TO_DOCUMENT->"已应用到编辑器";
+                    case FAILED_NOT_APPLIED->"应用失败，未修改";case OUTCOME_UNKNOWN,RECEIPT_PENDING->"结果待核对，禁止重放";
+                };
+                state+=" · "+switch(receipt.disk()){case SAVED->"已保存到磁盘（上次核对）";case UNSAVED->"尚未保存到磁盘（上次核对）";case UNKNOWN->"磁盘状态未知";};
+                state+=" · "+switch(receipt.documentState()){case APPLIED->"候选仍在编辑器（上次核对）";case UNDONE->"已撤销（上次核对）";case CHANGED->"应用后有编辑（上次核对）";case UNKNOWN->"编辑器状态待核对";};
+            }
+            result.add(new Row(false,"edit:"+proposal.proposal().proposalId(),state,"",List.of(),List.of(),Optional.of(proposal)));
+        }
         return result;
     }
     // Parse once off EDT and preserve text/code order, including an unfinished streaming fence.
@@ -213,6 +230,11 @@ final class ChatTimeline implements AutoCloseable {
             message.setLayout(new BoxLayout(message, BoxLayout.Y_AXIS)); message.setAlignmentX(Component.LEFT_ALIGNMENT);
             message.setName(row.user() ? "userBubble" : "agentMessage");
             message.setBorder(BorderFactory.createEmptyBorder(8, 10, 12, 10));
+            row.edit().ifPresent(proposal->{
+                JButton action=new JButton(proposal.receipt().isPresent()?"核对编辑器 / 保存 / Undo 状态":"查看 Diff");action.setName("openEditPreview");
+                action.setEnabled(proposal.review()!=edu.courseassist.contract.EditContracts.ReviewState.STAGED);
+                action.addActionListener(e->editAction.accept(sessionId,proposal));message.add(action);
+            });
             if (row.user()) {
                 message.setBackground(Optional.ofNullable(UIManager.getColor("TextField.background")).orElse(Color.GRAY));
             } else {
@@ -334,5 +356,7 @@ final class ChatTimeline implements AutoCloseable {
     void clear() { renderedRows=List.of();displayedSession=null;deferredRows=null;deferredSession=null;applying = false; followBottom = true; latest = null; pending.set(null); rows.removeAll(); if (viewer != null) viewer.clear(); updateBottomButton(); }
     public void close() { Toolkit.getDefaultToolkit().removeAWTEventListener(nestedReadingIntent); closed = true; pending.set(null); worker.shutdownNow(); if (viewer != null) viewer.close(); }
     record Segment(String source, String language, boolean code, boolean plain) {}
-    private record Row(boolean user, String id, String state, String process, List<Segment> body, List<Citation> citations) {}
+    private record Row(boolean user, String id, String state, String process, List<Segment> body, List<Citation> citations,Optional<edu.courseassist.contract.EditContracts.ProposalView> edit) {
+        Row(boolean user,String id,String state,String process,List<Segment> body,List<Citation> citations){this(user,id,state,process,body,citations,Optional.empty());}
+    }
 }
