@@ -48,3 +48,7 @@
 应用结果至少区分未应用、Document已应用、结果未知、回执待恢复；磁盘UNKNOWN/UNSAVED/SAVED单列。重复approve返回原applyId/状态，Undo后不重新应用。新draft发送才允许再次进入ReAct。
 
 逻辑生成请求由宿主按原提交、目标/源码修订、指令修订及范围绑定。toolCallId仅作协议配对，不能作唯一业务去重键；更换callId或模型自造requestId不能重复生成。同请求并发/成功后/失败后重复propose返回既有状态/结果，内部生成订阅不增加；真正重生成需用户新draft提交。
+
+## G1 落地对照（2026-10-26）
+
+请求/目标/快照/候选/展示/审核/回执及平台接口已新增源码，实际签名与生命周期见[API](API.md)和[G1实现](../tasks/dev-manager/F2/G1_IMPLEMENTATION.md)。本提案保留规划历史；真实定位/生成/Diff/应用适配由后续组完成，不因接口存在而宣称可用。

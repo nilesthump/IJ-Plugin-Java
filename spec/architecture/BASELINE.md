@@ -36,3 +36,7 @@
 用户要求生成F2方案与个人任务组，全部由用户本人负责。[F2开发方案](F2_DEVELOPMENT_PLAN.md)、[契约提案](../contracts/F2_API_PROPOSAL.md)及[顺序任务G0–G6](../tasks/dev-manager/F2/README.md)为新增规划入口。已确认业务约束与实施建议分开；F2尚未实现、未正式冻结，不替代F0实际API或已验收行为。
 
 本轮不改变根AGENTS的现行F0实施限制、目录机检、hooks或CI。F2实施前先完成G0的精确归属/治理对齐并经main可信策略核验，再进入产品组；不因个人负责而暗中扩大editor/ui范围。
+
+## F2 G0/G1 实施入口（2026-10-26）
+
+用户已授权前两组及精确治理提案。G0 PR #18已合入并核验，原F0-only限制按新授权更新；目录例外见WRITE_SCOPE及F2/G0_DECISIONS。G1契约/存储/能力基础正在验证，实际边界见[F2/G1实现](../tasks/dev-manager/F2/G1_IMPLEMENTATION.md)与[API](../contracts/API.md)。定位、Diff、实际应用仍未实现；不声明冻结。

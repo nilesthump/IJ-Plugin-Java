@@ -198,3 +198,17 @@ DraftView新增captureOffsets（相对于原始文字的UTF-16偏移）和captur
 ## 第十一轮：启动状态与批量导入
 
 用户授权（原文在本地 evidence/user-turn-070.md，哈希登记于 sources.json；本段为代理转述）：持久保存最后一次成功启用/明确停用选择，IDE 退出不覆盖该选择。旧库默认停用，启动恢复仅构建运行资源，不恢复旧请求；恢复失败保持 OFF 并提供诊断及配置入口。资源管理器允许多选 PDF，按返回顺序逐个导入，使用最新资料库基线；失败或停用停止剩余队列，已完成项保留。批量任务期间拒绝其他资料变更。设置页移除整理历史、恢复未保存、关闭标签三个按钮。未冻结，等待用户验收，不创建 PR。
+
+## F2 G1 实际契约增量（2026-10-26）
+
+纯 Java 数据与端口已落地：EditContracts、EditTargetPort.resolveAndCapture、EditPreviewPort.open、EditApplyPort.apply。实际字段以源码为准，详见 [G1 实现记录](../tasks/dev-manager/F2/G1_IMPLEMENTATION.md)。Input 四字段及历史构造/JSON兼容保留。
+
+ViewEvent 新增 OpenEditPreview(meta, ProposalRef)、ApproveEditProposal(meta, PreviewToken)、RejectEditProposal(meta, PreviewToken)；OperationKind 新增 APPLY。前两项在 G1 无真实 adapter 时明确 NOT_SUPPORTED，拒绝走独立仓储本地命令；三者不进入 SubmitDraft/RetryAttempt/ManualCompact，不消费 draft 或创建用户轮次。
+
+ProposalRef 固定 proposalId/revision/beforeHash/afterHash，PreviewToken 再固定宿主展示 id 与 instance。哈希针对精确 UTF-16BE code units，不等于磁盘字节哈希。EditSnapshot 明确完整 before 和允许 offsets；format=1，未知格式拒绝，文本超过1,000,000 Java chars明确失败。该上限是实现防护，不是实际规模验收。
+
+EditRepository 由 SessionRepository 拥有，同一 H2 writer 上建立独立 schema。生成写入验证 LIVE/instance/operation/epoch；审核验证当前根/实例/准确展示和耐久父资格，不要求父生成槽存在。父有效终态、实际成功候选工具来源、资格提升和槽释放共同事务提交。终态 ReAct Snapshot 不回写。
+
+APPLY 意图/结果分开记录，独立 operation 和稳定 applyId 去重；回执区分 INTENT/APPLYING/APPLIED_TO_DOCUMENT/FAILED_NOT_APPLIED/OUTCOME_UNKNOWN/RECEIPT_PENDING 及 UNKNOWN/UNSAVED/SAVED 磁盘状态。重启/停用不自动重放；未知结果维持阻塞，普通恢复不得清除，实际核验适配留 G5。会话删除级联清全部 F2 私有记录，迟到写拒绝。
+
+ToolBoundary 固定课程/目标/候选能力，默认无 F2 adapter，不暴露应用工具。实际目标定位、候选子生成、Diff、Undo/写命令及真实服务均不在 G1 完成声明内。本地状态事实进入未来上下文与 checkpoint 指纹，但候选原文和未完成生成不会因此进入模型。

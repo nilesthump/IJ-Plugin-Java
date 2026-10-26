@@ -95,6 +95,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         return command(()->{for(ProjectState p:projects.values()){settle(p.binding.projectId(),Optional.empty());refresh(p);}return null;});
     }
     private void settle(String project,Optional<String> instance) {
+        repository.settleEdits(project,instance);
         for(Run run:List.copyOf(runs.values())) {
             Identity i=run.operation.identity();if(!i.projectId().equals(project)||instance.isPresent()&&!instance.get().equals(i.projectInstanceId()))continue;
             run.cancel();
@@ -112,7 +113,8 @@ public final class SessionCoordinator implements SessionController, SelectionSin
                     }
                 }
                 if(run.operation.kind()==OperationKind.GENERATE)repository.react().interrupt(i);
-                else repository.finishCompact(i);
+                else if(run.operation.kind()==OperationKind.COMPACT) repository.finishCompact(i);
+                else throw new IllegalStateException("APPLY must use local edit coordination");
             }catch(RuntimeException failure){
                 Throwable cause=ReactEngine.unwrap(failure);
                 if(!ReactEngine.isCancellation(cause)&&!(cause instanceof Rejected r&&r.reason==Rejection.SESSION_DELETED))markBlocked(i,cause);
@@ -158,6 +160,12 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         String project=p.binding.projectId(),instance=p.instance;var meta=event.meta();String target=meta.sessionId().orElse("");
         if(blocked.contains(target)&&(event instanceof UpdateDraftText||event instanceof RemoveDraftCapture))
             throw new Rejected(Rejection.UNSAVED_STATE);
+        // G1 has no Diff or apply adapter. Never reserve/consume/launch generation here.
+        if(event instanceof OpenEditPreview||event instanceof ApproveEditProposal) {
+            repository.history(project,instance,target);
+            throw new Rejected(Rejection.NOT_SUPPORTED);
+        }
+        if(event instanceof RejectEditProposal e)return repository.edits().reject(project,meta,e.preview());
         if(event instanceof RecoverSession)restore(p,target);
         else if(event instanceof CreateSession e)repository.create(project,instance,SessionData.id(),e.title(),SessionData.emptyDraft());
         else if(event instanceof DeleteSession) {

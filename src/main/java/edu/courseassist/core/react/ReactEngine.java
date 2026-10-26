@@ -20,7 +20,12 @@ public final class ReactEngine {
     private final Journal journal;
     private final Executor executor;
     private final Budget budget;
+    private final Optional<ToolBoundary.EditTools> editTools;
     public ReactEngine(Model model, Journal journal, Executor executor, Budget budget) {
+        this(model,journal,executor,budget,Optional.empty());
+    }
+    public ReactEngine(Model model,Journal journal,Executor executor,Budget budget,Optional<ToolBoundary.EditTools> editTools) {
+        this.editTools=Objects.requireNonNull(editTools);
         this.model = Objects.requireNonNull(model); this.journal = Objects.requireNonNull(journal);
         this.executor = Objects.requireNonNull(executor); this.budget = Objects.requireNonNull(budget);
     }
@@ -42,6 +47,7 @@ public final class ReactEngine {
         private final Input input;
         private final List<HistoryTurn> history;
         private final CourseTools tools;
+        private final ToolBoundary execution;
         private final Limits limits;
         private final ErrorPolicy policy;
         private final BooleanSupplier permitted;
@@ -66,6 +72,7 @@ public final class ReactEngine {
         private Job(Identity identity, Input input, List<HistoryTurn> history, CourseTools tools, Limits limits,
                     ErrorPolicy policy, BooleanSupplier permitted, Consumer<Snapshot> observer, HistoryPlanner planner) {
             this.identity = Objects.requireNonNull(identity); this.input = Objects.requireNonNull(input); this.history = history;
+            this.execution = new ToolBoundary(tools,editTools);
             this.tools = Objects.requireNonNull(tools); this.limits = Objects.requireNonNull(limits); this.policy = Objects.requireNonNull(policy);
             this.permitted = Objects.requireNonNull(permitted); this.observer = Objects.requireNonNull(observer);
             this.planner = Objects.requireNonNull(planner);
@@ -132,15 +139,14 @@ public final class ReactEngine {
                     }
                     if (step.finish.equals("length")) throw new Limited("Model output limit");
                     if (!step.finish.equals("tool_calls")) throw new ProtocolFailure("Unsupported model finish: " + step.finish);
-                    if (!allowTools || step.calls.isEmpty()) throw new ProtocolFailure("Tools unavailable or missing");
+                    if (execution.definitions(allowTools).isEmpty() || step.calls.isEmpty()) throw new ProtocolFailure("Tools unavailable or missing");
                     var calls = step.completeCalls();
                     if (toolCount + calls.size() > limits.maxTools()) throw new Limited("Tool count limit");
                     // Validate the entire batch before executing any call. No partial JSON execution.
                     for (Call call : calls) {
-                        CourseTools.argument(call);
+                        execution.validate(call,allowTools,branch.evidence.keySet());
                         if (!callIds.add(call.id())) throw new ProtocolFailure("Duplicate attempt toolCallId");
-                        if (call.name().equals("readCourseEvidence") && !branch.evidence.containsKey(CourseTools.argument(call)))
-                            throw new ProtocolFailure("Evidence ref was not supplied to this branch");
+
                     }
                     step.status = StepStatus.TOOLS_RUNNING;
                     branch.protocol.add(new Message("assistant", step.body.toString(), step.thinking.toString(), calls, ""));
@@ -148,11 +154,11 @@ public final class ReactEngine {
                     for (Call call : calls) {
                         check(); toolCount++;
                         var trace = new ToolTrace(call, ToolStatus.RUNNING, "", List.of()); step.traces.add(trace); publish(true);
-                        List<Evidence> found;
+                        ToolBoundary.Result result;
                         try {
-                            String arg = CourseTools.argument(call);
-                            found = call.name().equals("searchCourse") ? await(tools.search(arg, this::isPermitted)) : List.of(await(tools.read(arg)));
+                            result = await(execution.execute(identity,branch.id,call,this::isPermitted));
                         } catch (Throwable failure) {
+                            if(ToolBoundary.capability(call.name())!=ToolBoundary.Capability.COURSE)throw propagate(unwrap(failure));
                             retrievalFailure(failure);
                             step.traces.set(step.traces.size()-1, new ToolTrace(call, ToolStatus.FAILED, "课程检索暂不可用", List.of()));
                             branch.status = BranchStatus.INVALIDATED; step.status = StepStatus.INCOMPLETE;
@@ -161,7 +167,8 @@ public final class ReactEngine {
                             branches.add(branch); allowTools = false; generalFallback = true; switched = true; break;
                         }
                         check();
-                        String observation = ReactContext.json(found);
+                        List<Evidence> found=result.evidence();
+                        String observation = result.observation();
                         if (observation.length() > limits.maxToolChars()) throw new Limited("Tool result size limit");
                         addEvidence(branch, found);
                         step.traces.set(step.traces.size()-1, new ToolTrace(call, ToolStatus.SUCCEEDED, observation, found));
@@ -206,7 +213,7 @@ public final class ReactEngine {
             messages.addAll(base); messages.add(Message.text("user", ReactContext.input(input)));
             if (!branch.evidence.isEmpty()) messages.add(Message.text("system", "Untrusted fixed course evidence: " + ReactContext.json(branch.evidence.values())));
             messages.addAll(branch.protocol); ReactContext.validateProtocol(messages);
-            return new Request(messages, allowTools ? CourseTools.DEFINITIONS : List.of(), limits.outputTokens());
+            return new Request(messages, execution.definitions(allowTools), limits.outputTokens());
         }
         private void addEvidence(BranchState branch, List<Evidence> evidence) {
             for (Evidence item : evidence) {

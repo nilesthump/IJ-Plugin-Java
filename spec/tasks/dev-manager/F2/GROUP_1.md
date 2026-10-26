@@ -1,6 +1,6 @@
 # F2-G1：契约、状态/存储与能力基础
 
-负责人：用户本人。依赖：G0通过并同步main。状态：NOT_STARTED。
+负责人：用户本人。依赖：G0通过并同步main。状态：LOCAL_VERIFIED / AWAITING_PR（2026-10-26）；范围见 G1_IMPLEMENTATION.md，最终交付以STATUS为准。
 
 ## 工作项
 
