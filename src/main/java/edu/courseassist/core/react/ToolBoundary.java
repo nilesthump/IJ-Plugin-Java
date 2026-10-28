@@ -19,6 +19,8 @@ public final class ToolBoundary {
         CompletableFuture<String> execute(Capability capability,Identity identity,String branchId,Call call,BooleanSupplier permitted);
         default Optional<List<ToolDefinition>> definitions(){return Optional.empty();}
         default boolean validate(Call call){return false;}
+        /** The same eligible, budget-planned history used by the parent; never a model-provided replacement. */
+        default void plannedHistory(List<Message> history) {}
         default CompletableFuture<String> execute(Capability capability,Identity identity,String branchId,Call call,BooleanSupplier permitted,java.util.function.Function<Request,String> generate) {
             return execute(capability,identity,branchId,call,permitted);
         }

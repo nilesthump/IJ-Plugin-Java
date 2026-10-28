@@ -1,0 +1,76 @@
+{
+  "observedDate": "2026-10-16",
+  "timezone": "Asia/Shanghai",
+  "kind": "executed-local-cumulative-markdown-prefix-probe",
+  "jdk": "25.0.2+10-LTS-69",
+  "parserProbeVersion": "commonmark 0.30.1",
+  "result": {
+    "status": "success",
+    "cumulativePrefixes": 5,
+    "snapshots": [
+      {
+        "revision": 1,
+        "languageInfo": "ja",
+        "rawLength": 12,
+        "codeLiteralLength": 0,
+        "htmlLength": 57
+      },
+      {
+        "revision": 2,
+        "languageInfo": "java",
+        "rawLength": 24,
+        "codeLiteralLength": 10,
+        "htmlLength": 69
+      },
+      {
+        "revision": 3,
+        "languageInfo": "java",
+        "rawLength": 30,
+        "codeLiteralLength": 15,
+        "htmlLength": 74
+      },
+      {
+        "revision": 4,
+        "languageInfo": "java",
+        "rawLength": 34,
+        "codeLiteralLength": 15,
+        "htmlLength": 74
+      },
+      {
+        "revision": 5,
+        "languageInfo": "java",
+        "rawLength": 38,
+        "codeLiteralLength": 15,
+        "htmlLength": 85
+      }
+    ],
+    "localParserOnly": true,
+    "networkOrIntellijExecuted": false,
+    "rawSourceMutated": false
+  },
+  "source": "import java.nio.charset.StandardCharsets;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.util.List;\nimport org.commonmark.node.FencedCodeBlock;\nimport org.commonmark.node.Node;\nimport org.commonmark.parser.Parser;\nimport org.commonmark.renderer.html.HtmlRenderer;\n\n/** Tests parser behavior over cumulative local prefixes, not provider/IDE streaming. */\npublic final class StreamingMarkdownProbe {\n    public static void main(String[] args) throws Exception {\n        List<String> deltas = List.of(\"## 演示\\n\\n```ja\", \"va\\nint count\", \" = 1;\\n\", \"```\\n\", \"\\n结束。\");\n        List<String> infos = List.of(\"ja\", \"java\", \"java\", \"java\", \"java\");\n        List<String> bodies = List.of(\"\", \"int count\\n\", \"int count = 1;\\n\", \"int count = 1;\\n\", \"int count = 1;\\n\");\n        Parser parser = Parser.builder().build();\n        HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();\n        StringBuilder raw = new StringBuilder();\n        StringBuilder report = new StringBuilder(\"{\\\"status\\\":\\\"success\\\",\\\"cumulativePrefixes\\\":5,\\\"snapshots\\\":[\");\n        for (int i = 0; i < deltas.size(); i++) {\n            raw.append(deltas.get(i));\n            String snapshot = raw.toString();\n            FencedCodeBlock fence = find(parser.parse(snapshot));\n            if (fence == null || !fence.getInfo().equals(infos.get(i)) || !fence.getLiteral().equals(bodies.get(i))) {\n                throw new IllegalStateException(\"Unexpected partial-fence behavior at snapshot \" + i);\n            }\n            String html = renderer.render(parser.parse(snapshot));\n            if (!raw.toString().equals(snapshot)) throw new IllegalStateException(\"Raw source changed\");\n            if (i > 0) report.append(',');\n            report.append(\"{\\\"revision\\\":\").append(i+1).append(\",\\\"languageInfo\\\":\\\"\")\n                  .append(fence.getInfo()).append(\"\\\",\\\"rawLength\\\":\").append(snapshot.length())\n                  .append(\",\\\"codeLiteralLength\\\":\").append(fence.getLiteral().length())\n                  .append(\",\\\"htmlLength\\\":\").append(html.length()).append('}');\n        }\n        report.append(\"],\\\"localParserOnly\\\":true,\\\"networkOrIntellijExecuted\\\":false,\\\"rawSourceMutated\\\":false}\");\n        Files.writeString(Path.of(args[0], \"stream-prefix-result.json\"), report, StandardCharsets.UTF_8);\n        System.out.println(report);\n    }\n    private static FencedCodeBlock find(Node node) {\n        if (node instanceof FencedCodeBlock fence) return fence;\n        for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {\n            FencedCodeBlock found = find(child);\n            if (found != null) return found;\n        }\n        return null;\n    }\n}\n",
+  "artifacts": [
+    {
+      "path": "tmp/architecture/probes/markdown-swing/StreamingMarkdownProbe.java",
+      "sha256": "85ce7b96578db2e022ed651a1991b0ebb1169d21562954cf7bdae53f9b34caf4"
+    },
+    {
+      "path": "tmp/architecture/probes/markdown-swing/stream-prefix-result.json",
+      "sha256": "0e99c95b80d9a38f40fb206d6e1e51a092e49fe8bbbca27dea2b7d1e451cb0b8"
+    },
+    {
+      "path": "tmp/architecture/probes/markdown-swing/stream-prefix-compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "tmp/architecture/probes/markdown-swing/stream-prefix-run.log",
+      "sha256": "864ca806644b17105ece4288b0f7d73dce3a53f37e67e2e2e44fe6e0496a39d7"
+    }
+  ],
+  "observation": "Incomplete fence language changes from ja to java; literal for a partial final code line contains a parser-generated terminal newline. Raw source remains unchanged.",
+  "limits": [
+    "Local parser and HTML generation only, no SSE/provider/core event loop/IDE runtime.",
+    "Does not verify scheduling, theme switching, storage, cancellation or target SDK.",
+    "Parser AST literals are derived views, not replacement archives."
+  ]
+}

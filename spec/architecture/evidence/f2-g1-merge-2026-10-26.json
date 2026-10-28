@@ -1,0 +1,17 @@
+{
+  "kind": "agent-verified-merge-receipt",
+  "pr": "https://github.com/nilesthump/IJ-Plugin-Java/pull/19",
+  "head": "32f0cad047e4de8f489a1e06dc6429f9e396d84c",
+  "merge": "1ec4b9412d8c70b20a404da6c9a499d82bae1654",
+  "mergedAt": "2026-10-26T17:24:34+08:00",
+  "validation": "success; run 40297246055",
+  "scope": "success; run 40299182400",
+  "mainAncestorVerified": true,
+  "localBranch": "dev-manager",
+  "localFastForwardVerified": true,
+  "sourceBranchRetained": true,
+  "g0": "DONE",
+  "g1": "DONE",
+  "g2ThroughG6": "NOT_STARTED",
+  "limitations": "No native F2 Diff, Undo, source apply or paid provider acceptance."
+}

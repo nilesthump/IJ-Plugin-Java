@@ -7,7 +7,6 @@ import com.intellij.openapi.command.undo.UndoManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.vfs.*;
 import edu.courseassist.contract.EditApplyPort;
 import edu.courseassist.contract.EditContracts.*;
@@ -20,8 +19,34 @@ public final class JavaEditApplyPort implements EditApplyPort {
     private final Project project;
     private final String instance;
     private final Map<String,Observed> observed=new ConcurrentHashMap<>();
+    private volatile Runnable changeSignal=()->{};
     private record Observed(ApplyRequest request,Document document,AtomicReference<DocumentState> state) {}
     public JavaEditApplyPort(Project project,String instance){this.project=project;this.instance=instance;}
+    @Override public edu.courseassist.contract.ViewSubscription observeChanges(Runnable changed) {
+        var lifetime=com.intellij.openapi.util.Disposer.newDisposable("Course Assistant edit observations");
+        com.intellij.openapi.util.Disposer.register(project,lifetime);
+        var queued=new java.util.concurrent.atomic.AtomicBoolean();
+        var active=new java.util.concurrent.atomic.AtomicBoolean(true);
+        Runnable signal=()->{
+            if(active.get()&&queued.compareAndSet(false,true)) ApplicationManager.getApplication().invokeLater(()->{
+                queued.set(false); if(active.get()&&!project.isDisposed())changed.run();
+            });
+        };
+        changeSignal=signal;
+        com.intellij.openapi.editor.EditorFactory.getInstance().getEventMulticaster().addDocumentListener(
+            new com.intellij.openapi.editor.event.DocumentListener() {
+                @Override public void documentChanged(com.intellij.openapi.editor.event.DocumentEvent event) {
+                    if(observed.values().stream().anyMatch(v->v.document()==event.getDocument()))signal.run();
+                }
+            },lifetime);
+        ApplicationManager.getApplication().getMessageBus().connect(lifetime).subscribe(
+            com.intellij.AppTopics.FILE_DOCUMENT_SYNC,new com.intellij.openapi.fileEditor.FileDocumentManagerListener() {
+                @Override public void beforeDocumentSaving(Document document) {
+                    if(observed.values().stream().anyMatch(v->v.document()==document))signal.run();
+                }
+            });
+        return ()->{active.set(false);changeSignal=()->{};com.intellij.openapi.util.Disposer.dispose(lifetime);};
+    }
     @Override public CompletionStage<Long> validate(EditProposal proposal) {
         var result=new CompletableFuture<Long>();
         ApplicationManager.getApplication().invokeLater(()->{
@@ -29,7 +54,7 @@ public final class JavaEditApplyPort implements EditApplyPort {
                 var source=proposal.snapshot().request().origin();
                 var request=new ApplyRequest("validation-only",new Origin(source.projectId(),instance,source.sessionId(),source.turnId(),source.attemptId(),source.operationId(),source.epoch()),proposal);
                 var document=target(request);var snapshot=proposal.snapshot();
-                if(!document.getText().equals(snapshot.before()))throw new IllegalStateException("F2 Document changed");
+                if(!document.getText().equals(snapshot.before()))throw new SourceChanged();
                 result.complete(document.getModificationStamp());
             }catch(Exception failure){result.completeExceptionally(new NotApplied(failure));}
         });return result;
@@ -45,15 +70,15 @@ public final class JavaEditApplyPort implements EditApplyPort {
                             Document document=target(request);
                             var snapshot=request.proposal().snapshot();
                             if(document.getModificationStamp()!=request.documentStamp()||!document.getText().equals(snapshot.before()))
-                                throw new IllegalStateException("F2 target changed; reopen a new candidate");
+                                throw new SourceChanged();
                             var state=new AtomicReference<>(DocumentState.APPLIED);
                             // Keep evidence even if the IDE write or subsequent receipt publication fails.
                             touched[0]=true;
                             document.setText(request.proposal().after());
                             observed.put(request.applyId(),new Observed(request,document,state));
                             UndoManager.getInstance(project).undoableActionPerformed(new BasicUndoableAction(document) {
-                                @Override public void undo(){state.set(DocumentState.UNDONE);}
-                                @Override public void redo(){state.set(DocumentState.APPLIED);}
+                                @Override public void undo(){state.set(DocumentState.UNDONE);changeSignal.run();}
+                                @Override public void redo(){state.set(DocumentState.APPLIED);changeSignal.run();}
                             });
                         }));
                 if(!touched[0])result.complete(failed(request));
@@ -78,8 +103,8 @@ public final class JavaEditApplyPort implements EditApplyPort {
         VirtualFile file=VirtualFileManager.getInstance().findFileByUrl(target.fileRef());
         VirtualFile base=project.getBasePath()==null?null:LocalFileSystem.getInstance().findFileByPath(project.getBasePath());
         if(file==null||!file.isValid()||writing&&!file.isWritable()||!"java".equals(file.getExtension())||!(file instanceof VirtualFileWithId id)
-                ||!target.fileIdentity().equals("vfs:"+id.getId())||base==null||file.getCanonicalFile()==null
-                ||!VfsUtilCore.isAncestor(base,file.getCanonicalFile(),false)||!ProjectFileIndex.getInstance(project).isInSourceContent(file)
+                ||!target.fileIdentity().equals("vfs:"+id.getId())||base==null||base.getCanonicalFile()==null||file.getCanonicalFile()==null
+                ||!VfsUtilCore.isAncestor(base.getCanonicalFile(),file.getCanonicalFile(),false)
                 ||!target.relativePath().equals(VfsUtilCore.getRelativePath(file,base,'/')))
             throw new IllegalStateException("F2 file identity, scope or writability changed");
         Document document=FileDocumentManager.getInstance().getDocument(file);

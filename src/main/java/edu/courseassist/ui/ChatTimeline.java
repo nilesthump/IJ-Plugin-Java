@@ -117,7 +117,7 @@ final class ChatTimeline implements AutoCloseable {
         } finally { running.set(false); if (pending.get() != null) start(); }
     }
     private List<Row> prepare(SessionViewState session) {
-        List<Row> result = new ArrayList<>();
+        List<Row> result = new ArrayList<>();Set<String> placed=new HashSet<>();
         for (TurnView turn : session.turns()) {
             List<Segment> user = new ArrayList<>();
             for (MessagePart part : turn.userMessage().parts()) {
@@ -149,9 +149,16 @@ final class ChatTimeline implements AutoCloseable {
                 state += " · " + branch.basis().explanation();
                 var refs = attempt.contextEligibility()==ContextEligibility.ELIGIBLE_DURABLE_SUCCESS && attempt.effectiveBranchId().filter(branch.branchId()::equals).isPresent() && branch.status() != BranchStatus.INVALIDATED ? branch.basis().citations() : List.<Citation>of();
                 result.add(new Row(false, attempt.attemptId() + ":" + branch.branchId(), state, process.toString(), answer, refs));
+                for(var proposal:session.editProposals())if(proposal.turnId().equals(turn.turnId())&&proposal.attemptId().equals(attempt.attemptId())&&proposal.branchId().equals(branch.branchId())) {
+                    result.add(editRow(proposal,session.writesBlocked()));placed.add(proposal.proposal().proposalId());
+                }
             }
         }
-        for(var proposal:session.editProposals()) {
+        // Legacy view-only callers without ownership still retain access to their cards.
+        for(var proposal:session.editProposals())if(!placed.contains(proposal.proposal().proposalId()))result.add(editRow(proposal,session.writesBlocked()));
+        return result;
+    }
+    private Row editRow(edu.courseassist.contract.EditContracts.ProposalView proposal,boolean recovery) {
             String state="Java 修改 · "+proposal.targetPath()+" · "+switch(proposal.review()) {
                 case STAGED->"等待生成完成";case REVIEWABLE->"待审核";case APPROVED->"已批准";case REJECTED->"已拒绝";case INVALIDATED->"需重新核对并查看 Diff";
             };
@@ -164,9 +171,7 @@ final class ChatTimeline implements AutoCloseable {
                 state+=" · "+switch(receipt.disk()){case SAVED->"已保存到磁盘（上次核对）";case UNSAVED->"尚未保存到磁盘（上次核对）";case UNKNOWN->"磁盘状态未知";};
                 state+=" · "+switch(receipt.documentState()){case APPLIED->"候选仍在编辑器（上次核对）";case UNDONE->"已撤销（上次核对）";case CHANGED->"应用后有编辑（上次核对）";case UNKNOWN->"编辑器状态待核对";};
             }
-            result.add(new Row(false,"edit:"+proposal.proposal().proposalId(),state,"",List.of(),List.of(),Optional.of(proposal)));
-        }
-        return result;
+        return new Row(false,"edit:"+proposal.proposal().proposalId(),state,"",List.of(),List.of(),Optional.of(proposal),recovery);
     }
     // Parse once off EDT and preserve text/code order, including an unfinished streaming fence.
     static List<Segment> markdown(String source) { return markdown(source,List.of()); }
@@ -228,10 +233,13 @@ final class ChatTimeline implements AutoCloseable {
             if(index<renderedRows.size() && renderedRows.get(index).value().equals(row)) { nextRows.add(renderedRows.get(index));continue; }
             JPanel message = row.user() ? new BubblePanel() : vertical();
             message.setLayout(new BoxLayout(message, BoxLayout.Y_AXIS)); message.setAlignmentX(Component.LEFT_ALIGNMENT);
-            message.setName(row.user() ? "userBubble" : "agentMessage");
+            message.setName(row.user() ? "userBubble" : "agentMessage");message.putClientProperty("timelineRowId",row.id());
             message.setBorder(BorderFactory.createEmptyBorder(8, 10, 12, 10));
-            row.edit().ifPresent(proposal->{
-                JButton action=new JButton(proposal.receipt().isPresent()?"核对编辑器 / 保存 / Undo 状态":"查看 Diff");action.setName("openEditPreview");
+            row.edit().filter(proposal->proposal.receipt().isEmpty() || row.recovery() || proposal.receipt().filter(r->
+                    r.state()==edu.courseassist.contract.EditContracts.ApplyState.APPLIED_TO_DOCUMENT && r.documentState()==edu.courseassist.contract.EditContracts.DocumentState.UNKNOWN ||
+                    r.state()==edu.courseassist.contract.EditContracts.ApplyState.OUTCOME_UNKNOWN ||
+                    r.state()==edu.courseassist.contract.EditContracts.ApplyState.RECEIPT_PENDING).isPresent()).ifPresent(proposal->{
+                JButton action=new JButton(proposal.receipt().isPresent()?"重试状态恢复":"查看 Diff");action.setName("openEditPreview");
                 action.setEnabled(proposal.review()!=edu.courseassist.contract.EditContracts.ReviewState.STAGED);
                 action.addActionListener(e->editAction.accept(sessionId,proposal));message.add(action);
             });
@@ -239,7 +247,7 @@ final class ChatTimeline implements AutoCloseable {
                 message.setBackground(Optional.ofNullable(UIManager.getColor("TextField.background")).orElse(Color.GRAY));
             } else {
                 JLabel avatar = new JLabel("◉  Agent"); avatar.setFont(avatar.getFont().deriveFont(Font.BOLD)); message.add(avatar);
-                JLabel state = new JLabel(row.state()); state.setToolTipText(row.state()); message.add(state);
+                JLabel state = new JLabel(row.state()); if(row.edit().isPresent())state.setName("editProposalState"); state.setToolTipText(row.state()); message.add(state);
                 if (!row.process().isBlank()) {
                     JTextArea details = text(row.process()); details.setName("processPreview");
                     details.setFont(details.getFont().deriveFont(11f));
@@ -353,10 +361,11 @@ final class ChatTimeline implements AutoCloseable {
     }
     private static JPanel vertical() { JPanel p = new JPanel(); p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS)); return p; }
     private static JTextArea text(String source) { JTextArea a = new JTextArea(source); a.setEditable(false); a.setLineWrap(true); a.setWrapStyleWord(true); a.setOpaque(false); ((javax.swing.text.DefaultCaret) a.getCaret()).setUpdatePolicy(javax.swing.text.DefaultCaret.NEVER_UPDATE); return a; }
+    void showEmpty() { clear();apply("empty-foreground",List.of()); }
     void clear() { renderedRows=List.of();displayedSession=null;deferredRows=null;deferredSession=null;applying = false; followBottom = true; latest = null; pending.set(null); rows.removeAll(); if (viewer != null) viewer.clear(); updateBottomButton(); }
     public void close() { Toolkit.getDefaultToolkit().removeAWTEventListener(nestedReadingIntent); closed = true; pending.set(null); worker.shutdownNow(); if (viewer != null) viewer.close(); }
     record Segment(String source, String language, boolean code, boolean plain) {}
-    private record Row(boolean user, String id, String state, String process, List<Segment> body, List<Citation> citations,Optional<edu.courseassist.contract.EditContracts.ProposalView> edit) {
-        Row(boolean user,String id,String state,String process,List<Segment> body,List<Citation> citations){this(user,id,state,process,body,citations,Optional.empty());}
+    private record Row(boolean user, String id, String state, String process, List<Segment> body, List<Citation> citations,Optional<edu.courseassist.contract.EditContracts.ProposalView> edit,boolean recovery) {
+        Row(boolean user,String id,String state,String process,List<Segment> body,List<Citation> citations){this(user,id,state,process,body,citations,Optional.empty(),false);}
     }
 }

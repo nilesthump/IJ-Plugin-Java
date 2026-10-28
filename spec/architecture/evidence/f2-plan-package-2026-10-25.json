@@ -1,0 +1,221 @@
+{
+  "kind": "documentation-delivery-snapshot",
+  "capturedDate": "2026-10-25",
+  "timezone": "Asia/Shanghai",
+  "baseCommit": "8fac78899ecffb612f3af9904d220faf1646f692",
+  "branch": "dev-manager",
+  "owner": "用户本人",
+  "status": "PLAN_GENERATED_IMPLEMENTATION_NOT_STARTED",
+  "userEvidence": {
+    "path": "spec/architecture/evidence/user-turn-076.md",
+    "sha256": "7642fd47f3c433ba93588a1164147bf62e750cc290393fe37d1e32db1ef1c718",
+    "kind": "user-verbatim-and-agent-scope-interpretation",
+    "recordedDate": "2026-10-25"
+  },
+  "files": [
+    {
+      "path": "spec/architecture/F2_DEVELOPMENT_PLAN.md",
+      "sha256": "2020728b11b10ca8f728c7e3a83294eed1b98312245bab2ccc981844e07dec08",
+      "content": "# F2 开发方案：用户本人负责\r\n\r\n日期：2026-10-25。状态：开发工作提案，已确认业务约束与待实施技术建议分开；不是正式候选、冻结架构或已实现功能。全部F2任务由用户本人负责，使用既有分支，不向甲乙丙分派实施。\r\n\r\n阅读入口：[个人任务组](../tasks/dev-manager/F2/README.md)、[契约提案](../contracts/F2_API_PROPOSAL.md)、[验证矩阵](../tasks/dev-manager/F2/VALIDATION_MATRIX.md)。本公开方案不依赖本地原始答复或忽略文件；原文与来源哈希由负责人本地保管。\r\n\r\n## 1. 当前事实与继承边界\r\n\r\n本轮本地dev-manager与origin/main均为8fac78899ecffb612f3af9904d220faf1646f692。F0已由用户验收并完成既有PR合入；历史169项测试与IDE证据沿用原交付记录，不算本轮重新执行。当前只有负责人STATUS/HANDOFF有未提交补记，本轮保留。\r\n\r\n| 现状 AS-IS | F2所需增量 |\r\n| --- | --- |\r\n| ReactData.Input已有question、code、captureOffsets、captureOrder | 保留混排原文，链接派生目标/源码，不改写用户提交 |\r\n| ReactEngine:112以课程状态统一控制tools；:209使用CourseTools.DEFINITIONS | 按能力独立提供课程、定位、候选工具；错误按工具类型分流 |\r\n| SpringAiCourseModel:38序列化通用工具schema，无内部循环 | 继续由外层唯一ReAct所有者编排，不增加框架隐藏循环 |\r\n| ChatContracts.OperationKind仅GENERATE/COMPACT，事件无F2审核 | 增加独立本地审核事件与应用操作，不复用SubmitDraft/Retry |\r\n| JavaCodeCapturePort只返回选区/方法/类结构 | 新增项目内文字定位及同版完整Document前像，不能拼接片段冒充全文 |\r\n| UI已是MixedDraftEditor与ChatTimeline | 增量提案视图、原生Diff及两个按钮，保留现有输入/IME/滚动行为 |\r\n| ReactRepository拒绝终态Snapshot再次保存 | F2候选、决定、应用事实单独持久化，不能回写终态模型协议 |\r\n\r\n保留单插件、纯Java、Spring AI/H2/JVector、现有构建与唯一验证入口。不新增服务进程，不实施F1/JUnit/Git提交消息等功能，不提供任意路径写入、任意命令或代码执行工具。凭据仍走平台凭据服务。\r\n\r\n## 2. 已确认目标 TARGET\r\n\r\n| ID | 已确认行为 | 主要验收组 |\r\n| --- | --- | --- |\r\n| R01 | 按用户指令修改Java源码，覆盖重构/修bug等有意义场景 | G2/G3/G6 |\r\n| R02 | 选区可省略；可在draft文本指出文件、类、方法及预期行为 | G2 |\r\n| R03 | 应用前使用IDEA内置Diff并排展示真实before与候选after | G4 |\r\n| R04 | 预览不修改项目，比较固定原文及候选副本 | G4 |\r\n| R05 | 批准绑定准确版本；源码或候选变化需重新Diff、重新批准 | G4/G5 |\r\n| R06 | 应用已展示内容，不再调模型；IDE写命令支持Undo | G5 |\r\n| R07 | “已应用到编辑器”和“已保存到磁盘”分别报告 | G5 |\r\n| R08 | 两个按钮准确为“同意并应用”“拒绝”，均不进ReAct | G4/G5 |\r\n| R09 | 只有用户重新在draft发送才再次进入ReAct；拒绝/失败/过期不自动重生成 | G3/G4/G5 |\r\n| R10 | F2由用户本人全权负责，不沿用F0的四人分工 | G0–G6 |\r\n\r\nR01/R03来自作业及本轮延续讨论，R02/R04–R09来自用户明确补充/确认，R10来自本轮安排。工具名、表结构、参数和下面的MVP范围仍是实施提案。\r\n\r\n## 3. 范围建议及待决项\r\n\r\n推荐第一阶段：一个明确的现有Java源文件、一个完整候选整体批准；必要改动必须在明确允许范围内。先不做新增/删除/移动文件、多文件事务、逐块批准、可编辑候选、自动格式化/优化imports、自动编译测试或真实MCP传输。单文件等是推荐实施边界，不能写成用户已经逐项批准。\r\n\r\n| 决策 | 推荐提案 | 落定时点 |\r\n| --- | --- | --- |\r\n| D0 个人交付与目录 | 全部责任归用户，dev-manager集中交付；G0先以独立治理PR落精确F2路径归属及可信门禁 | 任何F2产品代码前 |\r\n| D1 编辑范围 | 首版现有单Java文件、整份候选；方法外imports/helper等须有明确范围 | G0 |\r\n| D2 工具方式 | 本地Java受控边界，可接MCP，协议按需引入 | G1 |\r\n| D3 生成方式 | 每个生成工具至多一次tools=[]子请求，父级统一用量/预算/取消，无内部重试 | G1/G3 |\r\n| D4 保存策略 | 应用到Document，按IDE正常保存行为；不额外强制保存 | G0/G5 |\r\n| D5 重启审核 | 原始候选可回看；重新验证当前目标和展示后才可批准，不自动恢复应用 | G1/G5 |\r\n| D6 文字决定 | 本版只实现明确按钮；不把draft文字“同意”自动变成写权限 | G0/G4 |\r\n| D7 有限参数 | 查找候选数/源码大小/工具观察/模型次数与时间均有界，取值以本机测量和回归记录 | G1–G3 |\r\n\r\nG0记录实际实施边界和必要更正；未决项不阻止本轮产出方案，但阻止假定已全面批准或正式冻结。\r\n\r\n## 4. 主流程与所有者\r\n\r\n```mermaid\r\nflowchart TD\r\n    A[\"用户从 draft 发送：选区可选\"] --> B[[\"F0唯一ReAct：首检、预算、模型\"]]\r\n    B -->|\"定位 / 生成工具\"| C[\"宿主定位真实目标并固定快照<br/>生成、校验完整候选\"]\r\n    C -->|\"有界配对观察\"| B\r\n    B -->|\"目标/需求不明\"| Q[\"追问并收口，等待新的draft发送\"]\r\n    B -->|\"存在REVIEWABLE候选且父终态有效耐久，释放槽\"| D[\"IDEA内置只读快照Diff\"]\r\n    D --> E{\"本地按钮\"}\r\n    E -->|\"同意并应用\"| F[\"复验并应用准确候选，支持Undo\"]\r\n    E -->|\"拒绝\"| G[\"记录拒绝，源码不变\"]\r\n    F --> H[\"显示真实结果；失败/过期不自动重生成\"]\r\n    G --> I[\"等待用户\"]\r\n    H --> I\r\n    Q -->|\"用户再次发送draft\"| A\r\n    I -->|\"仅用户再次发送draft\"| A\r\n```\r\n\r\n有选区时使用真实归属和版本；纯文字时模型提出定位线索，宿主在原session所属项目允许源码内有界解析。唯一完整结果直接采集，不额外强制定位确认；同名文件、重载、未找到、索引未就绪、查询截断分别返回明确状态，不猜首个目标。定位工具不授予写权限。\r\n\r\n无选区的快照在解析并采集成功时固定，原始提交保持不可变；新增目标、before和范围是有来源的派生观察。保存完整Document before供Diff/复验，模型只看必要范围及有界上下文。已有F0方法/类结构片段不是完整before，需同版补采。\r\n\r\n首次课程检索仍按attempt一次；工具观察回完整预算核算，不重做首检。F2无课程库时仍可用，课程检索失败仅隔离课程能力，不把F2错误转为通识成功。课程故障导致旧分支失效时，其候选也失去资格，不因另一分支成功复活。\r\n\r\n宿主按原提交、目标/源码修订、指令修订及允许范围分配稳定逻辑生成请求；不同toolCallId不产生新业务请求。对同请求并发、成功后或失败后重复propose，只返回原状态/结果，不再次订阅生成模型；需要真正重新生成时由用户新draft提交。重复工具观察仍分别匹配各自callId。\r\n\r\n## 5. 组件与契约提案\r\n\r\n| 边界 | 建议落点 | 责任 |\r\n| --- | --- | --- |\r\n| 目标/快照端口 | contract下纯JavaDTO；editor/f2平台适配 | 项目、文件、方法、允许范围及完整before同版 |\r\n| 工具执行边界 | core/react与core/edit | 课程/定位/候选独立能力、有限执行、类型化观察 |\r\n| 候选生成 | core/edit调用既有model端口 | 固定指令/源码，一次无工具子调用，校验后构造after |\r\n| 候选与应用存储 | storage新F2仓储，同一H2 | 候选、审核、应用意图、回执与session根守卫 |\r\n| Diff/审核视图 | ui/f2，现有时间线最小集成 | 内置viewer、固定只读副本、两个本地事件 |\r\n| 受限应用适配 | editor/f2 | 只消费宿主持有的批准产物，IDE写命令内最终复验 |\r\n| 装配 | bootstrap/公共注册 | 注入端口与生命周期，不把UI/editor实现搬到bootstrap规避范围 |\r\n\r\n示意调用为resolveEditTarget(requestRef)、proposeCodeEdit(snapshotRef, instructionRef)和宿主applyApprovedCodeEdit(applyId)。第三项不作为模型可调用的写工具暴露；批准不能来自模型approved=true。具体字段见契约提案，G1才更新实际API及源码。\r\n\r\n## 6. 状态、存储与上下文\r\n\r\n分开保存不可变目标/候选、本地审核状态、应用事实。候选记录其turn/attempt/branch/toolCall及指令来源，完整before/after、范围、版本/哈希。生成完成只到暂存；父有效分支正常终态、候选资格及耐久提交共同成立才可REVIEWABLE。\r\n\r\n建议审核状态PENDING/APPROVED/REJECTED/INVALIDATED；应用独立记录INTENT/APPLYING/APPLIED_TO_DOCUMENT/FAILED_NOT_APPLIED/OUTCOME_UNKNOWN/RECEIPT_PENDING，磁盘保存状态另列UNKNOWN/UNSAVED/SAVED。它们是字段提案，不能靠一个“成功”布尔合并。\r\n\r\n候选资格提升须和父终态、活跃槽收口在同一H2协调边界验证；保存失败不开批准。审核/应用事实不能追加到已终态ReactRepository Snapshot，应在独立F2记录发布视图。预览/审核检查根LIVE、原instance、候选来源/修订及耐久资格，不要求原生成operation仍活跃；生成及新的APPLY写入分别验证各自operation。\r\n\r\n后续模型只在新的draft提交时读取有资格的本地状态事实及明确来源。拒绝/过期/应用事实需进入统一投影和checkpoint指纹，避免摘要仍称“待批准”或“已修改”；事实不恢复失败生成全文、thinking或协议资格。重新读取项目文件是新的有界读取。\r\n\r\n删除session清理F2私有原文、产物、审核、协议引用和恢复记录；已修改的用户源文件不属于聊天私有数据，不自动回滚。若删除与写入竞争，先撤销提交资格并收口；必须保留的最小本地恢复票据如何清理由G1/G5明确，不能借恢复旁存复活已删除聊天。项目关闭/停用与迟到回包也复验原实例和operation。\r\n\r\n## 7. Diff与本地决定\r\n\r\nDiff左右为固定只读before/after，不绑定可直接编辑的live Document。UI只有在候选完整、有效、耐久且展示了准确版本后提供“同意并应用”“拒绝”；关闭viewer只释放视图，不等于决定或继续生成。\r\n\r\n批准/拒绝走独立本地ViewEvent/协调器分支，不复用UI send、retryLatest、SubmitDraft或旧ReAct Job。两按钮均要求模型订阅数、嵌入请求数、课程首检数、ReAct启动数增量为0；不得触发自动摘要、模型结果说明或合成用户消息。现有draft不被消费/覆盖。\r\n\r\n拒绝、过期、失败、待核对均展示本地真实状态；仅用户再次draft发送可以再定位或生成。既有F0重试语义保持，不能为F2按钮借用空draft触发retryLatest。F2重新生成须新提交，不能从审核按钮续接旧attempt。\r\n\r\n## 8. 准确应用与恢复\r\n\r\n1. 用稳定applyId去重，先校验项目/session/候选和真实按钮证据。已成功返回历史结果，处理中/待核对返回原状态；新请求才申请本session应用槽。忙时不排队。\r\n2. 验证实际文件归属、可写性、允许范围、当前Document版本和完整before，包括未保存编辑。目标/内容/版本变化使批准失效，不能自动重定位、模糊打补丁或改名。\r\n3. 先耐久保存精确应用意图；失败不执行。进入IDE写命令后再次核验提交资格及基线，只应用已展示after。网络、数据库长事务、模型和等待用户不放在IDE读/写锁内。\r\n4. 获得真实Document结果再保存回执，支持命名Undo命令；后续磁盘保存/Undo是独立可观察事实，不自动重放旧批准。\r\n5. H2与Document不是共同原子事务。结果不明或已应用但回执失败时结束本地执行，保持可见阻塞并只核验补记；重启不自动编辑。匹配内容本身不足以证明本次应用。\r\n6. 所有占槽出口统一收口，终态保存后只释放本操作槽；不能占住旧运行任务等用户，也不能释放其他操作的槽。实际已改不能因后续取消、回复失败或聊天删除而宣称未发生。\r\n\r\n## 9. 任务顺序及完成定义\r\n\r\n所有组唯一负责人均为用户本人，顺序G0→G1→G2→G3→G4→G5→G6。G0先处理当前F0-only入口与managerExcluded的真实冲突；本轮不改hooks、权限策略、构建、依赖或业务代码，不创建分支/PR。\r\n\r\n开发交付完成需范围内实现、统一All、目标IDE必要检查、独立检查、最新PR validation/scope、main合入与核验；用户实际黑盒及真实服务边界单独记录。本轮只完成文档生成与Repository检查，所有F2实现与IDE/API验收为NOT_RUN。\r\n\r\n## 10. 官方依据与验证限制\r\n\r\n2026-10-25读取的[Documents](https://plugins.jetbrains.com/docs/intellij/documents.html)支持Document内存文本、命令与Undo；[PSI Files](https://plugins.jetbrains.com/docs/intellij/psi-files.html)说明项目作用域PSI与文件查找；[Threading Model](https://plugins.jetbrains.com/docs/intellij/threading-model.html)约束模型访问锁和EDT；[IDEA Diff Viewer](https://www.jetbrains.com/help/idea/differences-viewer.html)说明侧对比及可编辑本地内容。只读副本+显式宿主批准是基于这些能力的本方案设计，不是官方对本插件的保证。\r\n\r\n本机仍仅验证实际安装版本，当前既有基线为IU-262.10968.63；未来升级重新读取product-info并同步构建/CI，不承诺其他版本。官方网页和合成模型不能替代本机Diff/Undo/脏文档/取消竞争证据。\r\n"
+    },
+    {
+      "path": "spec/contracts/F2_API_PROPOSAL.md",
+      "sha256": "8333ff5657a6f7d266c51e6b67baf04e98ef56fdba5c598087079fef581d10ab",
+      "content": "# F2 公共边界提案\r\n\r\n2026-10-25。与[开发方案](../architecture/F2_DEVELOPMENT_PLAN.md)配套；这是拟新增契约，不覆盖[实际F0 API](API.md)，没有对应源码实现。负责人：用户本人。G0治理落地后，G1才同步实际DTO/端口/API。\r\n\r\n## 纯Java数据边界\r\n\r\n| 示意类型 | 必要信息与约束 |\r\n| --- | --- |\r\n| EditRequest | 宿主稳定requestId、原project/instance/session/turn/attempt、用户指令引用与修订、可选capture引用、定位线索；不以任意路径作授权 |\r\n| TargetQuery | 用户提供的路径/模块/类/方法/参数线索及请求来源；限制原项目源码范围 |\r\n| TargetResolution | UNIQUE/AMBIGUOUS/NOT_FOUND/NOT_READY/INCOMPLETE/STALE；候选带稳定身份、路径/模块/签名；INCOMPLETE不能伪称唯一 |\r\n| EditSnapshot | 宿主snapshotRef、真实文件/类/方法、完整Document before、stamp、Document文本哈希、允许范围、采集来源 |\r\n| EditProposal | proposalId/revision、snapshotRef、instructionRef、不可变after/哈希、范围、来源branch/toolCall、完整性与父资格 |\r\n| ProposalView | 展示概要、准确版本、是否可审核、已展示标识、本地审核/应用事实；SDK/PSI/Document对象不进DTO |\r\n| ReviewDecision | commandId、明确proposalId/revision及before/after哈希、来源实例/展示版本，APPROVE或REJECT；不接模型自报批准 |\r\n| ApplyReceipt | applyId、精确候选绑定、Document实际结果、磁盘保存状态、后续Undo/漂移事实、可得文件引用与恢复状态 |\r\n\r\n公共坐标沿用SourceRange的一基行列/UTF-16规则；内部offset起含终不含，转换有测试。Document前像/after使用同一文本表示计算哈希，保留所有正文；磁盘编码/换行及保存hash另算，不能混同。任何预览前的合法表示转换必须先固化到展示版本，批准后不再改变内容。\r\n\r\n## 示意端口，不是已落地签名\r\n\r\n- EditTargetPort.resolveAndCapture(context, query)：只读、有界、项目作用域，返回完整结果或明确异常；已有选区仍须有完整同版before。\r\n- EditProposalService.propose(context, snapshotRef, instructionRef)：受控子生成，返回有界观察和不可变产物引用，不写项目。\r\n- EditPreviewPort.open(context, proposalRef)：原生只读副本Diff；记录准确展示版本；关闭仅释放视图。\r\n- EditApplyPort.apply(context, applyId)：只读取宿主保存的批准产物，在IDE写命令复验并应用，返回真实Document结果。它不是ReAct模型工具。\r\n- EditRepository：独立候选/审核/应用记录，复用H2守卫与协调事务，不覆盖已终态Snapshot。\r\n\r\n只有目标解析/候选工具可列入模型schema；本地批准/拒绝/应用/恢复不暴露给模型。MCP适配仅包裹同一语义边界，不能获得额外读写范围。\r\n\r\n## 本地事件与操作提案\r\n\r\n新增ApproveEditProposal、RejectEditProposal、OpenEditPreview、RecoverEditOperation等明确事件，均携带EventMeta与精确候选引用。APPLY为独立OperationKind；拒绝/打开预览只做有界本地处理，是否占短期本地操作资源由G1明确，不能调起生成槽。\r\n\r\n两个用户按钮准确为“同意并应用”“拒绝”。本地事件分支不能进入SessionCoordinator的SubmitDraft/RetryAttempt/ManualCompact调度分支。事件不清空draft、不生成用户消息，不伪造assistant/tool协议。支持文字替代按钮的应用协议不在当前已确认范围。\r\n\r\n## 存储、迁移及资格\r\n\r\n建议新增F2目标/产物、review、apply_intent/receipt表或同等独立结构，身份与session根守卫一致。各记录包含schema/policy版本；旧F0 JSON缺F2集合按兼容规则读取，未知版本明确限制，不删除数据库后伪装首次启动。\r\n\r\n候选“可审核”的提升与父有效终态、持久提交及槽释放协调；子模型结束不等于父成功。审核/应用后只更新独立记录与投影视图，不能再次save已终态ReactSnapshot。\r\n\r\n生成读写检查根LIVE、原instance及各自生成operation；预览/审核检查根LIVE、原instance、候选来源/修订及父耐久资格，不要求已释放的父生成operation仍活跃。新的APPLY写入校验它自己的operation/epoch/提交资格，不把旧生成operation复用为应用权限。应用副作用单独回执，不升级失败生成历史资格；checkpoint指纹纳入准确审核/应用事实版本。删除清理范围、未知结果恢复票据与根生命周期竞争在G1/G5明确。\r\n\r\n## 必须区分的结果\r\n\r\n正常业务结果包括需定位、需澄清、未找到、候选无变化、候选过期、busy、拒绝。平台取消、IO/SQL/解析及开发故障保留原cause到明确任务边界，不变成空成功或课程检索降级。\r\n\r\n应用结果至少区分未应用、Document已应用、结果未知、回执待恢复；磁盘UNKNOWN/UNSAVED/SAVED单列。重复approve返回原applyId/状态，Undo后不重新应用。新draft发送才允许再次进入ReAct。\r\n\r\n逻辑生成请求由宿主按原提交、目标/源码修订、指令修订及范围绑定。toolCallId仅作协议配对，不能作唯一业务去重键；更换callId或模型自造requestId不能重复生成。同请求并发/成功后/失败后重复propose返回既有状态/结果，内部生成订阅不增加；真正重生成需用户新draft提交。\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/F2/README.md",
+      "sha256": "a3e1468968fadd5e7b77b9976060a66102c4592e65da9b1a9c96fd16faf6f920",
+      "content": "# F2 个人任务组入口\r\n\r\n2026-10-25。全部任务唯一负责人：用户本人。顺序开发，不分派给F0成员；开发分支推荐沿用dev-manager，先由G0落实精确F2归属与门禁，再写产品代码。不创建新分支，不把代码放错包规避规则。\r\n\r\n方案：[F2_DEVELOPMENT_PLAN](../../../architecture/F2_DEVELOPMENT_PLAN.md)；契约：[F2_API_PROPOSAL](../../../contracts/F2_API_PROPOSAL.md)；[状态](STATUS.md)、[交接](HANDOFF.md)、[验证矩阵](VALIDATION_MATRIX.md)。\r\n\r\n| 组 | 内容 | 前置 | 负责人 | 初始实现状态 |\r\n| --- | --- | --- | --- | --- |\r\n| [G0](GROUP_0.md) | 治理、实施范围及交付路径 | 阅读当前基线 | 用户本人 | NOT_STARTED；可先做治理准备 |\r\n| [G1](GROUP_1.md) | 契约、状态/存储、工具能力基础 | G0通过 | 用户本人 | NOT_STARTED |\r\n| [G2](GROUP_2.md) | 可选选区/文字定位与同版快照 | G1通过 | 用户本人 | NOT_STARTED |\r\n| [G3](GROUP_3.md) | 受控候选生成与ReAct接入 | G2通过 | 用户本人 | NOT_STARTED |\r\n| [G4](GROUP_4.md) | 原生Diff与两个本地审核按钮 | G3通过 | 用户本人 | NOT_STARTED |\r\n| [G5](GROUP_5.md) | 获批应用、Undo、回执与恢复 | G4通过 | 用户本人 | NOT_STARTED |\r\n| [G6](GROUP_6.md) | 端到端回归、人工验收与交付 | G5通过 | 用户本人 | NOT_STARTED |\r\n\r\n## 每组执行方式\r\n\r\n先读根AGENTS、CURRENT、BASELINE/F0与F2方案、治理、当前本组及实际API/Java。记录当前分支/工作区和上一组真实证据；不改写F0历史，不假定新组已授权改全部旧目录。\r\n\r\n每组按一个可观察场景实施、验证、记录；只在本组退出条件满足后推进。阶段LOCAL_VERIFIED不同于main交付DONE；最终完成要求统一验证、独立检查、PR门禁、main合入与核验，人工验收独立记录。未完成组不提前标DONE。\r\n\r\n统一入口：powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All；真实IDE必要场景增加-IdeSmoke及本机路径。只生成本轮文档时用-Scope Repository，不能替代产品验证。不调用付费模型证明本地接口。\r\n\r\n本轮仅创建方案与任务定义，没有修改实际契约、业务、构建、权限策略或hooks。原始讨论与来源哈希仅在负责人本地忽略证据保存，公开任务不要求读取它们。\r\n\r\n## 可直接交给后续agent的提示\r\n\r\n```text\r\nF2所有任务由用户本人负责。先读F2/STATUS和HANDOFF，从GROUP_0的下一条动作开始；不要跳过现有AGENTS的F0-only和branch-scopes限制，不分派甲乙丙实施，不创建分支。\r\n严格区分已确认R01–R10与D0–D7技术提案。两个审核按钮本地处理，不调用模型、不进入ReAct；只有用户重新发送draft才能再次进入。\r\n任何候选必须完整、父有效分支正常且耐久后才可审核。批准绑定Diff展示版本；应用复验当前Document并支持Undo，Document与磁盘保存分开报告。\r\n保持F0混排输入、身份/单槽、课程降级、停止/中断资格、摘要与删除语义。统一验证，记录真实通过/失败/未执行。\r\n```\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/F2/GROUP_0.md",
+      "sha256": "45d848b5c565aa1fc2eb0e389f85c3fc28d20a75b550b89adc05bfdc7d980207",
+      "content": "# F2-G0：治理、实施边界与交付路径\r\n\r\n负责人：用户本人。前置：读完F2方案及现行治理。状态：NOT_STARTED；本组先做治理准备，不写F2业务。\r\n\r\n## 要解决的事实冲突\r\n\r\n根AGENTS仍只开发F0；WRITE_SCOPE和.github/branch-scopes.json的managerExcluded排除editor/ui。用户本人承担F2不等于这些机器规则已改变。当前文档生成已授权，业务实施尚未启动。\r\n\r\n## 工作项\r\n\r\n1. 核对dev-manager/main本地基线、脏工作区及F0验收/合入证据。保留补记，不动成员HEAD。明确D1单文件/整份批准、D4保存策略及其他实施边界，记录提案与实际决定的来源；不能将全部旧讨论当作已确认。\r\n2. 选用“用户独立负责、dev-manager集中交付”的推荐路线，列出实际最小路径清单。拟新增editor/f2、ui/f2及对应测试负责F2适配；现有CourseAssistantView/ChatTimeline及必要测试只做最小接线。该清单先审定，不给整个editor/ui无限写权，不动PDF。\r\n3. 先提交独立治理PR：同步AGENTS的F2入口、WRITE_SCOPE、分支范围策略及本地/CI同一语义的校验测试。若采用精确例外，保留原排除项并对F2子目录/必要文件显式建模；不能改脚本忽略错误或把实现搬到bootstrap过检。\r\n4. 治理PR仅包含允许范围的规则/文档/验证，不混入尚不被允许的业务文件。当前main可信scope工作流读取main政策，必须先在该治理PR的validation/scope成功、独立检查和合入核验后，再同步继续G1。\r\n5. 记录用户本人是所有组负责人；这不是再次向甲乙丙分派。若不采用集中路线，应在本组明确合法替代路径并回填任务，不能等代码完成才拆分PR。\r\n\r\n## 具体产物与验证\r\n\r\n产物：精确写入清单、范围/实施决定记录、治理PR及main核验、本组STATUS/HANDOFF证据。将来需改的治理路径是任务清单，不表示本轮已经修改。\r\n\r\n使用既有scripts/check-scope.ps1及真实范围回归，验证F2指定路径放行、无关F0成员文件继续拒绝、重命名两端、main可信策略与本地一致；固定五分支、禁止删除/强推和hooks不变。统一All及需要的治理行为检查按VALIDATION执行。\r\n\r\n## 退出条件\r\n\r\n实施范围来源明确；文档归属、本地机检、可信main策略一致；治理已合入并同步；F0行为未改。任一未满足，G1不得开始产品代码。D0–D7未决仍如实记录，不宣称正式冻结。\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/F2/GROUP_1.md",
+      "sha256": "aa9b52710514fa75a30299fabb3073bd19773d8608eb2ee94f0fcb8770cf5140",
+      "content": "# F2-G1：契约、状态/存储与能力基础\r\n\r\n负责人：用户本人。依赖：G0通过并同步main。状态：NOT_STARTED。\r\n\r\n## 工作项\r\n\r\n1. 依据F2_API_PROPOSAL落实纯Java请求/目标/快照/候选/审核/应用回执DTO和平台端口；保留既有Input四字段及混排顺序，旧JSON/构造入口有明确兼容策略。\r\n2. 新增独立本地Approve/Reject/OpenPreview事件与APPLY操作分派骨架。批准/拒绝不得落入SubmitDraft/Retry/Compact调度；没有真实实现时明确不支持，不能返回假成功。\r\n3. 建立独立F2仓储/schema迁移与session根守卫：不可变产物、审核状态、应用意图/事实分开；父有效终态、候选资格提升与槽收口设计共同事务协调。\r\n4. 抽出最小工具执行/能力边界，使课程、定位、候选可用性与错误分类独立；不是引入泛化任意文件/执行注册器。旧课程实现保持。\r\n5. 明确checkpoint指纹/事实投影、session删除、停用/关闭及未知应用结果恢复票据的处理；不把本地事件附回已终态ReactSnapshot。\r\n\r\n## 落点与验证\r\n\r\n拟落点：contract、core/react、core/edit、core/session、storage及对应测试；实际文件需服从G0清单。同步实际API.md，提案文档不冒充源码。\r\n\r\n验证旧库/旧F0 JSON重开、无字段兼容与不支持版本明确失败、跨项目/session/instance守卫、重复命令先返回原记录、父终态保存失败不能批准、删除/迟到写不能复活。新增本地按钮事件路径对模型/嵌入/ReAct调度计数均0。\r\n\r\n## 退出条件\r\n\r\n契约可编译、兼容/守卫测试有实际证据、存储事务与资格联动设计可验证；仅骨架不宣称F2可用。统一All通过及独立检查闭合后推进；阶段交付按既有PR规则。\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/F2/GROUP_2.md",
+      "sha256": "2ea95a5c3094b3d5a5c01644135d17ae33dc233765d6736aae06640bb632f47b",
+      "content": "# F2-G2：双入口定位与固定快照\r\n\r\n负责人：用户本人。依赖：G1通过。状态：NOT_STARTED。\r\n\r\n## 工作项\r\n\r\n1. 保留既有非空选区捕获；F2另支持纯文字指向文件/类/方法/参数。模型只提定位线索，宿主在原session项目允许源码内有界解析，不能按完成时当前标签改绑。\r\n2. 唯一完整目标直接采集；同名文件/类、方法重载、未找到、索引未就绪、查询截断分别报告。显示一个截断结果不能假称唯一，不偷偷改用当前编辑器目标。\r\n3. 在平台后台读边界采集真实Document和同版PSI，保存完整before、文件身份、版本/哈希及明确允许范围；含用户未保存编辑。只有旧F0片段时补采同版完整前像。\r\n4. 采集中变化明确过期；返回宿主targetRef/snapshotRef。原用户提交不可变，派生观察带来源；后续应用不得重新解析后将旧批准转给别的目标。\r\n5. 所需文件过大/范围不足等明确返回，不无限查找或上传整项目。需要补充时结束本轮、释放槽；用户再次draft发送才重查。\r\n\r\n## 落点与验证\r\n\r\n拟落点：editor/f2解析/快照适配、core/edit目标规则、公共端口和bootstrap装配；按G0合法归属处理。\r\n\r\n合成项目覆盖两个模块同名文件、重载/嵌套类、无目标/不完整查询、选区与文字冲突、未保存文档、项目关闭/会话切换、采集中修改、source版本与范围对应。真实本机IDE验证PSI/Document读锁和索引未就绪状态，不以合成字符串证明平台定位。\r\n\r\n## 退出条件\r\n\r\n两种入口都得到真实且同版的完整快照或明确状态；无需额外定位确认；没有写项目副作用。统一All及必要IDE检查通过，未执行场景单列。\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/F2/GROUP_3.md",
+      "sha256": "35328fa7232371d9ba158564ba03dd9913972fcf93a34afbe845bd9a58ee8c43",
+      "content": "# F2-G3：受控候选生成与ReAct接入\r\n\r\n负责人：用户本人。依赖：G2通过。状态：NOT_STARTED。\r\n\r\n## 工作项\r\n\r\n1. 在现有唯一ReAct循环中接入定位/候选工具，保留attempt一次首检、每步完整预算、严格toolCallId配对与课程证据身份。无库不禁用F2，F2异常不套课程通识降级。\r\n2. 使用固定snapshotRef及原始指令生成候选；按推荐提案，每次工具内部至多一次tools=[]模型请求，预算/次数/耗时/输出与取消计入父级，无第二session、递归循环或隐式重试。宿主按原提交/目标/源码/指令修订及范围生成稳定逻辑requestId，不接受模型换toolCallId或自造requestId绕过去重；同请求并发、成功后或失败后重复调用均返回旧结果/状态，不再次订阅生成模型，协议结果仍各自配对callId。\r\n3. 严格解析结构化修改，校验before精确匹配、范围、非重叠块及输出完整性。在固定副本构造after，预览前固定所有正文与哈希；禁止未展示的格式化/优化imports。\r\n4. 工具观察返回有界概要/产物引用。流式只供不可批准预览；父有效分支正常耐久收口才能提升候选，不将课程降级旧分支候选复活。\r\n5. 缺需求追问、无变化、无效候选、超限和开发故障分开处理。F2重新生成只允许用户新SubmitDraft，不由审核按钮/失败处理或retryLatest触发。\r\n\r\n## 验证\r\n\r\n沿ReactEngineTest/SpringAi模型测试增加合成响应：无课程库仍能生成、课程故障隔离、一次子调用计数、不同callId的同请求重复/并发及错误后再调用不增订阅、预算用尽前拒绝订阅、工具参数分片不提前执行、恶意/越界/重叠修改拒绝、父保存失败/停止不使子候选合格。现有课程问答/引用/中断哨兵全部回归，不调用真实付费模型。\r\n\r\n## 退出条件\r\n\r\n能从两种输入得到准确完整候选及独立产物；失败/中断资格与上下文/摘要过滤共用；统一All及必要本机模型接线探针通过。合成模型只证明本地协议，不声称真实生成质量。\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/F2/GROUP_4.md",
+      "sha256": "4475abb2245157d66c33debaecbc32102a0f3cc89f8039d1799dac106a10ec0e",
+      "content": "# F2-G4：原生Diff与两个本地审核按钮\r\n\r\n负责人：用户本人。依赖：G3通过。状态：NOT_STARTED。\r\n\r\n## 工作项\r\n\r\n1. 在真实时间线增量显示候选概要和预览入口；使用IDEA内置viewer并排比较不可变只读before/after，不将live Document交给可编辑Diff。\r\n2. 只有父有效终态/候选耐久及准确版本展示后，才能提供“同意并应用”“拒绝”。窗口关闭只释放视图；不默认接受/拒绝，也不重进模型。\r\n3. 两按钮发独立宿主本地事件，不能复用CourseAssistantView的send/retryLatest。拒绝只改审核状态；批准将准确候选交G5本地操作，不重新生成代码。\r\n4. 审核反馈本地渲染，不自动提问、模型总结、重生成、摘要或SubmitDraft；不消费或覆盖用户draft，不伪造无配对tool消息。\r\n5. 过期/失败提示保持本地；用户再次draft发送才进入ReAct。多次打开/关闭、重复按钮与迟到UI回调校验候选/视图版本。\r\n\r\n## 验证\r\n\r\n真实本机IDE必须证明内置侧对比（聊天代码块/截图不能代替）、预览前后Document及磁盘无修改、左右内容与批准哈希一致。用模型/嵌入/首检/ReAct调度计数证明两个按钮增量全部0，保持draft原文/混排位置不变。\r\n\r\n回归MixedDraftEditor/ChatTimeline的IME、选择/光标、代码条、滚动阅读与回底；候选视图释放不停止其他业务。G5未真实接入前批准按钮不得呈现假应用成功。\r\n\r\n## 退出条件\r\n\r\n有真实IDE预览证据和本地事件零模型调用证据；准确按钮/禁用状态/生命周期符合约束。统一All通过，人工视觉交互仍单列用户验收。\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/F2/GROUP_5.md",
+      "sha256": "9ec899e082e8bc092cee47573bcb3965cdb15ec58ff8bee55bcf965f386352a0",
+      "content": "# F2-G5：获批应用、Undo与回执恢复\r\n\r\n负责人：用户本人。依赖：G4通过。状态：NOT_STARTED。\r\n\r\n## 工作项\r\n\r\n1. 同一applyId先去重，已成功/处理中/待恢复返回原结果；只有新操作申请本session单槽，busy不排队。批准必须来自真实本地按钮，绑定展示版本及before/after/允许范围。\r\n2. 当前项目实例、文件身份/可写性、Document版本及完整before全部匹配才持久保存应用意图；IDE写命令执行前再次复验资格，应用既定after并支持命名Undo。\r\n3. 漂移则候选/批准失效，不自动重定位、重生成、模糊合并、格式化或覆盖新编辑。原始文件编码/磁盘保存不伪装Document状态。\r\n4. 记录真实Document应用结果，分别观察磁盘保存和后续Undo。文件已变但回执失败保留事实；未知结果只核验补记，不重调模型/重放。重启不自动编辑。\r\n5. 所有占槽出口本地收口，仅释放本操作槽；未保存/待核对保持可见阻塞。停用、停止、项目关闭、聊天删除与提交竞争明确裁决；已应用不因删除聊天自动回滚。\r\n6. 审核/应用事实统一进入下一次显式draft的投影和checkpoint指纹，不恢复失败候选全文/协议。删除处理私有数据与恢复票据，不能旁存复活聊天。\r\n\r\n## 验证\r\n\r\n真实IDE覆盖脏Document、批准后改代码/重命名/只读目标、重复同意/同意拒绝竞争、取消在提交前后、一次应用可Undo、Undo后重复批准不重写、磁盘保存状态准确。故障注入意图保存失败、写结果不明、回执失败、恢复/删除竞争，证明实际事实不被伪装或重复执行。\r\n\r\n不得宣称H2与Document共同原子；不以异常后自动覆盖/回滚用户新改动“修复”结果。按钮全过程模型/嵌入/ReAct启动增量仍为0。\r\n\r\n## 退出条件\r\n\r\n单文件推荐范围内准确应用、Undo及本地恢复可证明，所有出口槽收口/阻塞闭合；统一All+必要IdeSmoke通过，独立检查无遗留。真实API/人工交互尚未执行继续NOT_RUN。\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/F2/GROUP_6.md",
+      "sha256": "612b9476805e2afc8f72d5194a543506628ddbc283f1c4a3ed1cd22cbe4e97f4",
+      "content": "# F2-G6：全链路验证、人工验收与交付\r\n\r\n负责人：用户本人。依赖：G5通过。状态：NOT_STARTED。\r\n\r\n## 工作项\r\n\r\n1. 按VALIDATION_MATRIX完成两种入口→候选→原生Diff→同意/拒绝→结果/Undo→再次draft的全链路。模型与嵌入使用合成/本地受控响应证明本地逻辑，不调用付费模型。\r\n2. 全量回归已验收F0：问答/引用及课程故障隔离、资料硬删除、混排/IME/顺序、滚动/恢复、项目/session隔离、停止/未完成历史、摘要指纹及删除全清。\r\n3. 更新用户黑盒操作文档：插件安装/配置复用、合成Java工程准备、文字/选区两入口、重名/重载、未保存文本、Diff只读、两个按钮、重复点击、漂移、Undo/保存、关闭/重启。\r\n4. 独立Standards/Spec检查，修复并复查；统一All、实际本机-IdeSmoke、插件ZIP检查，保留失败日志/修复/最终结果，不把Repository通过当产品验收。\r\n5. 当前既有dev-manager按已生效G0规则直接PR main，最新head须validation/scope通过，再合入、fetch核验并保留固定分支。没有用户发布/合并授权时先完成可审阅内容，不伪造远端完成。\r\n6. 逐组STATUS/HANDOFF、方案/API与公共CURRENT回填真实状态。文档生成、LOCAL_VERIFIED、main开发交付DONE、用户人工验收、真实模型质量分别记录。\r\n\r\n## 交付物\r\n\r\n完整源码与测试、准确契约/开发方案、F2人工黑盒步骤、统一验证/真实IDE证据、独立检查和PR/main核验。最终作业英文报告/演示若另有整体任务应同步实际F2行为，不据任务定义声称已制作。\r\n\r\n## 退出条件\r\n\r\n矩阵所有必需本地场景有实际证据且无未闭合问题；main开发交付满足门禁，用户实际验收另记；未执行的真实API、规模与模型质量不写PASS。F2不得破坏F0验收基线，也不因本组完成宣称架构正式冻结。\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/F2/VALIDATION_MATRIX.md",
+      "sha256": "ab899060ea578fd685ba83fc7ff47901bb70117f0d8478520a43a0bf2444b6c5",
+      "content": "# F2 验证与验收矩阵\r\n\r\n日期：2026-10-25。负责人：用户本人。所有产品场景初始NOT_RUN；本轮Repository文档检查不改变该表。按组执行后填真实命令/退出码/日志与限制。\r\n\r\n| ID | 场景/最小可观察结果 | 关联目标/组 | 层次 | 初始状态 |\r\n| --- | --- | --- | --- | --- |\r\n| T01 | F2精确路径可交付，无关成员路径仍拒绝，可信main政策一致 | R10/G0 | 治理行为 | NOT_RUN |\r\n| T02 | 旧库/旧JSON重开不丢F0原文；不支持版本明确失败 | 全部/G1 | H2/JUnit | NOT_RUN |\r\n| T03 | 两入口固定原session；唯一目标直接继续，重名/重载不猜 | R01/R02/G2 | JUnit+IDE | NOT_RUN |\r\n| T04 | 未找到/未就绪/查询截断分开；截断一个候选不伪称唯一 | R02/G2 | JUnit+IDE | NOT_RUN |\r\n| T05 | 同版完整before含未保存编辑，采集中变更拒绝半套快照 | R02/R05/G2 | 真实IDE | NOT_RUN |\r\n| T06 | 无课程库仍有F2；课程故障不把F2错误变通识成功 | R01/G3 | 合成ReAct | NOT_RUN |\r\n| T07 | 同逻辑请求子生成至多一次；换callId/并发/失败后重复不再订阅，tools为空且预算前拒绝 | R01/G3 | 计数/协议 | NOT_RUN |\r\n| T08 | 越界/重叠/原文不匹配候选明确失败；无实际项目写入 | R04/G3 | JUnit | NOT_RUN |\r\n| T09 | 子候选完整但父停止/失效/保存失败，不可批准或进未来模型 | R04/R05/G1/G3 | 故障注入 | NOT_RUN |\r\n| T10 | 内置侧对比、before/after准确、预览零Document/磁盘修改 | R03/R04/G4 | 真实IDE+人工 | NOT_RUN |\r\n| T11 | 两按钮准确标签，模型/嵌入/首检/ReAct增量0，draft不变 | R08/R09/G4/G5 | UI+调用计数 | NOT_RUN |\r\n| T12 | 拒绝/关闭/过期/失败不自动重生成；新draft才新ReAct | R08/R09/G4 | UI+核心 | NOT_RUN |\r\n| T13 | 源码/候选/项目/文件身份变化使旧批准失效，不自动覆盖 | R05/G5 | 真实IDE | NOT_RUN |\r\n| T14 | 重复同意和同意/拒绝竞争不重复写，Undo后不重放批准 | R06/R08/G5 | 并发+IDE | NOT_RUN |\r\n| T15 | 已展示after准确应用且可Undo；Document/磁盘结果分开 | R06/R07/G5 | 真实IDE+人工 | NOT_RUN |\r\n| T16 | 意图失败不写；已改回执失败保留事实；未知结果只核验 | R05/R07/G5 | H2故障+IDE | NOT_RUN |\r\n| T17 | 停用/关闭/删除及晚回调不能复活候选/槽；已改文件不自动回滚 | R04/R05/G5 | 竞争/生命周期 | NOT_RUN |\r\n| T18 | 审核事实投影/checkpoint更新，不提升失败正文/协议资格 | R05/R09/G1/G5 | ContextPlanner | NOT_RUN |\r\n| T19 | F0课程/PDF硬删除、混排/IME、草稿与滚动、上下文/删除全回归 | 继承/G6 | All+IDE | NOT_RUN |\r\n| T20 | 打包无测试/凭据；独立检查、最新CI及main核验分开记录 | R10/G6 | 交付 | NOT_RUN |\r\n\r\n## 统一入口与证据口径\r\n\r\n文档：powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope Repository。\r\n\r\n实施：powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All。必要真实IDE再加-IdeSmoke -LocalIdePath <本机绝对路径> -GradleUserHome <明确缓存路径>；先读取实际product-info，不复制旧版本假设。\r\n\r\nJUnit/本地合成HTTP证明规则和协议，真实IDE证明Diff/PSI/Document/Undo，人工证明鼠标交互/视觉/实际体验，真实API质量须用户自行按配置验收；四者不得互相冒充。没有付费调用许可或额度时不发请求。\r\n\r\n每组记录首次失败、修复、最终退出码、测试数量/实际IDEbuild和未执行项。PR前范围与All必做；门禁/合入只有读到真实结果才记完成。不要用空测试或镜像实现的断言充数。\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/F2/STATUS.md",
+      "sha256": "e5b6f6d6b45bb3be8eeae4e19ccc7d4f8510a1d49ebae641321830208ef0db8f",
+      "content": "# F2 状态\r\n\r\n日期：2026-10-25。唯一负责人：用户本人。文档包已生成，产品实现NOT_STARTED；架构未正式冻结。本地基线dev-manager/origin-main为8fac788。\r\n\r\n| 组 | 实现 | 自动/IDE验证 | 依赖 |\r\n| --- | --- | --- | --- |\r\n| G0治理与边界 | NOT_STARTED | NOT_RUN | 可开始治理准备 |\r\n| G1契约与存储 | NOT_STARTED | NOT_RUN | G0通过 |\r\n| G2目标定位 | NOT_STARTED | NOT_RUN | G1通过 |\r\n| G3候选生成 | NOT_STARTED | NOT_RUN | G2通过 |\r\n| G4Diff审核 | NOT_STARTED | NOT_RUN | G3通过 |\r\n| G5安全应用 | NOT_STARTED | NOT_RUN | G4通过 |\r\n| G6回归交付 | NOT_STARTED | NOT_RUN | G5通过 |\r\n\r\n## 本轮实际范围\r\n\r\n只生成开发方案、契约提案、七组任务和验证矩阵，补入口导航与讨论证据；不改业务、实际API、构建依赖、hooks或范围政策。现有负责人补记保留；F0验收/合入沿用历史证据，不重做完成工作。\r\n\r\n推荐dev-manager集中交付先经G0精确治理，现有managerExcluded未自动放开。单文件/整份批准等继续是提案，不据文档把全部细节记为用户已确认。两按钮本地零模型调用、draft唯一重入是明确要求。\r\n\r\n## 下一条动作\r\n\r\n进入GROUP_0，先形成拟写文件/范围清单与实施边界，落独立治理PR并通过main可信政策；之后才开始G1源码。不要直接修改editor/ui或绕过hooks。\r\n\r\n## 本轮文档验证与独立检查\r\n\r\n统一scripts/validate.ps1 -Scope Repository退出0；13份新文档内容/范围、17个本地链接、4处入口导航检查通过。产品、构建、DevOps、现行权限规则与WORKING保持不变。\r\n\r\n两路独立文档检查闭合：修正了Diff需存在REVIEWABLE候选、审核不依赖已释放父operation、同逻辑请求换callId/失败后不重复生成三处歧义。首次BASELINE新增段落换行空白失败及一次只读核验脚本解析失败，修正后的最终检查通过；原始检查结果保存在本地证据，未隐去失败。\r\n\r\n所有F2产品、All、IDE/API及人工验收仍NOT_RUN，本轮结果只证明文档交付。\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/F2/HANDOFF.md",
+      "sha256": "899ead226c2bda99686eea6080366e62ba9fcda202b339867edb678ea12ae465",
+      "content": "# F2 交接\r\n\r\n日期：2026-10-25。负责人：用户本人。分支：现有dev-manager；本地基线8fac788，与本地origin/main一致。当前任务是方案/任务包交付，未实施F2。\r\n\r\n先读F2 README、STATUS和开发方案，再从GROUP_0继续。根AGENTS仍F0-only，manager范围仍排除editor/ui；用户个人负责不等于机器策略已改。推荐G0先独立治理PR明确精确F2路径/必要接线，不新开分支、不把实现挪到bootstrap、不分配甲乙丙。\r\n\r\n已确认：可选选区/文字定位；原生Diff先审核且预览零写入；批准准确版本；应用已展示内容、支持Undo，Document与磁盘保存分开；“同意并应用”“拒绝”均本地事件，只有用户再次draft发送才重新进入ReAct。\r\n\r\n技术提案：单文件/整份批准、本地工具边界/受控子生成、独立F2仓储、具体幂等和恢复字段。先按G0记录实际实施边界，不能把生成文档说成所有技术决定已确认或正式冻结。\r\n\r\n真实接点：ReactData.Input有question/code/captureOffsets/captureOrder；ReactEngine仍课程工具总开关；真实UI已是MixedDraftEditor/ChatTimeline；终态ReactRepository Snapshot不可回写。F2需独立审核/应用记录及checkpoint事实投影，不破坏F0。\r\n\r\n七组顺序执行，各组负责人都是用户本人。当前所有实现/产品测试NOT_STARTED/NOT_RUN；本轮Repository退出0，13份新文档/17个本地链接/4处入口导航与范围检查通过；两路独立文档检查已闭合，修正三处候选准入/审核守卫/逻辑生成去重歧义。初次换行空白及核验脚本解析失败均已修正并保留本地记录；产品与DevOps未改。不得拿F0历史169项测试作为F2已验证证据，不发付费模型请求证明本地接口。\r\n\r\n保留本轮之前STATUS/HANDOFF未提交记录，不自行提交/推送/合并。公开任务不依赖本地忽略原文；后续每轮继续维护负责人evidence与来源哈希。\r\n"
+    }
+  ],
+  "navigation": [
+    {
+      "path": "spec/architecture/BASELINE.md",
+      "sha256AtCapture": "85342156a60acf3e2507bc16030f325c432e34644d7bcde59d1f66edeed0808d",
+      "addedText": "\n## F2 规划入口（2026-10-25）\n\n用户要求生成F2方案与个人任务组，全部由用户本人负责。[F2开发方案](F2_DEVELOPMENT_PLAN.md)、[契约提案](../contracts/F2_API_PROPOSAL.md)及[顺序任务G0–G6](../tasks/dev-manager/F2/README.md)为新增规划入口。已确认业务约束与实施建议分开；F2尚未实现、未正式冻结，不替代F0实际API或已验收行为。\n\n本轮不改变根AGENTS的现行F0实施限制、目录机检、hooks或CI。F2实施前先完成G0的精确归属/治理对齐并经main可信策略核验，再进入产品组；不因个人负责而暗中扩大editor/ui范围。\n"
+    },
+    {
+      "path": "spec/tasks/README.md",
+      "sha256AtCapture": "8d89c80d8ee47763908e8628aa847682fc34f4a1c5232241b2a15c2f9460a363",
+      "addedText": "\r\n## F2：用户本人负责的顺序任务\r\n\r\n新增[F2个人任务入口](dev-manager/F2/README.md)，所有组唯一负责人为用户本人，不按上方历史F0四人分工分派。顺序为治理/范围、契约/存储、目标定位、候选生成、Diff审核、安全应用、联调交付。当前仅任务定义已生成，F2实现NOT_STARTED；先G0对齐现行写入规则，不创建新分支。\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/README.md",
+      "sha256AtCapture": "f69dfcdc470563a8923f65f4e1577e63e6f61fabb6bee06a2d1bf91eacd9ed18",
+      "addedText": "\r\n## F2个人任务入口（2026-10-25）\r\n\r\n用户明确F2由本人全权负责；新增[F2/README](F2/README.md)、[STATUS](F2/STATUS.md)和[HANDOFF](F2/HANDOFF.md)，共G0–G6七组串行任务。此处仅接入规划入口，不把旧F0剩余状态或四人比例套给F2，也不将方案生成算成实现。\r\n\r\n先从G0建立精确F2路径与可信门禁，推荐由用户在既有dev-manager集中交付。现行editor/ui排除范围不自动放开，不把代码放入bootstrap规避归属，不分派其他成员或创建分支。实际方案与契约提案分别见F2入口链接；产品验证仍NOT_RUN。\r\n"
+    },
+    {
+      "path": "spec/progress/CURRENT.md",
+      "sha256AtCapture": "ffd24f64121c6e92a9d9539cb7753abd0e045ab7d3ed22e2debc20d23a377c91",
+      "addedText": "\r\n## F2方案与个人任务组（2026-10-25）\r\n\r\n本轮生成[F2开发方案](../architecture/F2_DEVELOPMENT_PLAN.md)、[契约提案](../contracts/F2_API_PROPOSAL.md)与[本人顺序任务G0–G6](../tasks/dev-manager/F2/README.md)。所有F2任务归用户本人，产品实现NOT_STARTED，未正式冻结。本地dev-manager/origin-main为8fac788；F0已验收及合入沿用既有交付记录，本轮不重跑历史产品验收。\r\n\r\n先G0对齐F0-only入口及精确F2写入范围，现行门禁不在本轮修改。两个审核按钮“同意并应用”“拒绝”均本地处理，只有用户再次draft发送重入ReAct；其余技术建议明确列为提案。文档生成验证与未执行边界见F2状态，不代表F2功能可用。\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/STATUS.md",
+      "sha256AtCapture": "1e20115c7f568e4776874d62ba4022709c1f7d91d4ac1b8c924dc419ccde8802",
+      "addedText": "\r\n## F2方案和个人任务组生成（2026-10-25）\r\n\r\n- 用户要求生成F2方案/任务组，全部由用户本人负责；本地user-turn-076保存原文。新增[开发方案](../../architecture/F2_DEVELOPMENT_PLAN.md)、[契约提案](../../contracts/F2_API_PROPOSAL.md)与[个人任务包](F2/README.md)，共G0–G6七组串行，不向成员分派。\r\n- 推荐既有dev-manager集中交付；G0先处理F0-only入口及精确F2路径/可信门禁。此轮不改AGENTS、机检、hooks、CI、构建依赖、实际API或业务，不创建分支/PR，不变更WORKING。单文件/整份批准等技术建议未伪称全部确认。\r\n- 两路独立文档检查闭合，三项修正为REVIEWABLE候选准入、审核不要求已释放父operation、同逻辑请求换callId/失败后不重复生成。统一Repository退出0；13份新文档、17个本地链接及4处导航内容/范围检查通过。首次BASELINE换行空白与一次核验脚本解析失败修正后复核，记录保留。\r\n- 当前F2产品实现NOT_STARTED；All、F2 IDE/API及人工验收NOT_RUN。下一条进入F2/GROUP_0；F0历史验收与合入结论继续有效，不拿历史169项测试冒充F2验证。本轮未提交/推送。\r\n"
+    },
+    {
+      "path": "spec/tasks/dev-manager/HANDOFF.md",
+      "sha256AtCapture": "a9f2c2bc244c5b8a590e6e68381abf6217c54a72111562f43d1b03a7774dc4e1",
+      "addedText": "\r\n## F2方案和个人任务组生成（2026-10-25）\r\n\r\n- 用户要求生成F2方案/任务组，全部由用户本人负责；本地user-turn-076保存原文。新增[开发方案](../../architecture/F2_DEVELOPMENT_PLAN.md)、[契约提案](../../contracts/F2_API_PROPOSAL.md)与[个人任务包](F2/README.md)，共G0–G6七组串行，不向成员分派。\r\n- 推荐既有dev-manager集中交付；G0先处理F0-only入口及精确F2路径/可信门禁。此轮不改AGENTS、机检、hooks、CI、构建依赖、实际API或业务，不创建分支/PR，不变更WORKING。单文件/整份批准等技术建议未伪称全部确认。\r\n- 两路独立文档检查闭合，三项修正为REVIEWABLE候选准入、审核不要求已释放父operation、同逻辑请求换callId/失败后不重复生成。统一Repository退出0；13份新文档、17个本地链接及4处导航内容/范围检查通过。首次BASELINE换行空白与一次核验脚本解析失败修正后复核，记录保留。\r\n- 当前F2产品实现NOT_STARTED；All、F2 IDE/API及人工验收NOT_RUN。下一条进入F2/GROUP_0；F0历史验收与合入结论继续有效，不拿历史169项测试冒充F2验证。本轮未提交/推送。\r\n"
+    }
+  ],
+  "unchangedNormativeBaseline": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "b245ee5f8098d3acde933ca56c88cc5b054798f3ed16641b5854bd54b49f3fa8"
+    },
+    {
+      "path": ".github/branch-scopes.json",
+      "sha256": "e16870c7f21cbcd88f6c5ec38727f6097e96a3c97856d7d1ed256739ad4d57a2"
+    },
+    {
+      "path": ".github/workflows/validation.yml",
+      "sha256": "6cc95e21054dc4abd5474e9e21892b53f237324292065552a5e0cdb46a5d9b88"
+    },
+    {
+      "path": ".github/workflows/scope.yml",
+      "sha256": "fec7f606a29661dc6c42334f79d472c5af0c667764aea509a0985683c93c1f57"
+    },
+    {
+      "path": "scripts/validate.ps1",
+      "sha256": "11d81e014f7d07263761a077986c145313d7b03d6c1d6a1232a6531d54229514"
+    },
+    {
+      "path": "scripts/check-scope.ps1",
+      "sha256": "d0cab267b958d20688a922b3013fbf5c94fbd51002bed0e4ca73c46a2349d47b"
+    },
+    {
+      "path": "scripts/check-repository.ps1",
+      "sha256": "e5d1da2b8363652b0839987534aaa736298b64f767ac9cee0fbf3c86804c32bf"
+    },
+    {
+      "path": "build.gradle",
+      "sha256": "65aa54002ea992194341cf41d140654ced4b4b2d2bad6c393b6204c1d94df4b1"
+    },
+    {
+      "path": "settings.gradle",
+      "sha256": "ed00550e386dd0b2e31e068645f79e8c1da1ea69bbeac2f1aa243b1560889e59"
+    },
+    {
+      "path": "gradle.properties",
+      "sha256": "4f3ca7f618302307fcf5e7b7bfa56cf7043418cb27c7f873ca56324daeda9694"
+    },
+    {
+      "path": "spec/governance/WRITE_SCOPE.md",
+      "sha256": "7c60ba158adf7ebf2495a4db5327ae303412e082ef4fb3862e3266ae507158bd"
+    },
+    {
+      "path": "spec/governance/BRANCH_POLICY.md",
+      "sha256": "dd0ff0d672510127f53c53371be2ea688d05e7e7d1c2a7ee487b18ca80f7e2d5"
+    },
+    {
+      "path": "spec/governance/VALIDATION.md",
+      "sha256": "7da61cf2457d821c720feceb9c514ab44dc41f8631df35d3547ef47b05e4682b"
+    },
+    {
+      "path": "spec/contracts/API.md",
+      "sha256": "e1cd54af4514b8e89a8b96c12d18e491d85c6af9475640fbbe3e1eecb155f601"
+    },
+    {
+      "path": ".agents/skills/existing-repo-architecture/SKILL.md",
+      "sha256": "90ed5505153eec534ad762d9ff548ac21af4463a81f89b500439afc1f300b219"
+    }
+  ],
+  "verification": {
+    "initial": [
+      {
+        "check": 0,
+        "status": "fulfilled",
+        "exit_code": 1,
+        "output": "warning: in the working copy of 'spec/progress/CURRENT.md', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'spec/tasks/README.md', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'spec/tasks/dev-manager/README.md', CRLF will be replaced by LF the next time Git touches it\nspec/architecture/BASELINE.md:33: trailing whitespace.\n+\r\nspec/architecture/BASELINE.md:34: trailing whitespace.\n+## F2 规划入口（2026-10-25）\r\nspec/architecture/BASELINE.md:35: trailing whitespace.\n+\r\nspec/architecture/BASELINE.md:36: trailing whitespace.\n+用户要求生成F2方案与个人任务组，全部由用户本人负责。[F2开发方案](F2_DEVELOPMENT_PLAN.md)、[契约提案](../contracts/F2_API_PROPOSAL.md)及[顺序任务G0–G6](../tasks/dev-manager/F2/README.md)为新增规划入口。已确认业务约束与实施建议分开；F2尚未实现、未正式冻结，不替代F0实际API或已验收行为。\r\nspec/architecture/BASELINE.md:37: trailing whitespace.\n+\r\nspec/architecture/BASELINE.md:38: trailing whitespace.\n+本轮不改变根AGENTS的现行F0实施限制、目录机检、hooks或CI。F2实施前先完成G0的精确归属/治理对齐并经main可信策略核验，再进入产品组；不因个人负责而暗中扩大editor/ui范围。\r\nException: \r\nLine |\r\n  35 |  if($LASTEXITCODE -ne 0){throw 'Whitespace check failed'}\r\n     |                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n     | Whitespace check failed\r\n"
+      },
+      {
+        "check": 1,
+        "status": "fulfilled",
+        "exit_code": 0,
+        "output": "Repository baseline passed. This is not an IDE runtime or API capability test.\r\n"
+      }
+    ],
+    "second": [
+      {
+        "check": 0,
+        "status": "fulfilled",
+        "exit_code": 1,
+        "output": "ParserError: \r\nLine |\r\n  22 |  �� llPath((Join-Path (Split-Path -Parent $target) $relative)))){throw \"B ��\r\n     |                                                                ~\r\n     | Unexpected token '{' in expression or statement.\r\n"
+      },
+      {
+        "check": 1,
+        "status": "fulfilled",
+        "exit_code": 0,
+        "output": "Repository baseline passed. This is not an IDE runtime or API capability test.\r\n"
+      }
+    ],
+    "finalVerifier": {
+      "exit_code": 0,
+      "output": "warning: in the working copy of 'spec/progress/CURRENT.md', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'spec/tasks/README.md', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'spec/tasks/dev-manager/README.md', CRLF will be replaced by LF the next time Git touches it\n{\r\n  \"newDocs\": 13,\r\n  \"localLinks\": 17,\r\n  \"navigation\": 4,\r\n  \"scopeAllowed\": true,\r\n  \"devOpsAndProductUnchanged\": true,\r\n  \"workingUnchanged\": true\r\n}\r\n"
+    }
+  },
+  "independentReview": [
+    "requirements/governance: no material issue",
+    "implementation/flow: three issues fixed and rechecked closed"
+  ],
+  "notRun": [
+    "All",
+    "F2 IDE/API",
+    "F2 product scenarios",
+    "manual blackbox",
+    "external rendering"
+  ]
+}

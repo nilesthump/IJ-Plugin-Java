@@ -21,6 +21,76 @@ import static edu.courseassist.bootstrap.ide.SessionTestEnvironment.*;
 
 class SessionCoordinatorTest {
     @TempDir Path root;
+    @Test void emptyForegroundSubmitsOnceAndTitlesSurviveRenameAndLaterTurns() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();var binding=e.open("i","directory",false);
+            var send=new SubmitNewSession(e.meta("i",null),"  第一段用户消息\n说明问题  ");
+            assertEquals(Outcome.APPLIED,e.dispatch(send).outcome());
+            String id=e.sessions.snapshot("i").activeSessionId().orElseThrow();e.idle("i",id);
+            assertEquals("第一段用户消息 说明问题",e.view("i",id).title());
+            assertEquals(1,e.view("i",id).turns().size());
+            assertEquals(send.text(),e.repository.history(binding.projectId(),"i",id).getFirst().input().question());
+            assertEquals(Outcome.REJECTED,e.dispatch(send).outcome());
+            assertEquals(1,e.requests.size());assertEquals(1,e.sessions.snapshot("i").sessions().size());
+            // Even a manual name resembling an old generated title remains explicit.
+            assertEquals(Outcome.APPLIED,e.dispatch(new RenameSession(e.meta("i",id),"新会话 1")).outcome());
+            e.text("i",id,"第二段不能覆盖名称");e.submit("i",id);e.idle("i",id);
+            assertEquals("新会话 1",e.view("i",id).title());
+            assertTrue(e.repository.states(binding.projectId(),"i").getFirst().titleExplicit());
+            e.dispatch(new CloseSessionTab(e.meta("i",id)));
+            assertTrue(e.sessions.snapshot("i").activeSessionId().isEmpty());
+            e.dispatch(new SubmitNewSession(e.meta("i",null),"另一个话题"));
+            String second=e.sessions.snapshot("i").activeSessionId().orElseThrow();e.idle("i",second);
+            assertNotEquals(id,second);assertEquals(2,e.sessions.snapshot("i").sessions().size());
+            e.dispatch(new OpenSessionTab(e.meta("i",id)));assertEquals("新会话 1",e.view("i",id).title());
+        }
+    }
+    @Test void legacyTitleFieldAndBlockedRenameSurviveDatabaseReopen() throws Exception {
+        String id;
+        try(var e=new SessionTestEnvironment(root)) {
+            var binding=e.open("i","directory",false);id=e.create("i");
+            String session=id;
+            e.store.transaction(db->{
+                try(var query=db.prepareStatement("SELECT payload FROM ca_session WHERE id=?")) {
+                    query.setString(1,session);try(var rows=query.executeQuery()) {assertTrue(rows.next());
+                        String payload=rows.getString(1);assertTrue(payload.contains("\"titleExplicit\":false"));
+                        try(var update=db.prepareStatement("UPDATE ca_session SET payload=? WHERE id=?")) {
+                            update.setString(1,payload.replace(",\"titleExplicit\":false",""));update.setString(2,session);update.executeUpdate();
+                        }
+                    }
+                }return null;
+            }).join();
+            var legacy=e.repository.states(binding.projectId(),"i").getFirst();assertFalse(legacy.titleExplicit());
+            e.repository.edit(binding.projectId(),"i",id,s->new State(s.id(),s.projectId(),s.title(),s.revision()+1,s.lifecycle(),true,s.draft(),s.turns(),s.operation(),s.notices(),s.titleExplicit()));
+            e.sessions.refreshAll().toCompletableFuture().get();
+            assertEquals(Outcome.APPLIED,e.dispatch(new RenameSession(e.meta("i",id),"手动名称保留")).outcome());
+            assertTrue(e.repository.states(binding.projectId(),"i").getFirst().blocked());
+            assertEquals(legacy.draft(),e.view("i",id).draft());
+            e.sessions.closeProject("i").toCompletableFuture().get();
+        }
+        try(var e=new SessionTestEnvironment(root)) {
+            var binding=e.open("j","directory",false);
+            assertEquals("手动名称保留",e.view("j",id).title());
+            assertTrue(e.repository.states(binding.projectId(),"j").getFirst().titleExplicit());
+        }
+    }
+    @Test void emptyForegroundWhileDisabledDoesNotCreateOrLoseSessionState() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.open("i","directory",false);
+            var result=e.dispatch(new SubmitNewSession(e.meta("i",null),"keep locally"));
+            assertEquals(Rejection.PLUGIN_OFF,result.rejection().orElseThrow());
+            assertTrue(e.sessions.snapshot("i").sessions().isEmpty());assertTrue(e.requests.isEmpty());
+        }
+    }
+
+    @Test void completedAttemptDoesNotAdvertiseRetry() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();e.open("a","a",false);String session=e.create("a");
+            e.model.set((r,l)->{finish(l,"completed");return ()->{};});
+            e.text("a",session,"question");e.submit("a",session);e.idle("a",session);
+            assertFalse(e.view("a",session).allowedActions().contains(SessionAction.RETRY));
+        }
+    }
     @Test void removedCitationShowsNoticeAndKeepsChatWritableAfterReopen() throws Exception {
         Citation citation; String session;
         try(var e=new SessionTestEnvironment(root, request -> new edu.courseassist.contract.PdfContracts.PdfReadResult(request,1,

@@ -1,0 +1,328 @@
+{
+  "observedDate": "2026-10-16",
+  "timezone": "Asia/Shanghai",
+  "kind": "static-local-sdk-observation",
+  "metadata": {
+    "InspectedAt": "2026-10-16T13:49:15+08:00",
+    "Mode": "Static jar enumeration and javap; no IDE startup or runtime rendering",
+    "IdeDirectory": "H:\\IntelliJ IDEA 2026.1.1",
+    "ProductName": "IntelliJ IDEA",
+    "ProductVersion": "2026.2.3",
+    "BuildNumber": "262.10968.63",
+    "ProductCode": "IU",
+    "MinRequiredJavaVersion": 25,
+    "Javap": "H:\\jdk-25.0.2\\bin\\javap.exe",
+    "JavapVersion": "25.0.2",
+    "OriginalCompatibilityTarget": "262.9437.185 (not inspected)",
+    "JarFiles": [
+      {
+        "Path": "H:\\IntelliJ IDEA 2026.1.1\\lib\\intellij.platform.core.jar",
+        "Length": 4958790,
+        "SHA256": "079B20717DB96BCF04E1613A6679C37D4B51370D6FA9611051837B50D39F2D05"
+      },
+      {
+        "Path": "H:\\IntelliJ IDEA 2026.1.1\\lib\\intellij.platform.editor.ui.jar",
+        "Length": 1352934,
+        "SHA256": "94B0DFC8FE3B8F62E914836F97E969A970337943C5CEFC302DE2AD9E73750288"
+      },
+      {
+        "Path": "H:\\IntelliJ IDEA 2026.1.1\\lib\\intellij.platform.lang.impl.jar",
+        "Length": 57851812,
+        "SHA256": "82F80474F10ACE52A66A3155FA4D95FA460A014F8866D155A61A136B04E7EF34"
+      }
+    ]
+  },
+  "annotations": [
+    {
+      "Class": "EditorColorsManager",
+      "Line": 193,
+      "Owner": "public static final java.lang.String DEFAULT_SCHEME_NAME;",
+      "Annotation": "java.lang.Deprecated( forRemoval=true)"
+    },
+    {
+      "Class": "EditorColorsManager",
+      "Line": 290,
+      "Owner": "public abstract void setCurrentSchemeOnLafChange(com.intellij.openapi.editor.colors.EditorColorsScheme);",
+      "Annotation": "org.jetbrains.annotations.ApiStatus$Internal"
+    },
+    {
+      "Class": "EditorColorsManager",
+      "Line": 292,
+      "Owner": "public abstract void setCurrentSchemeOnLafChange(com.intellij.openapi.editor.colors.EditorColorsScheme);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresEdt"
+    },
+    {
+      "Class": "EditorColorsManager",
+      "Line": 374,
+      "Owner": "public com.intellij.openapi.editor.colors.EditorColorsScheme getDefaultScheme();",
+      "Annotation": "org.jetbrains.annotations.ApiStatus$Internal"
+    },
+    {
+      "Class": "EditorColorsManager",
+      "Line": 479,
+      "Owner": "public abstract long getSchemeModificationCounter();",
+      "Annotation": "org.jetbrains.annotations.ApiStatus$Experimental"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 261,
+      "Owner": "public abstract com.intellij.openapi.editor.Editor createEditor(com.intellij.openapi.editor.Document);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresEdt"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 275,
+      "Owner": "public abstract com.intellij.openapi.editor.Editor createViewer(com.intellij.openapi.editor.Document);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresEdt"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 289,
+      "Owner": "public abstract com.intellij.openapi.editor.Editor createEditor(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresEdt"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 308,
+      "Owner": "public abstract com.intellij.openapi.editor.Editor createEditor(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project, com.intellij.openapi.editor.EditorKind);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresEdt"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 332,
+      "Owner": "public abstract com.intellij.openapi.editor.Editor createEditor(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project, com.intellij.openapi.fileTypes.FileType, boolean);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresEdt"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 357,
+      "Owner": "public abstract com.intellij.openapi.editor.Editor createEditor(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project, com.intellij.openapi.vfs.VirtualFile, boolean);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresEdt"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 382,
+      "Owner": "public abstract com.intellij.openapi.editor.Editor createEditor(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project, com.intellij.openapi.vfs.VirtualFile, boolean, com.intellij.openapi.editor.EditorKind);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresEdt"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 412,
+      "Owner": "public abstract com.intellij.openapi.editor.Editor createViewer(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresEdt"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 431,
+      "Owner": "public abstract com.intellij.openapi.editor.Editor createViewer(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project, com.intellij.openapi.editor.EditorKind);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresEdt"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 455,
+      "Owner": "public abstract void releaseEditor(com.intellij.openapi.editor.Editor);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresEdt"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 631,
+      "Owner": "public abstract void addEditorFactoryListener(com.intellij.openapi.editor.event.EditorFactoryListener);",
+      "Annotation": "java.lang.Deprecated( forRemoval=true)"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 664,
+      "Owner": "public abstract void removeEditorFactoryListener(com.intellij.openapi.editor.event.EditorFactoryListener);",
+      "Annotation": "java.lang.Deprecated( forRemoval=true)"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 690,
+      "Owner": "public abstract void refreshAllEditors();",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresEdt"
+    },
+    {
+      "Class": "EditorFactory",
+      "Line": 698,
+      "Owner": "[class]",
+      "Annotation": "org.jetbrains.annotations.ApiStatus$NonExtendable"
+    },
+    {
+      "Class": "EditorHighlighterFactory",
+      "Line": 114,
+      "Owner": "public com.intellij.openapi.editor.highlighter.EditorHighlighterFactory();",
+      "Annotation": "org.jetbrains.annotations.ApiStatus$Internal"
+    },
+    {
+      "Class": "HtmlCodeSnippetBuilder",
+      "Line": 354,
+      "Owner": "public java.lang.StringBuilder build();",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresReadLock"
+    },
+    {
+      "Class": "HtmlCodeSnippetBuilder",
+      "Line": 364,
+      "Owner": "[class]",
+      "Annotation": "org.jetbrains.annotations.ApiStatus$Experimental"
+    },
+    {
+      "Class": "HtmlGeneratorProperties",
+      "Line": 229,
+      "Owner": "[class]",
+      "Annotation": "org.jetbrains.annotations.ApiStatus$Experimental"
+    },
+    {
+      "Class": "HtmlSyntaxInfoUtil",
+      "Line": 615,
+      "Owner": "public static java.lang.String getStyledSpan(com.intellij.openapi.editor.colors.TextAttributesKey, java.lang.String, float);",
+      "Annotation": "java.lang.Deprecated( forRemoval=true)"
+    },
+    {
+      "Class": "HtmlSyntaxInfoUtil",
+      "Line": 953,
+      "Owner": "public static java.lang.StringBuilder appendHighlightedByLexerAndEncodedAsHtmlCodeSnippet(java.lang.StringBuilder, com.intellij.openapi.project.Project, com.intellij.lang.Language, java.lang.String, boolean, float);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresReadLock"
+    },
+    {
+      "Class": "Language",
+      "Line": 586,
+      "Owner": "public static void unregisterAllLanguagesIn(java.lang.ClassLoader, com.intellij.openapi.extensions.PluginDescriptor);",
+      "Annotation": "org.jetbrains.annotations.ApiStatus$Internal"
+    },
+    {
+      "Class": "Language",
+      "Line": 737,
+      "Owner": "public void unregisterLanguage(com.intellij.openapi.extensions.PluginDescriptor);",
+      "Annotation": "org.jetbrains.annotations.ApiStatus$Internal"
+    },
+    {
+      "Class": "Language",
+      "Line": 843,
+      "Owner": "public void unregisterDialect(com.intellij.lang.Language);",
+      "Annotation": "org.jetbrains.annotations.ApiStatus$Internal"
+    },
+    {
+      "Class": "Language",
+      "Line": 1157,
+      "Owner": "public com.intellij.openapi.fileTypes.LanguageFileType findMyFileType(com.intellij.openapi.fileTypes.FileType[]);",
+      "Annotation": "org.jetbrains.annotations.ApiStatus$Internal"
+    },
+    {
+      "Class": "SyntaxHighlighterFactory",
+      "Line": 111,
+      "Owner": "public static final com.intellij.openapi.fileTypes.SyntaxHighlighterLanguageFactory LANGUAGE_FACTORY;",
+      "Annotation": "java.lang.Deprecated"
+    },
+    {
+      "Class": "SyntaxHighlighterFactory",
+      "Line": 165,
+      "Owner": "public static com.intellij.openapi.fileTypes.SyntaxHighlighter getSyntaxHighlighter(com.intellij.lang.Language, com.intellij.openapi.project.Project, com.intellij.openapi.vfs.VirtualFile);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresReadLock( generateAssertion=false)"
+    },
+    {
+      "Class": "SyntaxHighlighterFactory",
+      "Line": 212,
+      "Owner": "public static com.intellij.openapi.fileTypes.SyntaxHighlighter getSyntaxHighlighter(com.intellij.openapi.fileTypes.FileType, com.intellij.openapi.project.Project, com.intellij.openapi.vfs.VirtualFile);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresReadLock( generateAssertion=false)"
+    },
+    {
+      "Class": "SyntaxHighlighterFactory",
+      "Line": 242,
+      "Owner": "public abstract com.intellij.openapi.fileTypes.SyntaxHighlighter getSyntaxHighlighter(com.intellij.openapi.project.Project, com.intellij.openapi.vfs.VirtualFile);",
+      "Annotation": "com.intellij.util.concurrency.annotations.RequiresReadLock( generateAssertion=false)"
+    }
+  ],
+  "publicSignatures": {
+    "EditorColorsManager.public": "Compiled from \"EditorColorsManager.java\"\npublic abstract class com.intellij.openapi.editor.colors.EditorColorsManager {\n  public static final com.intellij.util.messages.Topic<com.intellij.openapi.editor.colors.EditorColorsListener> TOPIC;\n  public static final java.lang.String DEFAULT_SCHEME_NAME;\n  public static java.lang.String getDefaultSchemeName();\n  public static java.lang.String getColorSchemeFileExtension();\n  public static com.intellij.openapi.editor.colors.EditorColorsManager getInstance();\n  public abstract void addColorScheme(com.intellij.openapi.editor.colors.EditorColorsScheme);\n  public abstract com.intellij.openapi.editor.colors.EditorColorsScheme[] getAllSchemes();\n  public abstract void setGlobalScheme(com.intellij.openapi.editor.colors.EditorColorsScheme);\n  public abstract void setCurrentSchemeOnLafChange(com.intellij.openapi.editor.colors.EditorColorsScheme);\n  public abstract com.intellij.openapi.editor.colors.EditorColorsScheme getGlobalScheme();\n  public abstract com.intellij.openapi.editor.colors.EditorColorsScheme getActiveVisibleScheme();\n  public abstract com.intellij.openapi.editor.colors.EditorColorsScheme getScheme(java.lang.String);\n  public com.intellij.openapi.editor.colors.EditorColorsScheme getDefaultScheme();\n  public abstract boolean isDefaultScheme(com.intellij.openapi.editor.colors.EditorColorsScheme);\n  public abstract boolean isUseOnlyMonospacedFonts();\n  public abstract void setUseOnlyMonospacedFonts(boolean);\n  public com.intellij.openapi.editor.colors.EditorColorsScheme getSchemeForCurrentUITheme();\n  public boolean isDarkEditor();\n  public void resolveSchemeParent(com.intellij.openapi.editor.colors.EditorColorsScheme);\n  public void reloadKeepingActiveScheme();\n  public abstract long getSchemeModificationCounter();\n}\n",
+    "EditorFactory.public": "Compiled from \"EditorFactory.java\"\npublic abstract class com.intellij.openapi.editor.EditorFactory {\n  public com.intellij.openapi.editor.EditorFactory();\n  public static com.intellij.openapi.editor.EditorFactory getInstance();\n  public abstract com.intellij.openapi.editor.Document createDocument(java.lang.CharSequence);\n  public abstract com.intellij.openapi.editor.Document createDocument(char[]);\n  public abstract com.intellij.openapi.editor.Document createDocument(boolean);\n  public abstract com.intellij.openapi.editor.Document createDocument(java.lang.CharSequence, boolean, boolean);\n  public abstract com.intellij.openapi.editor.Editor createEditor(com.intellij.openapi.editor.Document);\n  public abstract com.intellij.openapi.editor.Editor createViewer(com.intellij.openapi.editor.Document);\n  public abstract com.intellij.openapi.editor.Editor createEditor(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project);\n  public abstract com.intellij.openapi.editor.Editor createEditor(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project, com.intellij.openapi.editor.EditorKind);\n  public abstract com.intellij.openapi.editor.Editor createEditor(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project, com.intellij.openapi.fileTypes.FileType, boolean);\n  public abstract com.intellij.openapi.editor.Editor createEditor(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project, com.intellij.openapi.vfs.VirtualFile, boolean);\n  public abstract com.intellij.openapi.editor.Editor createEditor(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project, com.intellij.openapi.vfs.VirtualFile, boolean, com.intellij.openapi.editor.EditorKind);\n  public abstract com.intellij.openapi.editor.Editor createViewer(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project);\n  public abstract com.intellij.openapi.editor.Editor createViewer(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project, com.intellij.openapi.editor.EditorKind);\n  public abstract void releaseEditor(com.intellij.openapi.editor.Editor);\n  public abstract java.util.stream.Stream<com.intellij.openapi.editor.Editor> editors(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project);\n  public final java.util.stream.Stream<com.intellij.openapi.editor.Editor> editors(com.intellij.openapi.editor.Document);\n  public final com.intellij.openapi.editor.Editor[] getEditors(com.intellij.openapi.editor.Document, com.intellij.openapi.project.Project);\n  public final com.intellij.openapi.editor.Editor[] getEditors(com.intellij.openapi.editor.Document);\n  public abstract com.intellij.openapi.editor.Editor[] getAllEditors();\n  public abstract java.util.List<com.intellij.openapi.editor.Editor> getEditorList();\n  public abstract void addEditorFactoryListener(com.intellij.openapi.editor.event.EditorFactoryListener);\n  public abstract void addEditorFactoryListener(com.intellij.openapi.editor.event.EditorFactoryListener, com.intellij.openapi.Disposable);\n  public abstract void removeEditorFactoryListener(com.intellij.openapi.editor.event.EditorFactoryListener);\n  public abstract com.intellij.openapi.editor.event.EditorEventMulticaster getEventMulticaster();\n  public abstract void refreshAllEditors();\n}\n",
+    "EditorHighlighterFactory.public": "Compiled from \"EditorHighlighterFactory.kt\"\npublic abstract class com.intellij.openapi.editor.highlighter.EditorHighlighterFactory {\n  public static final com.intellij.openapi.editor.highlighter.EditorHighlighterFactory$Companion Companion;\n  public com.intellij.openapi.editor.highlighter.EditorHighlighterFactory();\n  public abstract com.intellij.openapi.editor.highlighter.EditorHighlighter createEditorHighlighter(com.intellij.openapi.fileTypes.SyntaxHighlighter, com.intellij.openapi.editor.colors.EditorColorsScheme);\n  public abstract com.intellij.openapi.editor.highlighter.EditorHighlighter createEditorHighlighter(com.intellij.openapi.fileTypes.FileType, com.intellij.openapi.editor.colors.EditorColorsScheme, com.intellij.openapi.project.Project);\n  public abstract com.intellij.openapi.editor.highlighter.EditorHighlighter createEditorHighlighter(com.intellij.openapi.project.Project, com.intellij.openapi.fileTypes.FileType);\n  public abstract com.intellij.openapi.editor.highlighter.EditorHighlighter createEditorHighlighter(com.intellij.openapi.vfs.VirtualFile, com.intellij.openapi.editor.colors.EditorColorsScheme, com.intellij.openapi.project.Project);\n  public abstract com.intellij.openapi.editor.highlighter.EditorHighlighter createEditorHighlighter(com.intellij.openapi.project.Project, com.intellij.openapi.vfs.VirtualFile);\n  public abstract com.intellij.openapi.editor.highlighter.EditorHighlighter createEditorHighlighter(com.intellij.openapi.project.Project, java.lang.String);\n  public abstract com.intellij.openapi.editor.highlighter.EditorHighlighter createEditorHighlighter(com.intellij.openapi.editor.colors.EditorColorsScheme, java.lang.String, com.intellij.openapi.project.Project);\n  public static final com.intellij.openapi.editor.highlighter.EditorHighlighterFactory getInstance();\n}\n",
+    "HtmlCodeSnippetBuilder.public": "Compiled from \"HtmlSyntaxInfoUtil.java\"\npublic class com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlCodeSnippetBuilder {\n  public com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlCodeSnippetBuilder(java.lang.StringBuilder, com.intellij.openapi.project.Project, com.intellij.lang.Language);\n  public com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlCodeSnippetBuilder codeSnippet(java.lang.String);\n  public com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlCodeSnippetBuilder doTrimIndent(boolean);\n  public com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlCodeSnippetBuilder saturationFactor(float);\n  public com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlCodeSnippetBuilder additionalIterator(com.intellij.openapi.editor.richcopy.SyntaxInfoBuilder$RangeIterator);\n  public com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlCodeSnippetBuilder properties(com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlGeneratorProperties);\n  public java.lang.StringBuilder build();\n}\n",
+    "HtmlGeneratorProperties.public": "Compiled from \"HtmlSyntaxInfoUtil.java\"\npublic class com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlGeneratorProperties {\n  public static com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlGeneratorProperties createDefault();\n  public com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlGeneratorProperties generateBackground();\n  public com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlGeneratorProperties generateFontFamily();\n  public com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlGeneratorProperties generateWrappedTags();\n  public com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlGeneratorProperties generateHtmlTags();\n  public com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlGeneratorProperties generateFontSize();\n  public com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlGeneratorProperties textHandler(com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil$HtmlGeneratorProperties$TextHandler);\n}\n",
+    "HtmlSyntaxInfoUtil.public": "Compiled from \"HtmlSyntaxInfoUtil.java\"\npublic final class com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil {\n  public static java.lang.String getStyledSpan(com.intellij.openapi.editor.colors.TextAttributesKey, java.lang.String, float);\n  public static java.lang.StringBuilder appendStyledSpan(java.lang.StringBuilder, java.lang.String, java.lang.String...);\n  public static java.lang.StringBuilder appendStyledSpan(java.lang.StringBuilder, com.intellij.openapi.editor.colors.TextAttributesKey, java.lang.String, float);\n  public static java.lang.StringBuilder appendStyledSpan(java.lang.StringBuilder, com.intellij.openapi.editor.markup.TextAttributes, java.lang.String, float);\n  public static java.lang.StringBuilder appendHighlightedByLexerAndEncodedAsHtmlCodeSnippet(java.lang.StringBuilder, com.intellij.openapi.project.Project, com.intellij.lang.Language, java.lang.String, float);\n  public static java.lang.StringBuilder appendHighlightedByLexerAndEncodedAsHtmlCodeSnippet(java.lang.StringBuilder, com.intellij.openapi.project.Project, com.intellij.lang.Language, java.lang.String, boolean, float);\n  public static java.lang.CharSequence getHtmlContent(com.intellij.psi.PsiFile, java.lang.CharSequence, com.intellij.openapi.editor.richcopy.SyntaxInfoBuilder$RangeIterator, com.intellij.openapi.editor.colors.EditorColorsScheme, int, int);\n  public static java.lang.CharSequence getHtmlContent(java.lang.CharSequence, com.intellij.openapi.editor.richcopy.SyntaxInfoBuilder$RangeIterator, com.intellij.openapi.editor.colors.EditorColorsScheme, int);\n}\n",
+    "Language.public": "Compiled from \"Language.java\"\npublic abstract class com.intellij.lang.Language extends com.intellij.openapi.util.UserDataHolderBase {\n  public static final com.intellij.lang.Language[] EMPTY_ARRAY;\n  public static final com.intellij.lang.Language ANY;\n  public static java.util.Collection<com.intellij.lang.Language> getRegisteredLanguages();\n  public static void unregisterAllLanguagesIn(java.lang.ClassLoader, com.intellij.openapi.extensions.PluginDescriptor);\n  public void unregisterLanguage(com.intellij.openapi.extensions.PluginDescriptor);\n  public void unregisterDialect(com.intellij.lang.Language);\n  public static <T extends com.intellij.lang.Language> T findInstance(java.lang.Class<T>);\n  public static java.util.Collection<com.intellij.lang.Language> findInstancesByMimeType(java.lang.String);\n  public java.lang.String toString();\n  public java.lang.String[] getMimeTypes();\n  public java.lang.String getID();\n  public com.intellij.openapi.fileTypes.LanguageFileType getAssociatedFileType();\n  public com.intellij.openapi.fileTypes.LanguageFileType findMyFileType(com.intellij.openapi.fileTypes.FileType[]);\n  public com.intellij.lang.Language getBaseLanguage();\n  public java.lang.String getDisplayName();\n  public final boolean is(com.intellij.lang.Language);\n  public boolean isCaseSensitive();\n  public final boolean isKindOf(com.intellij.lang.Language);\n  public final boolean isKindOf(java.lang.String);\n  public java.util.List<com.intellij.lang.Language> getDialects();\n  public static com.intellij.lang.Language findLanguageByID(java.lang.String);\n  public java.util.Collection<com.intellij.lang.Language> getTransitiveDialects();\n}\n",
+    "SyntaxHighlighterFactory.public": "Compiled from \"SyntaxHighlighterFactory.java\"\npublic abstract class com.intellij.openapi.fileTypes.SyntaxHighlighterFactory {\n  public static final com.intellij.openapi.fileTypes.SyntaxHighlighterLanguageFactory LANGUAGE_FACTORY;\n  public com.intellij.openapi.fileTypes.SyntaxHighlighterFactory();\n  public static com.intellij.openapi.fileTypes.SyntaxHighlighterLanguageFactory getLanguageFactory();\n  public static com.intellij.openapi.fileTypes.SyntaxHighlighter getSyntaxHighlighter(com.intellij.lang.Language, com.intellij.openapi.project.Project, com.intellij.openapi.vfs.VirtualFile);\n  public static com.intellij.openapi.fileTypes.SyntaxHighlighter getSyntaxHighlighter(com.intellij.openapi.fileTypes.FileType, com.intellij.openapi.project.Project, com.intellij.openapi.vfs.VirtualFile);\n  public abstract com.intellij.openapi.fileTypes.SyntaxHighlighter getSyntaxHighlighter(com.intellij.openapi.project.Project, com.intellij.openapi.vfs.VirtualFile);\n}\n"
+  },
+  "rawArtifacts": [
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/annotations.json",
+      "sha256": "1829acea737269c725baa684e858964f797db330ec66c5820439135573cd0b36"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/EditorColorsManager.public.txt",
+      "sha256": "fe35533f39842f17ecf7941ad8ca1b434a9030e99bd318474b6a9ca07a048549"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/EditorColorsManager.verbose.txt",
+      "sha256": "c1dae8f62b67fc945eece213c874d823ae43d339480837dc95895b7a54a8569f"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/EditorFactory.public.txt",
+      "sha256": "87f8bbb374592229579e0106c02db13d40df5d377bd92c42bf1f1e19bb9344ee"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/EditorFactory.verbose.txt",
+      "sha256": "ac80ae8a09a52428e04267f28eaa5d39e45cc2ab7bc41d1d212a86450bf6ef45"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/EditorHighlighterFactory.public.txt",
+      "sha256": "818b6900dec48a6e3a47cf50212481beab81bdbed2058200f9d4c2ecf125bb10"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/EditorHighlighterFactory.verbose.txt",
+      "sha256": "d9d78908471cdd0c8a6a41d60952e610ddd9a4007921bcf447de68ac25d20daa"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/HtmlCodeSnippetBuilder.public.txt",
+      "sha256": "0d7755f3145b1535ee9b89d082140ee3db268074eefe80ebe75dab5210532eaf"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/HtmlCodeSnippetBuilder.verbose.txt",
+      "sha256": "0e7706881362ac3d75486acc0418f1b5a168b517a0967a266b0886d5fa01a229"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/HtmlGeneratorProperties.public.txt",
+      "sha256": "1fb59bcddec940400f63eb5854a85a8a65580b9e81ec8760920a382d325b4d95"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/HtmlGeneratorProperties.verbose.txt",
+      "sha256": "90751357cfb6f89f897eeeb87012bff515acdd7c5ef94b85c268f3fe1aeced9a"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/HtmlSyntaxInfoUtil.public.txt",
+      "sha256": "03a5483b1d52fb1b626bfa2c981c7803175558609bcf0d8a3eec2c40ce89c642"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/HtmlSyntaxInfoUtil.verbose.txt",
+      "sha256": "24dc59608f6adb0228df672a3c2380c66f9fe0ea0069b446adf8fb1f6e237bbe"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/Language.public.txt",
+      "sha256": "2767125fddf72947a819a642a65a3eecb01ac85c01cd892c86f182d2cf5f90fd"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/Language.verbose.txt",
+      "sha256": "6657b220da2c54a2f1f41b8563e8ff95cf8d340bde4152f7ce1d0e44a52ac0b3"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/metadata.json",
+      "sha256": "dc8dee91a61ca8d9c85c84ca35b7ea1879bbcf0b509427c204f49597c96d0f0f"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/README.md",
+      "sha256": "95b38fe61ccb9e1a00d6ed59f689c3eee1955696b29bf433124183bc35846ce6"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/SyntaxHighlighterFactory.public.txt",
+      "sha256": "4a9b825735742ebd99b0ecab20781ea0c1d5e2e47935f738facab7b0f6d24b2c"
+    },
+    {
+      "path": "tmp/architecture/probes/ui-sdk-inspection/SyntaxHighlighterFactory.verbose.txt",
+      "sha256": "1c3c72bcd9eb3de8828ddd82fc9ed8dc3a17aeb2c99921689d4d4fdea5c363ce"
+    }
+  ],
+  "limits": [
+    "Static class/signature/annotation inspection only; no IDE initialization or plugin load.",
+    "Installed 262.10968.63 only; requested target 262.9437.185 is not verified.",
+    "Public visibility or absence of restrictive annotations does not guarantee cross-version compatibility."
+  ]
+}

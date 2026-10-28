@@ -26,14 +26,26 @@ public final class SessionData {
     }
     public record State(String id, String projectId, String title, long revision, Lifecycle lifecycle,
                         boolean blocked, DraftView draft, List<Turn> turns, Optional<Operation> operation,
-                        List<Notice> notices) {
-        public State { turns = List.copyOf(turns); operation = Objects.requireNonNull(operation); notices = List.copyOf(notices); }
+                        List<Notice> notices, Boolean titleExplicit) {
+        public State(String id,String projectId,String title,long revision,Lifecycle lifecycle,boolean blocked,DraftView draft,
+                     List<Turn> turns,Optional<Operation> operation,List<Notice> notices) {
+            this(id,projectId,title,revision,lifecycle,blocked,draft,turns,operation,notices,false);
+        }
+        public State { titleExplicit=Boolean.TRUE.equals(titleExplicit); turns = List.copyOf(turns); operation = Objects.requireNonNull(operation); notices = List.copyOf(notices); }
         public State change(DraftView nextDraft, List<Turn> nextTurns, Optional<Operation> nextOperation) {
-            return new State(id, projectId, title, revision + 1, lifecycle, blocked, nextDraft, nextTurns, nextOperation, notices);
+            return new State(id, projectId, title, revision + 1, lifecycle, blocked, nextDraft, nextTurns, nextOperation, notices, titleExplicit);
         }
         public State lifecycle(Lifecycle next) {
-            return new State(id, projectId, title, revision + 1, next, blocked, draft, turns, operation, notices);
+            return new State(id, projectId, title, revision + 1, next, blocked, draft, turns, operation, notices, titleExplicit);
         }
+    }
+    public static String displayTitle(State state) {
+        if(state.titleExplicit()||state.turns().isEmpty())return state.title();
+        var input=state.turns().getFirst().input();
+        String text=input.question().strip().replaceAll("\\s+"," ");
+        if(text.isBlank())return "Java 代码提问";
+        int length=text.codePointCount(0,text.length());
+        return length<=48?text:text.substring(0,text.offsetByCodePoints(0,48))+"…";
     }
     public record Submission(CommandResult result, boolean fresh, Optional<Operation> operation) {}
     public record Checkpoint(String id, String sessionId, Optional<String> parent, int coveredTurns,

@@ -153,6 +153,11 @@ public final class SessionRepository {
     public State edit(String project,String instance,String session,Edit edit) {
         return store.transaction(c -> {State old=live(c,project,instance,session,false); State next=edit.apply(old); put(c,next); return next;}).join();
     }
+    /** Naming is local metadata and must not clear or be blocked by an unresolved write. */
+    public void rename(String project,String instance,String session,String title) {
+        store.transaction(c->{State s=live(c,project,instance,session,true);
+            put(c,new State(s.id(),s.projectId(),title,s.revision()+1,s.lifecycle(),s.blocked(),s.draft(),s.turns(),s.operation(),s.notices(),true));return null;}).join();
+    }
     public void tabs(String project,String instance,List<String> tabs,Optional<String> active) {
         store.transaction(c -> {
             Binding b=current(c,project,instance); Set<String> valid=new HashSet<>();
@@ -266,7 +271,7 @@ public final class SessionRepository {
                 var captures=old.draft().captures().stream().map(g->g.state()==CaptureState.PENDING?
                         new DraftCapture(g.captureId(),CaptureState.RECAPTURE_REQUIRED,g.source(),Optional.empty(),Optional.of("请重新捕获")):g).toList();
                 DraftView draft=new DraftView(old.draft().draftId(),old.draft().revision()+(captures.equals(old.draft().captures())?0:1),old.draft().text(),captures,SaveState.SAVED,old.draft().captureOffsets(),old.draft().captureOrder());
-                put(c,new State(old.id(),project,old.title(),old.revision()+1,Lifecycle.LIVE,editBlocked,draft,old.turns(),Optional.empty(),editBlocked?List.of(SessionData.notice("EDIT_OUTCOME_UNKNOWN","代码应用结果待核对，不能自动重放",old.id(),null)):List.of())); return null;
+                put(c,new State(old.id(),project,old.title(),old.revision()+1,Lifecycle.LIVE,editBlocked,draft,old.turns(),Optional.empty(),editBlocked?List.of(SessionData.notice("EDIT_OUTCOME_UNKNOWN","代码应用结果待核对，不能自动重放",old.id(),null)):List.of(),old.titleExplicit())); return null;
             }).join();
         }
         store.transaction(c->{Binding current=binding(c,project); if(!current.instance().equals(expectedInstance)) throw new Rejected(Rejection.PROJECT_CLOSED);
@@ -278,7 +283,7 @@ public final class SessionRepository {
             try{s=state(c,identity.projectId(),identity.sessionId());}catch(Rejected absent){return null;}
             if(s.lifecycle()==Lifecycle.LIVE&&s.operation().map(Operation::identity).equals(Optional.of(identity)))
                 put(c,new State(s.id(),s.projectId(),s.title(),s.revision()+1,s.lifecycle(),true,s.draft(),s.turns(),s.operation(),
-                        List.of(SessionData.notice("UNSAVED_STATE","保存失败，请恢复后再发送",s.id(),identity.operationId()))));
+                        List.of(SessionData.notice("UNSAVED_STATE","保存失败，请恢复后再发送",s.id(),identity.operationId())),s.titleExplicit()));
             return null;
         }).join();
     }
@@ -300,12 +305,12 @@ public final class SessionRepository {
         }
         store.transaction(c->{State s=live(c,project,instance,session,true);if(s.operation().isPresent())throw new SQLException("Recovery did not settle operation");
             if(edits.unresolved(c,session))throw new Rejected(Rejection.UNSAVED_STATE);
-            put(c,new State(s.id(),s.projectId(),s.title(),s.revision()+1,s.lifecycle(),false,s.draft(),s.turns(),Optional.empty(),List.of()));return null;}).join();
+            put(c,new State(s.id(),s.projectId(),s.title(),s.revision()+1,s.lifecycle(),false,s.draft(),s.turns(),Optional.empty(),List.of(),s.titleExplicit()));return null;}).join();
     }
     public void deletionFailed(String project,String instance,String session) {
         store.transaction(c->{current(c,project,instance);State s=state(c,project,session);if(s.lifecycle()==Lifecycle.LIVE)throw new SQLException("Deletion fence missing");
             put(c,new State(s.id(),project,s.title(),s.revision()+1,Lifecycle.DELETE_FAILED,true,s.draft(),s.turns(),s.operation(),
-                    List.of(SessionData.notice("DELETE_FAILED","删除未完成，请继续清理",session,null))));return null;}).join();
+                    List.of(SessionData.notice("DELETE_FAILED","删除未完成，请继续清理",session,null)),s.titleExplicit()));return null;}).join();
     }
     public void finishCompact(Identity identity) {store.transaction(c->{guard(c,identity,ReactRepository.Access.COORDINATOR_TERMINAL);
         State s=state(c,identity.projectId(),identity.sessionId());
@@ -325,7 +330,7 @@ public final class SessionRepository {
                 if(root.operation().filter(o->o.kind()==OperationKind.APPLY).isPresent()||unknown)
                     put(c,new State(root.id(),root.projectId(),root.title(),root.revision()+1,root.lifecycle(),unknown||root.blocked(),
                         root.draft(),root.turns(),root.operation().filter(o->o.kind()!=OperationKind.APPLY),
-                        unknown?List.of(SessionData.notice("EDIT_OUTCOME_UNKNOWN","代码应用结果待核对，不能自动重放",root.id(),null)):root.notices()));
+                        unknown?List.of(SessionData.notice("EDIT_OUTCOME_UNKNOWN","代码应用结果待核对，不能自动重放",root.id(),null)):root.notices(),root.titleExplicit()));
             }
             return null;
         }).join();

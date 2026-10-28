@@ -111,7 +111,7 @@ public final class EditRepository {
     }
     public List<ProposalView> views(String project,String instance,String session) {
         return store.transaction(c->{sessions.live(c,project,instance,session,true);List<ProposalView> out=new ArrayList<>();
-            for(var p:artifacts(c,session))out.add(new ProposalView(p.ref(),review(c,p.proposalId()),receipt(c,p.proposalId()),p.snapshot().target().relativePath()));
+            for(var p:artifacts(c,session))out.add(new ProposalView(p.ref(),review(c,p.proposalId()),receipt(c,p.proposalId()),p.snapshot().target().relativePath(),p.snapshot().request().origin().turnId(),p.snapshot().request().origin().attemptId(),p.branchId()));
             return List.copyOf(out);
         }).join();
     }
@@ -179,7 +179,7 @@ public final class EditRepository {
             writeReceipt(c,result);
             boolean unknown=unresolved(c,session);
             sessions.put(c,new State(root.id(),root.projectId(),root.title(),root.revision()+1,root.lifecycle(),unknown||(root.blocked()&&!previouslyUnknown),
-                    root.draft(),root.turns(),root.operation(),unknown?root.notices():List.of()));return null;
+                    root.draft(),root.turns(),root.operation(),unknown?root.notices():List.of(),root.titleExplicit()));return null;
         }).join();
     }
     /** A coordinator-held execution receipt may outlive lifecycle slot settlement. This only
@@ -197,7 +197,7 @@ public final class EditRepository {
             writeReceipt(c,result);if(result.state()==ApplyState.FAILED_NOT_APPLIED)setReview(c,request.proposal().proposalId(),ReviewState.INVALIDATED);
             boolean unknown=unresolved(c,session);
             sessions.put(c,new State(root.id(),root.projectId(),root.title(),root.revision()+1,root.lifecycle(),unknown,
-                    root.draft(),root.turns(),Optional.empty(),unknown?List.of(SessionData.notice("EDIT_OUTCOME_UNKNOWN","代码应用结果待核对，不能自动重放",session,request.applyId())):List.of()));return null;
+                    root.draft(),root.turns(),Optional.empty(),unknown?List.of(SessionData.notice("EDIT_OUTCOME_UNKNOWN","代码应用结果待核对，不能自动重放",session,request.applyId())):List.of(),root.titleExplicit()));return null;
         }).join();
     }
     private EditProposal displayed(Connection c,String project,EventMeta meta,PreviewToken token) throws SQLException {
@@ -295,7 +295,7 @@ public final class EditRepository {
             if(result.state()==ApplyState.FAILED_NOT_APPLIED)setReview(c,request.proposal().proposalId(),ReviewState.INVALIDATED);
             boolean unresolved=unresolved(result.state());
             sessions.put(c,new State(root.id(),root.projectId(),root.title(),root.revision()+1,root.lifecycle(),unresolved,
-                    root.draft(),root.turns(),Optional.empty(),unresolved?List.of(SessionData.notice("EDIT_OUTCOME_UNKNOWN","代码应用结果待核对，不能自动重放",root.id(),op.operationId())):List.of()));
+                    root.draft(),root.turns(),Optional.empty(),unresolved?List.of(SessionData.notice("EDIT_OUTCOME_UNKNOWN","代码应用结果待核对，不能自动重放",root.id(),op.operationId())):List.of(),root.titleExplicit()));
             return null;
         }).join();
     }

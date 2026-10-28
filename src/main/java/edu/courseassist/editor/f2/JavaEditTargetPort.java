@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.BooleanSupplier;
 
-/** Reads only the bound project's source roots. Neither clues nor a file URL grant authority. */
+/** Reads existing Java files only inside the bound project's directory. Neither clues nor a file URL grant authority. */
 public final class JavaEditTargetPort implements EditTargetPort {
     private final Project project;
     private final String instance;
@@ -36,46 +36,81 @@ public final class JavaEditTargetPort implements EditTargetPort {
     private TargetResolution read(EditRequest request,TargetQuery q) {
         check();
         if(DumbService.isDumb(project))return result(ResolutionStatus.NOT_READY,List.of());
+        String path=q.pathHint().replace('\\','/');
         if(q.pathHint().length()>512||q.classHint().length()>256||q.methodHint().length()>256||q.parameterHints().size()>32
-                ||q.parameterHints().stream().anyMatch(s->s.length()>256)||q.pathHint().contains("..")||q.pathHint().contains(":")||q.pathHint().startsWith("/"))
+                ||q.parameterHints().stream().anyMatch(s->s.length()>256)||q.pathHint().contains(".."))
             return result(ResolutionStatus.INCOMPLETE,List.of());
         CodePart selection=null;
         if(request.captureId().isPresent()) {
             selection=selections.stream().filter(s->s.captureId().equals(request.captureId().get())).findFirst().orElseThrow(()->new IllegalArgumentException("Unbound capture"));
         }
+        boolean absoluteClue=path.contains(":")||path.startsWith("/");
+        if(selection==null&&absoluteClue)return result(ResolutionStatus.INCOMPLETE,List.of());
         if(selection==null&&q.pathHint().isBlank()&&q.classHint().isBlank())return result(ResolutionStatus.INCOMPLETE,List.of());
         var index=ProjectFileIndex.getInstance(project);
+        VirtualFile base=project.getBasePath()==null?null:LocalFileSystem.getInstance().findFileByPath(project.getBasePath());
+        VirtualFile boundary=base==null?null:base.getCanonicalFile();
+        if(boundary==null)return result(ResolutionStatus.NOT_FOUND,List.of());
         List<VirtualFile> files=new ArrayList<>();
         boolean complete;
         if(selection!=null) {
             VirtualFile file=VirtualFileManager.getInstance().findFileByUrl(selection.source().fileRef());
             if(file==null)return result(ResolutionStatus.STALE,List.of());
-            if(!index.isInSourceContent(file))return result(ResolutionStatus.NOT_FOUND,List.of());
+            if(file.getCanonicalFile()==null||!VfsUtilCore.isAncestor(boundary,file.getCanonicalFile(),false))return result(ResolutionStatus.NOT_FOUND,List.of());
+            if(absoluteClue) {
+                // Metadata copied by the model may name the already-bound selection file.
+                // Compare only with that file; never locate a new target using this clue.
+                if(!namesSelectedFile(path,file))return result(ResolutionStatus.NOT_FOUND,List.of());
+                path=VfsUtilCore.getRelativePath(file,base,'/');
+                if(path==null)return result(ResolutionStatus.NOT_FOUND,List.of());
+            }
+            files.add(file);complete=true;
+        } else if(path.contains("/")) {
+            // An exact project-relative path is a single bounded lookup, not a whole-project search.
+            // Never fall back to a same-named file when this path is absent or outside the project directory.
+            VirtualFile file=base==null?null:base.findFileByRelativePath(path);
+            if(file==null||file.isDirectory()||!"java".equals(file.getExtension()))return result(ResolutionStatus.NOT_FOUND,List.of());
+            VirtualFile canonical=file.getCanonicalFile();
+            if(canonical==null||!VfsUtilCore.isAncestor(boundary,canonical,false))return result(ResolutionStatus.NOT_FOUND,List.of());
             files.add(file);complete=true;
         } else {
-            int[] visited={0};
-            complete=index.iterateContent(file->{check();if(++visited[0]>10000)return false;
-                if(!file.isDirectory()&&index.isInSourceContent(file)&&"java".equals(file.getExtension()))files.add(file);
-                return files.size()<=256;});
+            int visited=0;complete=true;
+            var pending=new ArrayDeque<VirtualFile>();pending.add(base);
+            var directories=new HashSet<String>();
+            while(!pending.isEmpty()) {
+                check();VirtualFile file=pending.removeFirst();
+                if(++visited>10000){complete=false;break;}
+                VirtualFile canonical=file.getCanonicalFile();
+                if(canonical==null||!(canonical.equals(boundary)||VfsUtilCore.isAncestor(boundary,canonical,false)))continue;
+                if(file.isDirectory()) {
+                    if(directories.add(canonical.getUrl()))Collections.addAll(pending,file.getChildren());
+                } else if("java".equals(file.getExtension())) {
+                    files.add(file);if(files.size()>256){complete=false;break;}
+                }
+            }
         }
         if(!complete)return result(ResolutionStatus.INCOMPLETE,List.of());
         List<Match> matches=new ArrayList<>();
         for(VirtualFile file:files) {
             check();
             if(!(file instanceof VirtualFileWithId))continue;
-            VirtualFile base=project.getBasePath()==null?null:LocalFileSystem.getInstance().findFileByPath(project.getBasePath());
             VirtualFile canonical=file.getCanonicalFile();
-            if(base==null||canonical==null||!VfsUtilCore.isAncestor(base,canonical,false)||!index.isInSourceContent(canonical))continue;
+            if(base==null||canonical==null||!VfsUtilCore.isAncestor(boundary,canonical,false))continue;
             String relative=project.getBasePath()==null?null:VfsUtilCore.getRelativePath(file,Objects.requireNonNull(LocalFileSystem.getInstance().findFileByPath(project.getBasePath())), '/');
             if(relative==null||!"java".equals(file.getExtension()))continue;
-            if(!q.pathHint().isBlank()&&!relative.equals(q.pathHint().replace('\\','/'))&&!file.getName().equals(q.pathHint()))continue;
+            if(!q.pathHint().isBlank()&&!relative.equals(path)&&!file.getName().equals(q.pathHint()))continue;
             var document=FileDocumentManager.getInstance().getDocument(file);
             if(document==null)continue;
             if(document.getTextLength()>edu.courseassist.contract.EditContracts.MAX_DOCUMENT_CHARS)return result(ResolutionStatus.INCOMPLETE,List.of());
             long stamp=document.getModificationStamp();String before=document.getText();
             var documents=PsiDocumentManager.getInstance(project);
             if(!documents.isCommitted(document))return result(ResolutionStatus.NOT_READY,List.of());
-            if(!(documents.getPsiFile(document) instanceof PsiJavaFile javaFile))continue;
+            // IDEA may expose .java outside source roots as plain-text PSI. Parse the exact
+            // captured Document as Java syntax; this does not mark roots or write a physical file.
+            var attached=documents.getPsiFile(document);
+            PsiFile parsed=attached instanceof PsiJavaFile?attached:PsiFileFactory.getInstance(project)
+                    .createFileFromText(file.getName(),com.intellij.ide.highlighter.JavaFileType.INSTANCE,before);
+            if(!(parsed instanceof PsiJavaFile javaFile))throw new IllegalStateException("Java snapshot parser unavailable");
             if(!javaFile.getText().equals(before))return result(ResolutionStatus.STALE,List.of());
             Span selected=null;
             if(selection!=null) {
@@ -111,9 +146,20 @@ public final class JavaEditTargetPort implements EditTargetPort {
         Match m=matches.getFirst();
         return new TargetResolution(ResolutionStatus.UNIQUE,List.of(m.target()),Optional.of(new EditSnapshot(1,UUID.randomUUID().toString(),request,m.target(),m.stamp(),m.before(),List.of(m.span()))));
     }
+    private static boolean namesSelectedFile(String clue,VirtualFile file) {
+        String path=clue.startsWith("file://")?clue.substring("file://".length()):clue;
+        // Both the IDE's file://H:/... and the conventional file:///H:/... refer to H:/... .
+        if(path.length()>3&&path.charAt(0)=='/'&&Character.isLetter(path.charAt(1))&&path.charAt(2)==':')path=path.substring(1);
+        return com.intellij.openapi.util.io.FileUtil.pathsEqual(path,file.getPath());
+    }
     private static void add(List<Match> matches,VirtualFile file,String relative,String module,String signature,PsiElement element,String before,long stamp,Span selected) {
         var range=element.getTextRange();
-        if(selected!=null&&(selected.start()<range.getStartOffset()||selected.end()>range.getEndOffset()))return;
+        if(selected!=null) {
+            int start=selected.start(),end=selected.end();
+            while(start<end&&Character.isWhitespace(before.charAt(start)))start++;
+            while(end>start&&Character.isWhitespace(before.charAt(end-1)))end--;
+            if(start==end||start<range.getStartOffset()||end>range.getEndOffset())return;
+        }
         matches.add(new Match(target(file,relative,module,signature),before,stamp,selected==null?new Span(range.getStartOffset(),range.getEndOffset()):selected));
     }
     private static Target target(VirtualFile file,String relative,String module,String signature) {

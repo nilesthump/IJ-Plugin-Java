@@ -11,7 +11,7 @@ public final class EditContracts {
     private EditContracts() {}
     public static final int FORMAT = 1;
     public static final int MAX_DOCUMENT_CHARS = 1_000_000;
-    public enum ResolutionStatus { UNIQUE, AMBIGUOUS, NOT_FOUND, NOT_READY, INCOMPLETE, STALE }
+    public enum ResolutionStatus { UNIQUE, AMBIGUOUS, NOT_FOUND, NOT_READY, INCOMPLETE, STALE, OUTSIDE_SOURCE_ROOT }
     public enum ReviewState { STAGED, REVIEWABLE, APPROVED, REJECTED, INVALIDATED }
     public enum ApplyState { INTENT, APPLYING, APPLIED_TO_DOCUMENT, FAILED_NOT_APPLIED, OUTCOME_UNKNOWN, RECEIPT_PENDING }
     public enum DiskState { UNKNOWN, UNSAVED, SAVED }
@@ -78,9 +78,10 @@ public final class EditContracts {
         public PreviewToken(String tokenId,ProposalRef proposal,String instanceId){this(tokenId,proposal,instanceId,0);}
         public PreviewToken { requireId(tokenId,"preview"); Objects.requireNonNull(proposal); requireId(instanceId,"instance");requireRevision(documentStamp); }
     }
-    public record ProposalView(ProposalRef proposal, ReviewState review, Optional<ApplyReceipt> receipt,String targetPath) {
-        public ProposalView(ProposalRef proposal,ReviewState review,Optional<ApplyReceipt> receipt){this(proposal,review,receipt,"");}
-        public ProposalView { Objects.requireNonNull(proposal); Objects.requireNonNull(review); receipt=Objects.requireNonNull(receipt);Objects.requireNonNull(targetPath); }
+    public record ProposalView(ProposalRef proposal, ReviewState review, Optional<ApplyReceipt> receipt,String targetPath,String turnId,String attemptId,String branchId) {
+        public ProposalView(ProposalRef proposal,ReviewState review,Optional<ApplyReceipt> receipt){this(proposal,review,receipt,"","","","");}
+        public ProposalView(ProposalRef proposal, ReviewState review, Optional<ApplyReceipt> receipt,String targetPath){this(proposal,review,receipt,targetPath,"","","");}
+        public ProposalView { turnId=turnId==null?"":turnId;attemptId=attemptId==null?"":attemptId;branchId=branchId==null?"":branchId; Objects.requireNonNull(proposal); Objects.requireNonNull(review); receipt=Objects.requireNonNull(receipt);Objects.requireNonNull(targetPath); }
     }
     public record ReviewDecision(String commandId, PreviewToken preview, boolean approve) {
         public ReviewDecision { requireId(commandId,"command"); Objects.requireNonNull(preview); }

@@ -22,10 +22,6 @@ tmp/
 worktrees/
 .DS_Store
 Thumbs.db
-# Local-only originals and discussion provenance are not part of the public repository.
+# Original source attachments stay local; discussion records were authorized for publication on 2026-10-28.
 /AY202627S1-CST3492-Assignment-A.pdf
 /Claude_Code_上下文压缩机制总结.txt
-/spec/architecture/evidence/
-/spec/architecture/WORKING.json
-/spec/architecture/DISCUSSION.md
-/spec/architecture/FINAL_CHECK.md

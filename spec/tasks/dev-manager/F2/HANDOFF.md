@@ -1,3 +1,119 @@
+## 当前：用户授权发布与合并（2026-10-28）
+
+本轮用户要求顺序完成清包→README→PR合并→发布R05 issue，并补充将所有未入Git的讨论文件上传。此授权覆盖旧“等待整体通过后发PR”和讨论保持本地的规定；不覆盖凭据保护或CI门禁。11个本地插件ZIP已清空；README补齐F2使用、构建/安装、会话和Undo说明，讨论档案及证据已纳入发布范围。旧安装包路径/哈希为历史交付记录，当前不再保留这些安装包。
+
+源码沿用229项/36套件与本机IDE已通过版本，127份Java文件哈希一致。本轮Repository检查、README本地链接、241路径scope、暂存内容凭据模式检查和Git内容来源哈希均通过，文档独立复查无阻断。远端PR仍须validation/scope成功。R05独立人工验证转交组员，PR合并后创建issue；#22继续暂缓，弹窗可视效果不补造人工通过。本段随包含它的PR最新head通过门禁并合入main后生效，满足后F2 G6开发交付DONE；开发分支上合入前仍为RELEASE_IN_PROGRESS。
+
+## 当前：最终用户体验优化（2026-10-28）
+
+用户确认R03/R04保护行为和R06–R08通过；R05已批准但不理解编辑器Undo/Redo步骤，保留这些子项人工待验证。进入最终体验优化，不据此宣称整体交付完成。
+
+已移除draft上方常驻通知区；改为5秒非阻塞短弹窗，不请求输入焦点，刷新去重，后台提示带会话名称，隐藏侧栏期间的一次性命令反馈独立保留。底栏不再显示原始异常类/枚举或含混的“操作已应用”。文件漂移使用typed SourceChanged并提示文件已更改；选区STALE由宿主直接提示原选区或所在文件已更改，无候选/自动重生成/自动应用。真实异常和保存阻塞保留，通知刷新异常传播至任务边界。
+
+LOCAL_VERIFIED / AWAITING_USER：最终统一All+IdeSmoke退出0（tmp/ux-notice-release-validation.log），229项/36套件零失败错误跳过；本机IU-262.10968.63 / JBR 25.0.4+1-b508.27 PASS（2026-10-28T09:49:48.666476400Z）。独立Standards/Spec发现并修正后台提示归属、异步错误传播、隐藏反馈丢失，复查无阻断。源码哈希复验和产品ZIP检查通过，56路径scope通过；首两轮验证日志保留，不替代最终证据。
+
+新包build/distributions/IJ-Plugin-Java-0.1.0-dev-f2-ux.zip，79999432 bytes，SHA256 fa08737ac285295b160a282fd5a0dcbc06e4806373df9e44c5439a16e89c5f0a。交付证据tmp/ux-notice-delivery.json。仅后续提示视觉及R05编辑器操作补测，见spec/tasks/dev-manager/F2/UX_FINAL_RETEST.md；headless检查不证明可见弹窗效果。#22继续等待成员复现，不修复；未提交/推送/PR/合并，最终通过后再统一处理。
+
+## 2026-10-28 新一轮黑测入口
+
+用户表示最新方案只测了R01/R02；现改用BLACKBOX_R03_R08.md执行六项未测场景，不重跑两项，不把已测补记通过。Issue #22继续等待其他成员复现，暂不修复。只更新方案，未运行人工用例，无产品包变化。
+
+## 2026-10-28 DSML问题暂缓处理
+
+用户要求先由其他成员独立复现。已发布 [issue #22](https://github.com/nilesthump/IJ-Plugin-Java/issues/22)，bug/question，暂不实施修复、不擅自推进开发；待复现反馈后再处理。此前产品交付状态保持。
+
+## 当前交付：Diff卡片归属与成功后ERROR分类（2026-10-28）
+
+用户已确认同会话可定位原文件方法。新增反馈：最早Diff堆到末尾、仅发送prompt后出现ERROR。本轮按持久turn/attempt/branch将卡片插回原回答；自动摘要预算内降级独立WARNING，真实失败仍ERROR，新请求只清对应旧生成故障，原失败档案保留。现场本次attempt/tools均SUCCEEDED；运行时原始异常未持久，未取得唯一错误栈，不声称确知现场ERROR唯一根因。
+
+LOCAL_VERIFIED / AWAITING_USER：统一All+IdeSmoke退出0，tmp/diff-owner-notice-validation.log，225项/35套件零失败错误跳过；本机IU-262.10968.63/JBR25.0.4 PASS（2026-10-28T08:00:34.559523400Z）。两路独立Standards/Spec无阻断，源码哈希/ZIP复验及52路径scope通过。
+
+最新包build/distributions/IJ-Plugin-Java-0.1.0-dev-f2-card-owner.zip。仅两项复测见spec/tasks/dev-manager/F2/DIFF_OWNER_RETEST.md：原会话观察已有卡片位置，再发一条prompt观察新卡片/通知；不重跑已通过定位与重命名。未提交/推送/PR/合并，等待整体人工通过。
+
+## 当前交付：R02同会话续改修复（2026-10-28）
+
+LOCAL_VERIFIED / AWAITING_USER。实际会话首轮选区UNIQUE并生成候选；后续“1”“3”未换文件却空路径全项目重查而AMBIGUOUS。现从同会话合格宿主定位结果延续目标线索，当前明确目标优先，重新读取Document并核对文件身份；旧选区/旧快照不复活。全省略恢复方法或类范围，未知范围不扩大为整文件，泛型参数保持。候选子请求复用父规划历史解释数字选项，不绕过压缩或输出资格。
+
+最终统一All+IdeSmoke退出0，tmp/r02-continuation-release.log；223项/35套件，失败/错误/跳过0。本机IU-262.10968.63/JBR25.0.4 PASS（2026-10-28T07:41:14.428434400Z），真实捕获/同名文件/拒绝/多轮短回复/最新未保存源码/新候选全链路通过。独立Standards和Spec发现的边界均修复复查；源码哈希及产品ZIP复验通过。初轮测试错误断言失败保留在tmp/r02-continuation-green.log，不当作产品通过证据。
+
+最新包build/distributions/IJ-Plugin-Java-0.1.0-dev-f2-continuation.zip。最短复测见spec/tasks/dev-manager/F2/R02_CONTINUATION_RETEST.md：保留原失败会话，不附选区、不补路径，继续原方法。首次选区现场成功及已通过的重命名/两项定位不重跑；冷启动Diff计时没有明确人工结论仍保留待测。未提交/推送/PR/合并，等待用户整体通过。
+
+## 当前交付：R02选区定位修复（2026-10-28）
+
+LOCAL_VERIFIED / AWAITING_USER。R02原人工FAIL保留：实际冻结选区正确，模型发送原文件H:/绝对路径被早期拒绝；选区还带有方法前缩进。已修复为仅识别绑定文件的路径别名，并仅为方法归属判断裁两端空白，原allowedRanges、原文/版本及项目边界不变。无选区文字入口仍要求项目相对路径。
+
+红测真实IDE返回NOT_FOUND/INCOMPLETE/INCOMPLETE，准确复现。最终统一All+IdeSmoke退出0（tmp/r02-selection-green.log），222项/35套件零失败错误跳过，本机IU-262.10968.63/JBR25.0.4 PASS（2026-10-28T06:41:46.783307500Z）。含实际F0整方法捕获、模型绝对路径参数、候选与Diff全链路及范围/冲突/外部/过期拒绝。两路独立检查无阻断，源码哈希与产品ZIP复验通过。
+
+最新包build/distributions/IJ-Plugin-Java-0.1.0-dev-f2-selection.zip。复测见spec/tasks/dev-manager/F2/R02_RETEST.md，剩余清单见BLACKBOX_REMAINING.md；原prompt不变，重开后新草稿重新采集。已有两项定位及重命名通过记录保留，不要求重跑。未提交/推送/PR/合并，仍等待用户整体验收。
+
+## 最新人工验收与剩余清单（2026-10-28）
+
+用户确认“重命名成功”；此前两项定位测试通过。普通Diff打开、基础应用已有现场执行证据，移出重复清单，但不补造所有细项PASS。当前执行入口为spec/tasks/dev-manager/F2/BLACKBOX_REMAINING.md：8项合并后的修复复测/新边界，另6项按需补测保留自动验证与人工未测边界。已验收F0不重跑整套；沿用现有notes/examples样例，不复位add。
+
+本轮只更新验收记录与方案，无业务代码或包变化；最新安装包仍为f2-rename.zip。222项及本机IDE验证证据保持。用户未确认整体完成，尚无提交/推送/PR/合并。
+
+## 当前交付：右键重命名菜单修复（2026-10-28）
+
+LOCAL_VERIFIED / AWAITING_USER。用户报告前述两项定位测试通过；右键重命名按钮灰色FAIL已修复。原因是Swing全局菜单显示早于列表MouseListener，冻结了空目标；现于getPopupLocation先命中目标，空白禁用且打开菜单后不被刷新改向其他会话。
+
+真实dispatchEvent红测准确复现（222项中仅新增1项失败）；修复后统一All+IdeSmoke退出0，222项/35套件零失败错误跳过，本机IU-262.10968.63/JBR25.0.4 PASS（2026-10-28T05:48:20.905575600Z）。日志tmp/rename-menu-red.log、tmp/rename-menu-green.log。两路独立检查无阻断；源码哈希、产品ZIP和45路径scope通过。桌面工具路径错误不可用，真实桌面点击仍由用户复测。
+
+安装包build/distributions/IJ-Plugin-Java-0.1.0-dev-f2-rename.zip，菜单两步复测见spec/tasks/dev-manager/F2/RENAME_RETEST.md。既有样例保留。未提交/推送/PR/合并，继续用户整体通过后统一PR合并；下文为历史记录。
+
+## 当前交付：项目目录与会话交互修复（2026-10-28）
+
+LOCAL_VERIFIED / AWAITING_USER。当前项目目录内现有Java文件无需Sources Root；歧义要求明确。空前台可输入，发送自动创建会话；历史/搜索采用首条消息短摘要并支持右键持久改名。保留此前完成态、自动观察及Diff刷新积压修复。
+
+统一All+IdeSmoke退出0：221项/35套件，失败/错误/跳过0；本机IU-262.10968.63/JBR25.0.4 PASS（2026-10-28T05:17:54.956565600Z），headless首次Diff面板442ms。日志tmp/project-conversation-delivery.log。两路独立检查无阻断，源码哈希、产品包和44路径scope通过；失败过程见PROJECT_CHAT_RETEST。桌面窗口速度/真实模型/人工验收不由此证明。
+
+安装包 `build/distributions/IJ-Plugin-Java-0.1.0-dev-f2-project-chat.zip`；最短黑测见 `spec/tasks/dev-manager/F2/PROJECT_CHAT_RETEST.md`，完整方案见BLACKBOX_TEST_PLAN。用户通过后再统一PR合并；未提交/推送/PR/合并，dev-manager保留。下文旧时点不覆盖本条。
+
+# 当前：首次 Diff 刷新积压修复本地验证通过（2026-10-27）
+
+LOCAL_VERIFIED / AWAITING_USER。真实协调器/H2回归复现40帧在首次预览前42次刷新；合并待处理视图刷新后通过，保留完整正文、终态与审核检查。最终统一All+IdeSmoke退出0，215项/35套件零失败错误跳过，本机IU-262.10968.63/JBR25.0.4 PASS，原生面板首次718ms（headless，非可见窗口速度）。日志tmp/diff-delay-final.log，报告2026-10-27T06:05:16.688311500Z。首次真实Dialog测试因HeadlessDialog自动关闭失败的记录已保留并更正；独立检查无阻断，产品ZIP/源码哈希/scope通过。
+
+安装及最短复测见 [DIFF_DELAY_RETEST](DIFF_DELAY_RETEST.md)。源码根限制来自G2/G3实施时的显式收窄，定位/应用两道检查，本轮未扩大范围；见 [SOURCE_ROOT_ANALYSIS](SOURCE_ROOT_ANALYSIS.md)。实际桌面首次点击速度与整体人工验收仍待用户确认，无提交/推送/PR/合并。
+
+## 历史记录
+
+# 当前：完成态与自动状态修复本地验证通过（2026-10-27）
+
+LOCAL_VERIFIED / AWAITING_USER。成功回答后恢复发送，正常F2编辑器/保存/Undo/Redo事实自动核验，无常规手动核验按钮；异常仍可恢复，历史应用与当前未知状态分开。详细行为、包和三步复测见 [AUTO_STATE_RETEST](AUTO_STATE_RETEST.md)。
+
+最终统一All+IdeSmoke退出0：214 tests / 35 suites，失败/错误/跳过0；本机IU-262.10968.63/JBR25.0.4通过，报告2026-10-27T05:14:29.672650100Z。日志tmp/auto-observation-delivery.log。源码哈希复验一致，产品ZIP不含IDE smoke/fixtures。两路独立增量检查闭合；此前失败日志和无效no-op测试前提更正保留在本地证据。用户整体人工验收仍待确认，无提交/推送/PR/merge，固定dev-manager保留。
+
+## 历史记录
+
+# 当前：人工反馈修复中（2026-10-27）
+
+用户新截图已显示唯一目标、候选、查看Diff及应用/保存状态；这只证明现场进展，不代替B01–B32整体验收。新增两项明确反馈：成功回答后底部仍为重试；应用后的编辑器/保存/Undo核验应内部自动完成。本轮已实现候选，正在完整All+IdeSmoke和独立检查，未通过前不交付新包。原文及代理解释已分列保存于本地忽略evidence，哈希登记。继续保留人工通过后统一PR合并门槛，无提交/推送/PR/merge。
+
+新增定向红测2项稳定失败（tmp/auto-observation-red-focused2.log）；首轮脚本编码与测试字段/局部变量编译问题已修正，失败日志保留。本轮成功结论以最终验证记录为准。
+
+## 之前记录
+
+# 当前：B01 人工失败修复，本地验证通过，等待人工复测（2026-10-26）
+
+用户在BLACKBOX_TEST_PLAN记录B01失败，实际prompt指向spec中的样例，定位返回INCOMPLETE/candidates=[]。原文与文件快照已在本地忽略evidence保存、来源哈希登记；旧G6自动通过不代表B01人工通过。
+
+真实IDE红测证明精确路径错误地受全工程扫描上限影响。已改为项目相对路径单点定位，继续守住原项目/源码根/canonical/同版PSI；不存在路径不fallback，非源码根明确OUTSIDE_SOURCE_ROOT。绿色IDE probe通过，最终统一All+IdeSmoke退出0：210 tests / 35 suites，失败/错误/跳过0，本机IU-262.10968.63/JBR25.0.4 PASS；日志 `tmp/f2-b01-final.log`，IDE报告2026-10-26T14:47:56Z。 本轮不读取凭据、不发付费请求、不提交/推送/PR/合并。
+
+用户现场触发哪条扫描上限和实际源码根配置未取得运行证据，不能称唯一根因已证实。spec样例若不在源码根，新版本应明确拒绝；成功复测应先复制样例到临时Java工程src。步骤与新包入口见[B01_RETEST](B01_RETEST.md)。B01保留FAIL / AWAITING_RETEST，其余人工未执行；不能标用户通过或G6 main DONE。
+
+## 此前记录
+
+# 当前：G5 已合入核验，G6 本地收尾待人工验收（2026-10-26）
+
+负责人：用户本人；分支 dev-manager，HEAD/main `9ac4448ec649890646979215fa35601314168761`。G0–G5 开发交付已合入；G4/G5 PR #21 受检head `053aa37` 的 validation/scope成功，main提交与本地祖先再次核验通过。此前 AWAITING_CI 段落保留为历史。
+
+本轮用户原文要求完成最后任务、给出黑盒方案，人工通过后再统一PR合并。按实际剩余任务执行G5补记和G6，不增加不存在的组。本轮未提交/推送/创建PR/合并，不修改生产或治理；G6 LOCAL_VERIFIED / AWAITING_USER，不能标main DONE或人工PASS。
+
+新增真实两入口完整链路及生成期间切换聊天隔离、原生按钮零模型/draft保持、Undo和新draft状态投影。首次统一All+IdeSmoke退出0，209 tests / 35 suites零失败错误跳过；本机IU-262.10968.63/JBR25.0.4 PASS。最终固定源码复核 `tmp/f2-g6-final.log` 退出0：209项/35套件零失败错误跳过，JUnit实际重执行，本机IDE PASS。实际细节、修正、日志、包哈希与未执行边界见 [G6_IMPLEMENTATION](G6_IMPLEMENTATION.md)。
+
+交付：[32项黑盒方案](BLACKBOX_TEST_PLAN.md)，准备 [Java样例](samples/src/demo/Calculator.java)及[重名样例](samples/src/other/Calculator.java)。人工/真实API均NOT_RUN。下一条：由用户安装 `build/distributions/IJ-Plugin-Java-0.1.0-dev-f2-g6.zip` 并反馈B编号；明确通过后才统一PR、门禁与main核验。保留固定分支，架构未冻结。
+
+## 历史记录
+
 # 当前 G4/G5 单 PR 交付（2026-10-26）
 
 唯一负责人：用户本人；既有 dev-manager，基线 main `4de5417ef81cd3e409c5721b1eb0a8d508ff3443`。G0–G3 已合入核验（G2/G3 为 PR #20）。用户授权 G4/G5 统一一个 PR 提交并合并；G6 未开始，架构未冻结。

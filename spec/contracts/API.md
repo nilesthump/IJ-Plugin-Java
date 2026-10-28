@@ -215,7 +215,7 @@ ToolBoundary 固定课程/目标/候选能力，默认无 F2 adapter，不暴露
 
 ## F2 G2/G3 实际接线（2026-10-26）
 
-生产 Project 服务为原项目/实例注入 JavaEditTargetPort，原始 SubmitDraft 的 ReAct 开放 resolveEditTarget(path,class,method,parameters) 和 proposeCodeEdit(ref)。`f()` 指明确零参数；`f` 与空参数列表指参数未知。选区取原提交冻结 CodePart，文字不能改绑其目标。源码仅来自项目内 source roots，明确返回 UNIQUE/AMBIGUOUS/NOT_FOUND/NOT_READY/INCOMPLETE/STALE。Target 增加兼容可缺的 fileIdentity；生产快照保留独立 VFS id，旧缺失值不授权应用。
+生产 Project 服务为原项目/实例注入 JavaEditTargetPort，原始 SubmitDraft 的 ReAct 开放 resolveEditTarget(path,class,method,parameters) 和 proposeCodeEdit(ref)。`f()` 指明确零参数；`f` 与空参数列表指参数未知。选区取原提交冻结 CodePart，文字不能改绑其目标。源码仅来自项目内 source roots，明确返回 UNIQUE/AMBIGUOUS/NOT_FOUND/NOT_READY/INCOMPLETE/STALE/OUTSIDE_SOURCE_ROOT。Target 增加兼容可缺的 fileIdentity；生产快照保留独立 VFS id，旧缺失值不授权应用。
 
 完整同版 Document before 与范围先独立持久化到 ca_edit_snapshot。CodeEditTools 只允许 attempt 首次分支解析；课程降级不得重新采集/生成。ca_edit_generation 在子订阅前预留宿主逻辑请求，重复 callId 变化/并发/失败不触发重订阅；原始指令不可被工具参数替换。
 
@@ -230,3 +230,48 @@ EditPreviewPort.open 的完成值为 Display，只有实际只读双侧 viewer �
 ApplyReceipt 新增兼容 DocumentState；历史 APPLIED_TO_DOCUMENT、当前观察和 DiskState 不合并，旧 JSON 缺字段按 UNKNOWN 处理。单个 applyId 的重复命令在 busy/epoch/当前源码校验之前返回原结果。意图失败不执行，未知或回执待保存阻塞；恢复只核对/补记且不得重放。重新打开项目时旧批准撤销，精确 before/身份重新验证并重新 Diff 后才发当前实例/stamp 的新 token；父成功、有效分支及实际成功候选工具来源仍须共同成立。
 
 所有 viewer（包括拒绝态归档）和未完成预览均绑定生命周期。停用/关闭/删除撤销迟到回调，删除清私有记录和诊断，不回滚用户文件。具体行为、真实验证与限制见 [G4/G5 实现](../tasks/dev-manager/F2/G45_IMPLEMENTATION.md)。旧文中“尚无Diff/apply adapter”仅为 G1/G3 时点状态。
+
+### B01 定位更正（2026-10-26）
+
+含目录的项目相对路径以单次VFS查找定位，随后仍复验原项目/canonical归属、Java源码根、完整Document/PSI和版本；不先枚举全工程，不受无关文件数量上限误拒绝。缺失精确路径不回退同名文件。仅文件名/类提示仍有界搜索，截断不冒称唯一。Windows分隔符规范化后同样拒绝绝对路径/盘符/遍历。
+
+`ResolutionStatus.OUTSIDE_SOURCE_ROOT` 表示精确目标存在但不属于原项目的Java源码根，没有snapshot或候选，不授予修改权限。定位失败观察提供status/candidates/reason，要求在正确Java工程的Sources Root内选择目标；诊断不会自动移动文件、修改项目配置或调用候选子生成。
+### 2026-10-27 自动应用事实观察（本地验证通过）
+
+EditApplyPort.observeChanges 提供只读变化通知，返回可释放 ViewSubscription。平台适配监听已应用目标Document编辑及保存事件，在IDE命令结束后通知；协调器在原项目/会话归属下读取已有耐久APPLIED_TO_DOCUMENT回执，事实发生变化才更新并发布。挂接项目时也核验已有回执，关闭项目/协调器释放订阅。无新的批准、源码写入、强制保存、Undo或模型请求；未知应用结果不能凭匹配文本升级成功，异常回执仍经本地恢复。
+
+完成成功回答后不提供RETRY；仅可重试的停止/中断/失败/超限F0末次尝试提供，使用过F2工具仍要求新draft。UI空草稿成功态显示禁用发送，有新输入才可发送。常规已应用卡片自动显示事实，没有“核对编辑器/保存/Undo”按钮；异常回执保留“重试状态恢复”。
+
+## 2026-10-27 项目目录与会话交互更正（优先于此前源码根限制）
+
+用户明确要求：F2范围扩大到当前打开项目文件夹内；重名无法唯一确定时请用户明确。现有单Java文件和完整Diff审核约束不变；定位/应用以项目canonical目录、VFS身份、同版完整Document为边界，不再要求IDE Sources Root标记。不修改工程标记或访问项目外目标；模糊检索有界，截断不得伪称唯一。
+
+无前台会话显示空新会话欢迎页与可输入区域，发送时核心创建会话并继续提交。历史/搜索默认显示首条用户消息的本地48码点短摘要（空纯代码问题用“Java 代码提问”），不调用模型；右键可重命名，手动名称优先持久保存且不被后续消息覆盖。原始消息不改写。用户整体通过后才统一PR合并，架构未冻结。
+
+`SubmitNewSession(meta,text)`仅用于没有前台会话的纯文字composer；不携带sessionId，核心串行检查前台身份，存在前台时拒绝STALE_REVISION而不重定向。新建后绑定准确session进行正常SubmitDraft，提交失败时保留已持久化草稿并发布新会话；未启用拒绝且不创建。UI提交中禁止重复发送，失败保留文字。
+
+`RenameSession(meta,title)`明确session身份，名称为1–80码点单行非空文字。存储State新增titleExplicit，旧JSON缺字段默认false；所有状态复制保留该标记。首条原始输入派生默认标题，不依赖成功模型输出或后续消息。OUTSIDE_SOURCE_ROOT枚举保留旧数据/工具兼容，当前Java项目目录适配不再返回该状态。
+
+## 2026-10-28 单选区定位表示兼容修复
+
+单个已绑定选区优先确定原VFS文件。定位path若为该文件的本机绝对路径或file URL表示，只做与原文件身份路径的精确比较及项目相对路径规范化，不据提示搜索另一文件；原canonical项目边界、原文/版本检查不变。无选区文字定位仍要求项目相对路径。类/方法包含判断与F0捕获对齐，仅裁去选区两端Character.isWhitespace参与比较；实际allowedRanges保留原始冻结选区，空白或方法外非空白内容不能借此扩大修改范围。公共Java签名未改。
+
+
+## 2026-10-28 同会话续改目标与指令上下文
+
+用户更正：未明确换文件时，不应因下一轮没有重新附选区而丢失已确认目标。宿主从同项目、同会话、耐久成功有效分支的配对resolveEditTarget观察保留文件线索；空path且class省略/匹配时使用前次路径，当前选区/明确路径/不同class优先，明确换目标失败不得回退旧目标。续改重新捕获Document/版本/允许范围并复核文件身份，不复活旧snapshotRef或选区坐标。全部线索省略时可恢复已知方法签名（泛型参数按类型层级拆分）；只知道文件、范围不明则INCOMPLETE，不扩大为整文件。
+
+候选子请求保留本轮原始instruction，并复用父ContextPlanner已经通过资格和预算规划的历史投影来解释数字选项等短回复，含已规划摘要/当前审核事实，不重展全档案、不传thinking或历史tool协议。当前allowedSource才是改动依据，历史代码只作为语义上下文；子请求继续受统一上下文预算/取消/作用域限制。新候选依然需要本地审核，不自动应用。验证与人工状态见任务R02_CONTINUATION_RETEST。
+
+
+## 2026-10-28 候选卡片来源与会话错误分类
+
+ProposalView新增turnId/attemptId/branchId，由EditRepository从持久候选origin及branch填充；旧构造器兼容。UI按三个字段将卡片固定在原Agent分支回答后，不从生成正文猜归属，不改变候选审批权限。历史artifact已含来源，无存储迁移。
+
+自动摘要失败可按既定预算/产品策略继续时，保留独立诊断并显示CONTEXT_FALLBACK WARNING，不标记生成失败。不能降级、真实生成或其他任务错误仍走原失败边界。新提交只移除其前次生成失败的对应通用提示，其他故障不清，旧attempt状态不变。现场异常栈尚未取得，实际读取结果与修复范围见DIFF_OWNER_RETEST。
+
+## 2026-10-28 过期提示与短弹窗
+
+EditApplyPort.SourceChanged表示应用前的完整源码或Diff展示版本变化；可包装在NotApplied内，明确区别于平台/存储故障。预览、批准复验和最终写命令拒绝均不自动重新生成。选区定位返回STALE时宿主直接发布EDIT_SELECTION_CHANGED；非选区漂移为EDIT_SOURCE_CHANGED，均为WARNING，不把保护性拒绝归为TASK_FAILED。真实异常保留诊断与失败状态；保存失败仍阻塞并可恢复。
+
+CourseAssistantView移除draft上方常驻通知文本框，通知以5秒非阻塞气泡展示，不请求焦点；相同code/message/session/operation持续状态不随刷新反复弹出，新的操作可再次提示。视图关闭释放弹窗；未展示时保留待提示，状态消失则撤掉待提示。聊天中的任务/审核状态保留。R05的Undo/Redo是IDE编辑器动作，不要求再次打开已应用候选的Diff，不新增重复批准入口。

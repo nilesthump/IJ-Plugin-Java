@@ -17,6 +17,36 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CodeEditToolsTest {
     @TempDir Path root;
+    @Test void staleSelectionProducesHostWarningWithoutCandidateOrGenericError() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();
+            var binding=e.sessions.open(new Location("C:/synthetic/stale","stale"),"i",
+                    ()->start->CompletableFuture.completedFuture(SessionTestEnvironment.group(start)),true,
+                    Optional.of((identity,input,permitted)->(request,query)->CompletableFuture.completedFuture(
+                            new TargetResolution(ResolutionStatus.STALE,List.of(),Optional.empty())))).toCompletableFuture().get();
+            String session=e.create("i");
+            e.sessions.beginCapture(SessionTestEnvironment.selection("selected","i"));
+            e.sessions.captureCompletion("selected").toCompletableFuture().get();
+            e.sessions.refreshAll().toCompletableFuture().get();e.text("i",session,"Change selected method");
+            AtomicInteger calls=new AtomicInteger();
+            e.model.set((request,listener)->{
+                if(calls.incrementAndGet()==1){
+                    listener.frame(new ToolDelta(0,"resolve","resolveEditTarget","{\"path\":\"\",\"class\":\"\",\"method\":\"\",\"parameters\":[]}"));
+                    listener.frame(new End("tool_calls"));listener.complete();
+                }else{
+                    String observation=request.messages().stream().filter(m->m.role().equals("tool")).findFirst().orElseThrow().content();
+                    assertTrue(observation.contains("STALE"));assertTrue(observation.contains("capture the selection again"));
+                    SessionTestEnvironment.finish(listener,"Please capture the selection again.");
+                }return ()->{};
+            });
+            e.submit("i",session);e.idle("i",session);
+            var notices=e.view("i",session).notices();
+            assertTrue(notices.stream().anyMatch(n->n.code().equals("EDIT_SELECTION_CHANGED")&&n.severity()==Severity.WARNING));
+            assertTrue(notices.stream().noneMatch(n->n.code().equals("TASK_FAILED")));
+            assertTrue(e.repository.edits().views(binding.projectId(),"i",session).isEmpty());assertEquals(2,calls.get());
+            assertTrue(e.sessions.failure(session).isEmpty());
+        }
+    }
     @Test void realSpringAiLoopbackProtocol(){assertDoesNotThrow(()->edu.courseassist.bootstrap.ide.F2GenerationChecks.run(root));}
     static final String BEFORE="class X { int n=1; }\n";
     static String patch(){int at=BEFORE.indexOf("1");return ReactContext.json(Map.of("changes",List.of(Map.of("start",at,"end",at+1,"before","1","after","2"))));}
@@ -58,6 +88,7 @@ class CodeEditToolsTest {
             assertEquals(1,child.get());assertEquals(4,parent.get());assertEquals(0,e.queries.size());
             var history=e.repository.history(project,"i",session);
             assertTrue(history.getFirst().attempts().getLast().eligible());
+            var owner=history.getFirst().attempts().getLast();assertEquals(owner.identity().turnId(),views.getFirst().turnId());assertEquals(owner.identity().attemptId(),views.getFirst().attemptId());assertEquals(owner.effectiveBranchId(),views.getFirst().branchId());
             assertFalse(ReactContext.history(project,session,history).toString().contains("\"changes\""));
             assertEquals(2,history.getFirst().attempts().getLast().branches().getFirst().protocol().stream().filter(m->m.role().equals("tool")&&m.callId().startsWith("proposal-")).count());
         }
@@ -83,6 +114,36 @@ class CodeEditToolsTest {
             assertEquals(invalid?AttemptStatus.FAILED:AttemptStatus.SUCCEEDED,e.repository.history(project,"i",session).getFirst().attempts().getLast().status());
         }
     }
+    @Test void outsideSourceRootExplainsBoundaryWithoutChildOrCandidate() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();
+            var binding=e.sessions.open(new Location("C:/synthetic/outside-source","outside-source"),"i",
+                    ()->start->CompletableFuture.completedFuture(SessionTestEnvironment.group(start)),true,
+                    Optional.of((identity,input,permitted)->(request,query)->CompletableFuture.completedFuture(
+                            new TargetResolution(ResolutionStatus.OUTSIDE_SOURCE_ROOT,List.of(),Optional.empty()))))
+                    .toCompletableFuture().get(10,TimeUnit.SECONDS);
+            String session=e.create("i");e.text("i",session,"Change spec/samples/X.java");AtomicInteger parents=new AtomicInteger();
+            e.model.set((request,listener)->{
+                assertFalse(request.tools().isEmpty(),"An out-of-scope resolution must not start child generation");
+                if(parents.incrementAndGet()==1) {
+                    listener.frame(new ToolDelta(0,"resolve","resolveEditTarget","{\"path\":\"spec/samples/X.java\",\"class\":\"\",\"method\":\"\",\"parameters\":[]}"));
+                    listener.frame(new End("tool_calls"));listener.complete();
+                } else {
+                    var observation=request.messages().stream().filter(m->m.role().equals("tool")&&m.callId().equals("resolve")).findFirst().orElseThrow();
+                    var json=EditPatch.JSON.readTree(observation.content());
+                    assertEquals("OUTSIDE_SOURCE_ROOT",json.get("status").asString());
+                    assertTrue(json.get("reason").asString().contains("Sources Root"));
+                    assertFalse(json.has("snapshotRef"));
+                    SessionTestEnvironment.finish(listener,"Target is outside configured Java source roots; no candidate generated.");
+                }
+                return ()->{};
+            });
+            e.submit("i",session);e.idle("i",session);
+            assertEquals(2,parents.get());assertEquals(2,e.requests.size());assertTrue(e.queries.isEmpty());
+            assertTrue(e.repository.edits().views(binding.projectId(),"i",session).isEmpty());
+            assertTrue(e.repository.history(binding.projectId(),"i",session).getFirst().attempts().getLast().eligible());
+        }
+    }
     @Test void exactPatchRejectsOverlapScopeMismatchDuplicatesAndTrailingData() {
         var origin=new Origin("p","i","s","t","a","o",0);var request=new EditRequest("r",origin,"t",0,"change",Optional.empty());
         var snapshot=new EditSnapshot(1,"s",request,new Target("file","X.java","",""),1,"abcdef",List.of(new Span(1,5)));
@@ -104,11 +165,13 @@ class CodeEditToolsTest {
                 reads.incrementAndGet();var target=new Target("file:///X.java","X.java","m","X");
                 return CompletableFuture.completedFuture(new TargetResolution(ResolutionStatus.UNIQUE,List.of(target),Optional.of(new EditSnapshot(1,"snap",request,target,7,BEFORE,List.of(new Span(0,BEFORE.length()))))));
             },e.repository.edits(),1024);
+            adapter.plannedHistory(List.of(Message.text("user","uncompressed-history-sentinel")));
+            adapter.plannedHistory(List.of(Message.text("system","planned-summary-sentinel")));
             var resolve=new Call("r","resolveEditTarget","{\"path\":\"X.java\",\"class\":\"\",\"method\":\"\",\"parameters\":[]}");
             String resolved=adapter.execute(ToolBoundary.Capability.TARGET,id,"branch",resolve,()->true).get();
             String ref=EditPatch.JSON.readTree(resolved).get("snapshotRef").asString();
             var started=new CountDownLatch(1);var release=new CountDownLatch(1);
-            java.util.function.Function<Request,String> generate=request->{subscriptions.incrementAndGet();started.countDown();try{if(!release.await(5,TimeUnit.SECONDS))throw new AssertionError("Test release missing");}catch(InterruptedException ex){throw new RuntimeException(ex);}if(fail)throw new ProtocolFailure("synthetic failure");return patch();};
+            java.util.function.Function<Request,String> generate=request->{assertTrue(request.messages().toString().contains("planned-summary-sentinel"));assertFalse(request.messages().toString().contains("uncompressed-history-sentinel"));subscriptions.incrementAndGet();started.countDown();try{if(!release.await(5,TimeUnit.SECONDS))throw new AssertionError("Test release missing");}catch(InterruptedException ex){throw new RuntimeException(ex);}if(fail)throw new ProtocolFailure("synthetic failure");return patch();};
             var first=CompletableFuture.supplyAsync(()->adapter.execute(ToolBoundary.Capability.PROPOSAL,id,"branch",new Call("p1","proposeCodeEdit",ReactContext.json(Map.of("ref",ref))),()->true,generate).join(),e.workers);
             assertTrue(started.await(5,TimeUnit.SECONDS));
             var duplicate=adapter.execute(ToolBoundary.Capability.PROPOSAL,id,"branch",new Call("p2","proposeCodeEdit",ReactContext.json(Map.of("ref",ref))),()->true,generate);
@@ -145,6 +208,47 @@ class CodeEditToolsTest {
             assertTrue(e.repository.edits().views(project,"i",session).isEmpty());
             assertFalse(ReactContext.history(project,session,history).toString().contains("incomplete-child-sentinel"));
             assertTrue(attempt.branches().stream().flatMap(b->b.steps().stream()).anyMatch(s->s.body().contains("incomplete-child-sentinel")));
+        }
+    }
+    @Test void continuationUsesOnlyEligibleHostTargetAndExplicitCluesOverride() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            String session=open(e),project=e.sessions.snapshot("i").projectId();
+            var submission=e.repository.submit(project,e.submitEvent("i",session),e.runtime.snapshot().epoch());
+            Identity id=submission.operation().orElseThrow().identity();Input input=new Input("3",List.of());
+            var oldId=new Identity(project,"i",session,"old-turn","old-operation","old-attempt",id.runtimeEpoch());
+            var oldInput=new Input("Change the selected method",List.of());
+            var target=new Target("file:///src/X.java","src/X.java","m","demo.X#f(java.util.Map<java.lang.String,java.lang.Integer>,int)","vfs:1");
+            var protocol=List.of(new Message("assistant","","",List.of(new Call("old-resolve","resolveEditTarget","{}")),""),
+                    new Message("tool",ReactContext.json(Map.of("status","UNIQUE","target",target)),"",List.of(),"old-resolve"),
+                    Message.text("assistant","Choose 3: use a local variable."));
+            var step=new Step("final",1,StepStatus.FINISHED,"Choose 3: use a local variable.","",List.of(),"stop",Optional.empty(),List.of());
+            var branch=new Branch("old-branch",BranchStatus.COMPLETED,RetrievalStatus.NO_INDEX,"",List.of(step),protocol);
+            for(boolean eligible:List.of(true,false))for(String path:List.of("","other/X.java"))for(String type:List.of("X","","Other"))for(String method:List.of("f","")) {
+                var old=new Snapshot(oldId,oldInput,1,1,eligible?AttemptStatus.SUCCEEDED:AttemptStatus.STOPPED,true,"old-branch","final",List.of(branch),List.of(),"");
+                AtomicReference<TargetQuery> seen=new AtomicReference<>();
+                var adapter=new CodeEditTools(id,input,(request,query)->{seen.set(query);assertTrue(request.captureId().isEmpty());return CompletableFuture.completedFuture(new TargetResolution(ResolutionStatus.NOT_FOUND,List.of(),Optional.empty()));},e.repository.edits(),1024,List.of(new HistoryTurn(oldInput,List.of(old))));
+                var call=new Call("resolve","resolveEditTarget",ReactContext.json(Map.of("path",path,"class",type,"method",method,"parameters",List.of("int"))));
+                adapter.execute(ToolBoundary.Capability.TARGET,id,"branch",call,()->true).get(5,TimeUnit.SECONDS);
+                assertEquals(eligible&&path.isEmpty()&&!type.equals("Other")?"src/X.java":path,seen.get().pathHint());
+                if(eligible&&path.isEmpty()&&type.isEmpty()&&method.isEmpty()) {
+                    assertEquals("f",seen.get().methodHint());assertEquals(List.of("java.util.Map<java.lang.String,java.lang.Integer>","int"),seen.get().parameterHints());
+                }
+            }
+            var fileTarget=new Target(target.fileRef(),target.relativePath(),target.module(),"file",target.fileIdentity());
+            var fileProtocol=protocol.stream().map(m->m.role().equals("tool")?new Message("tool",ReactContext.json(Map.of("status","UNIQUE","target",fileTarget)),"",List.of(),m.callId()):m).toList();
+            var fileBranch=new Branch("old-branch",BranchStatus.COMPLETED,RetrievalStatus.NO_INDEX,"",List.of(step),fileProtocol);
+            var fileOld=new Snapshot(oldId,oldInput,1,1,AttemptStatus.SUCCEEDED,true,"old-branch","final",List.of(fileBranch),List.of(),"");
+            var fileAdapter=new CodeEditTools(id,input,(r,q)->{throw new AssertionError("Must not widen an unspecified previous selection to the entire file");},e.repository.edits(),1024,List.of(new HistoryTurn(oldInput,List.of(fileOld))));
+            String unresolved=fileAdapter.execute(ToolBoundary.Capability.TARGET,id,"branch",new Call("r","resolveEditTarget",ReactContext.json(Map.of("path","","class","","method","","parameters",List.of()))),()->true).get();
+            assertEquals("INCOMPLETE",EditPatch.JSON.readTree(unresolved).get("status").asString());
+            var classTarget=new Target(target.fileRef(),target.relativePath(),target.module(),"demo.X",target.fileIdentity());
+            var classProtocol=protocol.stream().map(m->m.role().equals("tool")?new Message("tool",ReactContext.json(Map.of("status","UNIQUE","target",classTarget)),"",List.of(),m.callId()):m).toList();
+            var classBranch=new Branch("old-branch",BranchStatus.COMPLETED,RetrievalStatus.NO_INDEX,"",List.of(step),classProtocol);
+            var classOld=new Snapshot(oldId,oldInput,1,1,AttemptStatus.SUCCEEDED,true,"old-branch","final",List.of(classBranch),List.of(),"");
+            var classAdapter=new CodeEditTools(id,input,(r,q)->{assertEquals("demo.X",q.classHint());assertEquals("src/X.java",q.pathHint());return CompletableFuture.completedFuture(new TargetResolution(ResolutionStatus.NOT_FOUND,List.of(),Optional.empty()));},e.repository.edits(),1024,List.of(new HistoryTurn(oldInput,List.of(classOld))));
+            classAdapter.execute(ToolBoundary.Capability.TARGET,id,"branch",new Call("r","resolveEditTarget",ReactContext.json(Map.of("path","","class","","method","","parameters",List.of()))),()->true).get();
+            var foreign=new Snapshot(new Identity("foreign","i",session,"t","o","a",0),oldInput,1,1,AttemptStatus.SUCCEEDED,true,"old-branch","final",List.of(branch),List.of(),"");
+            assertThrows(ProtocolFailure.class,()->new CodeEditTools(id,input,(r,q)->null,e.repository.edits(),1024,List.of(new HistoryTurn(oldInput,List.of(foreign)))));
         }
     }
     @Test void legacyRetryBeforeAnyEditToolKeepsF0ButCannotStartF2()throws Exception {

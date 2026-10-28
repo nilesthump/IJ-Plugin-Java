@@ -36,7 +36,7 @@ final class F2ReviewApplyChecks {
             edt(()->WriteAction.run(()->{
                 var folder=LocalFileSystem.getInstance().refreshAndFindFileByNioFile(src);
                 var module=ModuleManager.getInstance(project).newModule(root.resolve("main.iml").toString(),"JAVA_MODULE");
-                ModuleRootModificationUtil.updateModel(module,model->model.addContentEntry(folder).addSourceFolder(folder,false));
+                ModuleRootModificationUtil.updateModel(module,model->model.addContentEntry(folder));
             }));
             com.intellij.openapi.project.DumbService.getInstance(project).waitForSmartMode();
             var file=LocalFileSystem.getInstance().refreshAndFindFileByNioFile(path);
@@ -58,12 +58,18 @@ final class F2ReviewApplyChecks {
             var step=new Step("final",2,StepStatus.FINISHED,"candidate ready","",List.of(trace),"stop",Optional.empty(),List.of());
             e.repository.react().save(new Snapshot(identity,input,2,2,AttemptStatus.SUCCEEDED,true,"branch","final",List.of(new Branch("branch",BranchStatus.COMPLETED,RetrievalStatus.NO_INDEX,"",List.of(step),List.of())),List.of(),""),false);
             var apply=new JavaEditApplyPort(project,"i");
+            // HeadlessDialog.show() immediately closes itself; exercise the production native panel here.
+            // Visible desktop window latency remains a separate human check.
             EditPreviewPort preview=p->{var future=new CompletableFuture<EditPreviewPort.Display>();
                 ApplicationManager.getApplication().invokeLater(()->{try {var diff=new SnapshotDiff(project,p);shown.set(diff);diff.ready().whenComplete((ignored,error)->{if(error!=null)future.completeExceptionally(error);else future.complete(diff);});}catch(Throwable error){future.completeExceptionally(error);}});return future;};
             e.sessions.attachEditHost("i",new SessionCoordinator.EditHost(preview,apply)).toCompletableFuture().get(15,TimeUnit.SECONDS);e.sessions.refreshAll().toCompletableFuture().get();
             e.text("i",session,"keep this draft exactly");var draft=e.view("i",session).draft();
+            long previewStarted=System.nanoTime();
             e.dispatch(new OpenEditPreview(e.meta("i",session),proposal.ref()));
             await(()->shown.get()!=null&&shown.get().ready().toCompletableFuture().isDone());
+            long previewMillis=TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-previewStarted);
+            System.out.println("F2 first native Diff panel ready (headless): "+previewMillis+" ms");
+            require(previewMillis<15000,"First native Diff panel must not take tens of seconds");
             await(()->button(shown.get().component(),"approveEditProposal").isEnabled());
             edt(()->{
                 var diff=shown.get();require(diff.nativeViewer()!=null,"IDEA SimpleDiffViewer really created with two editors");

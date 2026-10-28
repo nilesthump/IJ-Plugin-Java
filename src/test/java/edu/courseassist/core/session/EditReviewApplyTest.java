@@ -20,14 +20,17 @@ class EditReviewApplyTest {
     @TempDir Path root;
     static final class Host implements EditPreviewPort,EditApplyPort,EditPreviewPort.Display {
         PreviewToken token;Consumer<ReviewDecision> decisions;Runnable dismissed;
+        Runnable changed=()->{};
+        public ViewSubscription observeChanges(Runnable listener){changed=listener;return ()->changed=()->{};}
         Runnable closedCallback=()->{};int closes;boolean deferPreview;CompletableFuture<Display> opening=new CompletableFuture<>();
         int opens,writes,applies;boolean defer,validateFail,unknown,inspectFail;Runnable pending;long validatedStamp=7;
+        Map<String,ApplyReceipt> observations=new HashMap<>();
         ApplyRequest request;ApplyReceipt observation;CompletableFuture<ApplyReceipt> result;
         public CompletionStage<Display> open(EditProposal proposal){opens++;return deferPreview?opening:CompletableFuture.completedFuture(this);}
         public void whenClosed(Runnable callback){closedCallback=callback;}
         public void enable(PreviewToken token,Consumer<ReviewDecision> decisions,Runnable dismissed){this.token=token;this.decisions=decisions;this.dismissed=dismissed;}
         public void close(){closes++;if(dismissed!=null)dismissed.run();closedCallback.run();}
-        public CompletionStage<Long> validate(EditProposal p){return validateFail?CompletableFuture.failedFuture(new IllegalStateException("drift")):CompletableFuture.completedFuture(validatedStamp);}
+        public CompletionStage<Long> validate(EditProposal p){return validateFail?CompletableFuture.failedFuture(new EditApplyPort.NotApplied(new EditApplyPort.SourceChanged())):CompletableFuture.completedFuture(validatedStamp);}
         public CompletionStage<ApplyReceipt> apply(ApplyRequest r,WritePermit permit) {
             applies++;request=r;result=new CompletableFuture<>();
             pending=()->{
@@ -35,11 +38,11 @@ class EditReviewApplyTest {
                 boolean changed=permit.commit(()->writes++);
                 observation=new ApplyReceipt(r.applyId(),r.proposal().ref(),changed?ApplyState.APPLIED_TO_DOCUMENT:ApplyState.FAILED_NOT_APPLIED,
                         changed?DiskState.UNSAVED:DiskState.UNKNOWN,changed?Optional.of(9L):Optional.empty());
-                result.complete(observation);
+                observations.put(r.applyId(),observation);result.complete(observation);
             };
             if(!defer)pending.run();return result;
         }
-        public CompletionStage<Optional<ApplyReceipt>> inspect(ApplyRequest r){return inspectFail?CompletableFuture.failedFuture(new IllegalStateException("historical target renamed")):CompletableFuture.completedFuture(Optional.ofNullable(observation).filter(x->x.state()==ApplyState.APPLIED_TO_DOCUMENT));}
+        public CompletionStage<Optional<ApplyReceipt>> inspect(ApplyRequest r){return inspectFail?CompletableFuture.failedFuture(new IllegalStateException("historical target renamed")):CompletableFuture.completedFuture(Optional.ofNullable(observation!=null&&observation.applyId().equals(r.applyId())?observation:observations.get(r.applyId())).filter(x->x.state()==ApplyState.APPLIED_TO_DOCUMENT));}
     }
     private EditFoundationTest.Candidate candidate(SessionTestEnvironment e)throws Exception{return new EditFoundationTest().candidate(e);}
     private Host attach(SessionTestEnvironment e,EditFoundationTest.Candidate c)throws Exception {
@@ -49,6 +52,47 @@ class EditReviewApplyTest {
         e.sessions.refreshAll().toCompletableFuture().get();assertNotNull(h.token);return h;
     }
     private void settled(SessionTestEnvironment e)throws Exception {e.sessions.refreshAll().toCompletableFuture().get(30,TimeUnit.SECONDS);}
+    @Test void streamBurstDoesNotQueueOneDatabaseRefreshPerFrameAheadOfDiff() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.generationTimeout=java.time.Duration.ofMinutes(2);
+            var c=candidate(e);c.finish();Host host=new Host();
+            e.sessions.attachEditHost("i",new SessionCoordinator.EditHost(host,host)).toCompletableFuture().get();
+            String streaming=e.create("i");e.text("i",streaming,"stream");
+            var listener=new AtomicReference<edu.courseassist.core.react.ReactData.Listener>();
+            e.model.set((request,sink)->{listener.set(sink);return ()->{};});
+            e.submit("i",streaming);SessionTestEnvironment.await(()->listener.get()!=null);settled(e);
+            var event=new OpenEditPreview(e.meta("i",c.session()),c.proposal().ref());
+            var entered=new CountDownLatch(1);var release=new CountDownLatch(1);
+            var armed=new AtomicBoolean();var deliveries=new AtomicInteger();
+            try(var subscription=e.sessions.observe("i",view->{
+                if(armed.compareAndSet(true,false)) {
+                    entered.countDown();
+                    try {if(!release.await(30,TimeUnit.SECONDS))throw new IllegalStateException("refresh gate timed out");}
+                    catch(InterruptedException failure){Thread.currentThread().interrupt();throw new IllegalStateException(failure);}
+                }
+                deliveries.incrementAndGet();
+            })) {
+                settled(e);armed.set(true);
+                listener.get().frame(new edu.courseassist.core.react.ReactData.Body("start"));
+                assertTrue(entered.await(30,TimeUnit.SECONDS));
+                try {
+                    for(int n=0;n<40;n++)listener.get().frame(new edu.courseassist.core.react.ReactData.Body("x"));
+                    // The real engine has persisted the burst while the command observer is blocked.
+                    SessionTestEnvironment.await(()->e.repository.history(c.project(),"i",streaming).stream()
+                        .flatMap(t->t.attempts().stream()).flatMap(a->a.branches().stream()).flatMap(b->b.steps().stream())
+                        .anyMatch(step->step.body().endsWith("x".repeat(40))));
+                    int before=deliveries.get();
+                    var opened=e.sessions.dispatch(event);release.countDown();
+                    assertEquals(Outcome.APPLIED,opened.toCompletableFuture().get(30,TimeUnit.SECONDS).outcome());
+                    assertEquals(1,host.opens);
+                    assertTrue(deliveries.get()-before<=4,"obsolete refreshes ahead of Diff: "+(deliveries.get()-before));
+                } finally {release.countDown();SessionTestEnvironment.finish(listener.get(),"done");}
+            }
+            e.idle("i",streaming);assertTrue(e.observerErrors.isEmpty());
+            assertTrue(e.view("i",streaming).turns().getFirst().attempts().getFirst().branches().stream()
+                .flatMap(b->b.steps().stream()).anyMatch(step->step.markdown().endsWith("x".repeat(40)+"done")));
+        }
+    }
     @Test void displayedLocalButtonsPreserveMixedDraftAndMakeZeroNetworkRequests()throws Exception {
         try(var e=new SessionTestEnvironment(root)) {
             var c=candidate(e);var h=attach(e,c);e.text("i",c.session(),"do not consume this draft");
@@ -61,9 +105,31 @@ class EditReviewApplyTest {
             assertEquals(Outcome.APPLIED,e.dispatch(new ApproveEditProposal(e.meta("i",c.session()),h.token)).outcome());
             assertEquals(1,h.applies);assertEquals(1,h.writes);
             h.observation=new ApplyReceipt(h.request.applyId(),h.request.proposal().ref(),ApplyState.APPLIED_TO_DOCUMENT,DiskState.UNSAVED,Optional.of(10L),DocumentState.UNDONE);
-            e.dispatch(new InspectEditApplication(e.meta("i",c.session()),c.proposal().ref()));
+            h.changed.run();settled(e);
             assertEquals(DocumentState.UNDONE,c.view().receipt().orElseThrow().documentState());
             e.dispatch(new ApproveEditProposal(e.meta("i",c.session()),h.token));assertEquals(1,h.writes);
+        }
+    }
+    @Test void automaticObservationFailureRecordsUnknownAndRecoversWithoutReplay() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            var c=candidate(e);var h=attach(e,c);
+            e.dispatch(new ApproveEditProposal(e.meta("i",c.session()),h.token));settled(e);settled(e);
+            int calls=e.requests.size();
+            h.inspectFail=true;h.changed.run();settled(e);
+            assertFalse(e.view("i",c.session()).writesBlocked());
+            assertEquals(DocumentState.UNKNOWN,c.view().receipt().orElseThrow().documentState());
+            assertEquals(DiskState.UNKNOWN,c.view().receipt().orElseThrow().disk());
+            assertTrue(e.view("i",c.session()).notices().stream().anyMatch(n->n.code().equals("EDIT_OBSERVATION_FAILED")));
+            e.text("i",c.session(),"next");
+            h.inspectFail=false;h.changed.run();settled(e);
+            assertFalse(e.view("i",c.session()).writesBlocked());
+            assertTrue(e.view("i",c.session()).notices().stream().noneMatch(n->n.code().equals("EDIT_OBSERVATION_FAILED")));
+            assertEquals(calls,e.requests.size());assertEquals(1,h.writes);
+            e.pauseGeneration.set(true);e.submit("i",c.session());
+            h.inspectFail=true;h.changed.run();settled(e);
+            assertTrue(e.view("i",c.session()).allowedActions().contains(SessionAction.STOP));
+            var operation=e.view("i",c.session()).activeOperation().orElseThrow();
+            assertEquals(Outcome.APPLIED,e.dispatch(new StopOperation(e.meta("i",c.session()),operation.operationId())).outcome());
         }
     }
     @Test void rejectAndClosedViewerNeverApplyOrSchedule()throws Exception {
@@ -85,7 +151,18 @@ class EditReviewApplyTest {
             else assertThrows(Exception.class,()->e.dispatch(new ApproveEditProposal(e.meta("i",c.session()),h.token)));
             if(!drift)e.store.transaction(db->{db.createStatement().execute("ALTER TABLE edit_apply_fault RENAME TO ca_edit_apply");return null;}).join();
             assertEquals(0,h.applies);assertEquals(0,h.writes);assertTrue(e.repository.states(c.project(),"i").getFirst().operation().isEmpty());
-            if(drift)assertEquals(ReviewState.INVALIDATED,c.view().review());
+            if(drift){assertEquals(ReviewState.INVALIDATED,c.view().review());
+                assertTrue(e.view("i",c.session()).notices().stream().anyMatch(n->n.code().equals("EDIT_SOURCE_CHANGED")&&n.severity()==Severity.WARNING));
+                assertTrue(e.sessions.failure(c.session()).isEmpty());}
+        }
+    }
+    @Test void changedSourceWhenReopeningPreviewShowsSpecificNoticeWithoutEnablingApproval()throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            var c=candidate(e);var h=attach(e,c);h.close();settled(e);h.token=null;h.validateFail=true;
+            e.dispatch(new OpenEditPreview(e.meta("i",c.session()),c.proposal().ref()));settled(e);
+            assertNull(h.token);assertEquals(0,h.applies);
+            assertTrue(e.view("i",c.session()).notices().stream().anyMatch(n->n.code().equals("EDIT_SOURCE_CHANGED")));
+            assertTrue(e.sessions.failure(c.session()).isEmpty());assertFalse(e.view("i",c.session()).writesBlocked());
         }
     }
     @Test void cancelAndDeleteBeforeCommitRevokeWritePermit()throws Exception {

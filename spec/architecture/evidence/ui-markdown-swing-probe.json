@@ -1,0 +1,84 @@
+{
+  "observedDate": "2026-10-16",
+  "timezone": "Asia/Shanghai",
+  "kind": "executed-offscreen-java-swing-probe",
+  "buildJdk": "25.0.2+10-LTS-69",
+  "headless": true,
+  "dependencies": [
+    "org.commonmark:commonmark:0.30.1",
+    "org.commonmark:commonmark-ext-gfm-tables:0.30.1"
+  ],
+  "result": {
+    "status": "success",
+    "width": 850,
+    "height": 410,
+    "fencedCodeBlocks": 1,
+    "tables": 1,
+    "fixtureColorPixels": {
+      "keyword": 46,
+      "number": 13,
+      "string": 130,
+      "comment": 328
+    },
+    "colorsAreSynthetic": true,
+    "intellijRuntimeExecuted": false
+  },
+  "sourceInputs": {
+    "pom.xml": "<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\n  <modelVersion>4.0.0</modelVersion>\n  <groupId>local.f0.architecture.probe</groupId>\n  <artifactId>markdown-swing-probe</artifactId>\n  <version>0</version>\n  <dependencies>\n    <dependency><groupId>org.commonmark</groupId><artifactId>commonmark</artifactId><version>0.30.1</version></dependency>\n    <dependency><groupId>org.commonmark</groupId><artifactId>commonmark-ext-gfm-tables</artifactId><version>0.30.1</version></dependency>\n  </dependencies>\n</project>\n",
+    "fixture.md": "# Markdown 显示探针\n\n本图是独立 Swing 离屏渲染，代码颜色来自合成样例，不是 IDEA 运行验证。\n\n- 保留列表和代码的嵌套结构：\n\n  ```java\n  // 课程代码样例\n  int count = 1;\n  String label = \"total < 10\";\n  ```\n\n| 对象 | 行为 |\n| --- | --- |\n| 正文 | **Markdown** 与 `inline code` |\n| 快照 | 只读，保留原始文本 |\n\n> 这是引用段落。`<T>` 不应被当成 HTML 标签。\n\n原始 HTML 作为文字显示：<script>sampleOnly()</script>\n",
+    "SwingMarkdownProbe.java": "import java.awt.Color;\nimport java.awt.Graphics2D;\nimport java.awt.image.BufferedImage;\nimport java.nio.charset.StandardCharsets;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.util.List;\nimport java.util.Map;\nimport java.util.Set;\nimport javax.imageio.ImageIO;\nimport javax.swing.JEditorPane;\nimport javax.swing.SwingUtilities;\nimport javax.swing.text.html.HTMLEditorKit;\nimport org.commonmark.Extension;\nimport org.commonmark.ext.gfm.tables.TableBlock;\nimport org.commonmark.ext.gfm.tables.TablesExtension;\nimport org.commonmark.node.FencedCodeBlock;\nimport org.commonmark.node.Node;\nimport org.commonmark.parser.Parser;\nimport org.commonmark.renderer.NodeRenderer;\nimport org.commonmark.renderer.html.HtmlNodeRendererContext;\nimport org.commonmark.renderer.html.HtmlRenderer;\n\n/** Isolated layout probe. Deliberately contains no IntelliJ API or model invocation. */\npublic final class SwingMarkdownProbe {\n    private static final String CODE = \"// 课程代码样例\\nint count = 1;\\nString label = \\\"total < 10\\\";\\n\";\n    private static final Map<String, String> FIXTURE_COLORS = Map.of(\n        \"comment\", \"#63845A\", \"keyword\", \"#0033B3\", \"number\", \"#1750EB\", \"string\", \"#067D17\");\n\n    public static void main(String[] args) throws Exception {\n        Path base = Path.of(args[0]);\n        String markdown = Files.readString(base.resolve(\"fixture.md\"), StandardCharsets.UTF_8);\n        List<Extension> extensions = List.of(TablesExtension.create());\n        Node ast = Parser.builder().extensions(extensions).build().parse(markdown);\n        if (count(ast, FencedCodeBlock.class) != 1 || count(ast, TableBlock.class) != 1) {\n            throw new IllegalStateException(\"Expected exactly one code fence and one table\");\n        }\n        HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions)\n            .escapeHtml(true).sanitizeUrls(true)\n            .nodeRendererFactory(context -> new FixtureCodeRenderer(context)).build();\n        String body = renderer.render(ast);\n        if (body.contains(\"<script>\")) throw new IllegalStateException(\"Raw HTML was not escaped\");\n        String html = \"<html><body>\" + body + \"</body></html>\";\n        Files.writeString(base.resolve(\"rendered.html\"), html, StandardCharsets.UTF_8);\n        BufferedImage[] pixels = new BufferedImage[1];\n        String[] visibleText = new String[1];\n        SwingUtilities.invokeAndWait(() -> {\n            HTMLEditorKit kit = new HTMLEditorKit();\n            kit.getStyleSheet().addRule(\"body { font-family: 'Microsoft YaHei'; font-size: 12pt; color: #202020; background: #ffffff; margin: 16px; }\");\n            kit.getStyleSheet().addRule(\"pre { font-family: Consolas; font-size: 12pt; background: #f4f4f4; }\");\n            kit.getStyleSheet().addRule(\"table { border-collapse: collapse; }\");\n            kit.getStyleSheet().addRule(\"td, th { border: 1px solid #b0b0b0; padding: 6px; }\");\n            JEditorPane pane = new JEditorPane();\n            pane.setEditorKit(kit);\n            pane.setEditable(false);\n            pane.setText(html);\n            pane.setSize(850, 16000);\n            int height = pane.getPreferredSize().height;\n            pane.setSize(850, height);\n            pixels[0] = new BufferedImage(850, height, BufferedImage.TYPE_INT_RGB);\n            Graphics2D graphics = pixels[0].createGraphics();\n            graphics.setColor(Color.WHITE);\n            graphics.fillRect(0, 0, 850, height);\n            pane.printAll(graphics);\n            graphics.dispose();\n            pane.selectAll();\n            visibleText[0] = pane.getSelectedText();\n        });\n        if (!visibleText[0].contains(\"int count = 1;\") || !visibleText[0].contains(\"total < 10\")) {\n            throw new IllegalStateException(\"Code text lost in Swing document\");\n        }\n        StringBuilder counts = new StringBuilder();\n        for (var entry : FIXTURE_COLORS.entrySet()) {\n            int color = Color.decode(entry.getValue()).getRGB();\n            int matched = 0;\n            for (int y = 0; y < pixels[0].getHeight(); y++) {\n                for (int x = 0; x < pixels[0].getWidth(); x++) {\n                    if (pixels[0].getRGB(x, y) == color) matched++;\n                }\n            }\n            if (matched == 0) throw new IllegalStateException(\"Fixture color missing: \" + entry.getKey());\n            if (!counts.isEmpty()) counts.append(\",\");\n            counts.append(\"\\\"\").append(entry.getKey()).append(\"\\\":\").append(matched);\n        }\n        ImageIO.write(pixels[0], \"png\", base.resolve(\"rendered.png\").toFile());\n        Files.writeString(base.resolve(\"visible-text.txt\"), visibleText[0], StandardCharsets.UTF_8);\n        String result = \"{\\\"status\\\":\\\"success\\\",\\\"width\\\":850,\\\"height\\\":\" + pixels[0].getHeight()\n            + \",\\\"fencedCodeBlocks\\\":1,\\\"tables\\\":1,\\\"fixtureColorPixels\\\":{\" + counts\n            + \"},\\\"colorsAreSynthetic\\\":true,\\\"intellijRuntimeExecuted\\\":false}\";\n        Files.writeString(base.resolve(\"result.json\"), result, StandardCharsets.UTF_8);\n        System.out.println(result);\n    }\n\n    private static long count(Node node, Class<? extends Node> type) {\n        long total = type.isInstance(node) ? 1 : 0;\n        for (Node child = node.getFirstChild(); child != null; child = child.getNext()) total += count(child, type);\n        return total;\n    }\n\n    private static String escape(String text) {\n        return text.replace(\"&\", \"&amp;\").replace(\"<\", \"&lt;\").replace(\">\", \"&gt;\").replace(\"\\\"\", \"&quot;\");\n    }\n\n    private record FixtureCodeRenderer(HtmlNodeRendererContext context) implements NodeRenderer {\n        public Set<Class<? extends Node>> getNodeTypes() { return Set.of(FencedCodeBlock.class); }\n        public void render(Node node) {\n            FencedCodeBlock fence = (FencedCodeBlock) node;\n            if (!fence.getInfo().equals(\"java\") || !fence.getLiteral().equals(CODE)) {\n                throw new IllegalStateException(\"Unexpected fixture code content\");\n            }\n            String html = span(\"comment\", \"// 课程代码样例\") + \"\\n\"\n                + span(\"keyword\", \"int\") + \" count = \" + span(\"number\", \"1\") + \";\\n\"\n                + \"String label = \" + span(\"string\", \"\\\"total < 10\\\"\") + \";\\n\";\n            context.getWriter().raw(\"<pre><code>\" + html + \"</code></pre>\\n\");\n        }\n        private static String span(String category, String text) {\n            return \"<span style=\\\"color:\" + FIXTURE_COLORS.get(category) + \"\\\">\" + escape(text) + \"</span>\";\n        }\n    }\n}\n"
+  },
+  "artifacts": [
+    {
+      "path": "tmp/architecture/probes/markdown-swing/pom.xml",
+      "sha256": "ffe797d6b72fc7dfa694caa39e59a2c4f3ac290991b7bace70bc01e7c46a64ac"
+    },
+    {
+      "path": "tmp/architecture/probes/markdown-swing/fixture.md",
+      "sha256": "3cf0cf939f167c51922617927d425a93bd32bc9c9fd740c17d530a45fca5bdd4"
+    },
+    {
+      "path": "tmp/architecture/probes/markdown-swing/SwingMarkdownProbe.java",
+      "sha256": "cc63bc45ff863ad0fc891ee29888e1be979a4291f978852ced96b62c484c72ca"
+    },
+    {
+      "path": "tmp/architecture/probes/markdown-swing/classpath.txt",
+      "sha256": "510da5201b766170ca072917643a92418829f9c792c89a6a9ff35806b73cbdbe"
+    },
+    {
+      "path": "tmp/architecture/probes/markdown-swing/dependency-run.log",
+      "sha256": "e5f373997a1ee9c7d049176d2c51ab3478b55d71d1a4286ea5a36171c0429bbf"
+    },
+    {
+      "path": "tmp/architecture/probes/markdown-swing/compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "tmp/architecture/probes/markdown-swing/run.log",
+      "sha256": "8cd2542ac73881d487b808ad50b9ec18a377a8dba3d3d260d2a13b61602ceec5"
+    },
+    {
+      "path": "tmp/architecture/probes/markdown-swing/result.json",
+      "sha256": "303f1803c081c779a3637bcb440e2f11e3034e48ca95072ed1173d63c557fb73"
+    },
+    {
+      "path": "tmp/architecture/probes/markdown-swing/rendered.html",
+      "sha256": "af4bcd4381182943d1211448e66b5d84e01038936e08a0be20cfad0bb927ccb7"
+    },
+    {
+      "path": "tmp/architecture/probes/markdown-swing/visible-text.txt",
+      "sha256": "d62d785552a8aa1dfc6ec900e42bd9d51d8e2b77a9a08196a7a9ee69c5d4784e"
+    },
+    {
+      "path": "spec/architecture/evidence/ui-markdown-swing-probe.png",
+      "sha256": "347c1be600e860c74cee4ff7b8ae50f083d7058a4139b9dd4e81abf912402bf0"
+    }
+  ],
+  "visualInspection": "PNG viewed: nested list/code, table, quote and escaped HTML visible; synthetic four-color code rendered.",
+  "limits": [
+    "Standalone offscreen Swing only; no IntelliJ application or plugin loaded.",
+    "Colors are explicit synthetic fixture colors, not generated by IntelliJ highlighters.",
+    "No IDE scheme switch, streaming, resource lifecycle, long-history or actual gateway result.",
+    "Dependency versions are probe pins, not final project choices; the image is not a product UI mockup."
+  ]
+}

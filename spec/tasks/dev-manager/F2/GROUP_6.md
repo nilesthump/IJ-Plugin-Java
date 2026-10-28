@@ -1,6 +1,6 @@
 # F2-G6：全链路验证、人工验收与交付
 
-负责人：用户本人。依赖：G5通过。状态：NOT_STARTED。
+负责人：用户本人。依赖：G5通过。状态：LOCAL_VERIFIED / AWAITING_USER。人工通过后再统一PR合并；本地成果见[G6_IMPLEMENTATION](G6_IMPLEMENTATION.md)和[BLACKBOX_TEST_PLAN](BLACKBOX_TEST_PLAN.md)。
 
 ## 工作项
 

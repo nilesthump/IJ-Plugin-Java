@@ -16,6 +16,185 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CourseAssistantViewTest {
+    @Test void noticesUseTransientDisplayWithoutComposerStripOrRefreshReplay() throws Exception {
+        var controller=new ApplyingController();List<List<Notice>> shown=new ArrayList<>();
+        var view=edt(()->new CourseAssistantView(controller.state.projectInstanceId(),controller,
+                SyntheticControllers.application(SyntheticStates.application()),null,null,new java.util.HashMap<>(),shown::add));
+        try {edt(()->{
+            shown.clear();var old=controller.state;var s=old.sessions().getFirst();
+            for(int n=0;n<3;n++) {
+                var notice=new Notice("projection-"+n,Severity.WARNING,"EDIT_SOURCE_CHANGED","文件已被更改",Optional.of(s.sessionId()),Optional.of("open-1"));
+                var changed=new SessionViewState(s.sessionId(),s.title(),s.revision()+n+1,s.lifecycle(),s.draft(),s.turns(),s.activeOperation(),s.writesBlocked(),s.allowedActions(),List.of(notice));
+                controller.observer.accept(new ProjectChatViewState(old.projectId(),old.projectInstanceId(),old.revision()+n+1,List.of(changed),old.openSessionIds(),old.activeSessionId(),List.of()));
+            }
+            assertNull(find(view.component(),"notices"));assertEquals(1,shown.size());
+            assertTrue(shown.getFirst().getFirst().message().contains("文件已被更改"));
+            assertTrue(shown.getFirst().getFirst().message().contains(s.title()));
+            assertEquals(s.draft().text(),((javax.swing.text.JTextComponent)find(view.component(),"draftPreview")).getText());
+            assertTrue(controller.events.isEmpty());return null;
+        });}finally {edt(()->{view.close();return null;});}
+    }
+    @Test void emptyForegroundRetainsComposerAndSendsWithoutNewButton() throws Exception {
+        var controller=new ApplyingController();var old=controller.state;
+        controller.state=new ProjectChatViewState(old.projectId(),old.projectInstanceId(),old.revision(),old.sessions(),List.of(),Optional.empty(),List.of());
+        controller.reject=true;
+        List<List<Notice>> shown=new ArrayList<>();
+        var view=edt(()->new CourseAssistantView(old.projectInstanceId(),controller,SyntheticControllers.application(SyntheticStates.application()),null,null,new java.util.HashMap<>(),shown::add));
+        try {
+            edt(()->{
+                var input=(javax.swing.text.JTextComponent)find(view.component(),"draftPreview");
+                assertTrue(input.isEditable());input.setText("没有前台会话也能发送");
+                controller.observer.accept(new ProjectChatViewState(old.projectId(),old.projectInstanceId(),old.revision()+1,old.sessions(),List.of(),Optional.empty(),List.of()));
+                assertEquals("没有前台会话也能发送",input.getText());
+                var send=(JButton)find(view.component(),"submitDraft");assertTrue(send.isEnabled());send.doClick();
+                assertEquals("没有前台会话也能发送",input.getText());assertTrue(input.isEditable());
+                assertFalse(((JLabel)find(view.component(),"sessionStatus")).getText().contains("STALE_REVISION"));
+                assertTrue(shown.stream().flatMap(List::stream).anyMatch(n->n.message().contains("状态已变化")));return null;
+            });
+            var event=assertInstanceOf(SubmitNewSession.class,controller.events.getFirst());
+            assertTrue(event.meta().sessionId().isEmpty());assertEquals("没有前台会话也能发送",event.text());
+        } finally {edt(()->{view.close();return null;});}
+    }
+    @Test void emptyComposerTextMovesOnlyIntoNewDraftNotExistingHistory() throws Exception {
+        var controller=new ApplyingController();var old=controller.state;var first=old.sessions().getFirst();
+        controller.state=new ProjectChatViewState(old.projectId(),old.projectInstanceId(),old.revision(),old.sessions(),List.of(),Optional.empty(),List.of());
+        var view=edt(()->new CourseAssistantView(old.projectInstanceId(),controller,SyntheticControllers.application(SyntheticStates.application())));
+        try {edt(()->{
+            var input=(javax.swing.text.JTextComponent)find(view.component(),"draftPreview");input.setText("捕获前文字");
+            controller.observer.accept(old); // Old history must keep its own draft.
+            assertEquals(first.draft().text(),input.getText());
+            controller.observer.accept(controller.state);
+            assertEquals("捕获前文字",input.getText());
+            var fresh=new SessionViewState("new-capture","新会话",0,Lifecycle.LIVE,new DraftView("fresh-draft",0,"",first.draft().captures(),SaveState.SAVED),List.of(),Optional.empty(),false,first.allowedActions(),List.of());
+            controller.state=new ProjectChatViewState(old.projectId(),old.projectInstanceId(),old.revision()+1,List.of(fresh),List.of(fresh.sessionId()),Optional.of(fresh.sessionId()),List.of());
+            controller.observer.accept(controller.state);
+            assertEquals("捕获前文字",input.getText());return null;
+        });}finally {edt(()->{view.close();return null;});}
+    }
+    @Test void historyAndSearchExposeRenameForChosenSession() throws Exception {
+        var controller=new ApplyingController();
+        var view=edt(()->new CourseAssistantView(controller.state.projectInstanceId(),controller,SyntheticControllers.application(SyntheticStates.application())));
+        try {edt(()->{
+            for(boolean searching:List.of(false,true)) {
+                var panel=view.sessionPicker(searching);var list=(JList<?>)find(panel,"sessionList");
+                assertNotNull(list.getComponentPopupMenu());list.setSelectedIndex(0);
+                controller.observer.accept(new ProjectChatViewState(controller.state.projectId(),controller.state.projectInstanceId(),controller.state.revision()+1,controller.state.sessions(),controller.state.openSessionIds(),controller.state.activeSessionId(),List.of()));
+                assertNotNull(list.getSelectedValue(),"Refreshing state must not drop the rename target");
+                assertEquals("重命名",((JMenuItem)list.getComponentPopupMenu().getComponent(0)).getText());
+            }
+            view.renameSession(controller.state.sessions().getFirst().sessionId(),"我的课程问题");return null;
+        });assertInstanceOf(RenameSession.class,controller.events.getFirst());}
+        finally {edt(()->{view.close();return null;});}
+    }
+    @Test void rightClickResolvesTargetBeforeSwingShowsMenuAndClickRenamesThatTarget() throws Exception {
+        var controller=new ApplyingController();var old=controller.state;var first=old.sessions().getFirst();
+        var second=new SessionViewState("other-session","第二个会话",0,Lifecycle.LIVE,first.draft(),first.turns(),Optional.empty(),false,first.allowedActions(),List.of());
+        controller.state=new ProjectChatViewState(old.projectId(),old.projectInstanceId(),old.revision(),List.of(first,second),old.openSessionIds(),old.activeSessionId(),List.of());
+        var view=edt(()->new CourseAssistantView(old.projectInstanceId(),controller,SyntheticControllers.application(SyntheticStates.application())));
+        try {edt(()->{
+            for(boolean searching:List.of(false,true)) {
+                var prompted=new ArrayList<String>();
+                var panel=view.sessionPicker(searching,chosen->{prompted.add(chosen.sessionId());return "重命名结果";});
+                var list=(JList<?>)find(panel,"sessionList");list.setFixedCellHeight(24);list.setSize(320,180);
+                var menu=list.getComponentPopupMenu();var rename=(JMenuItem)menu.getComponent(0);
+                var visibleTargets=new ArrayList<String>();
+                // Exercise the actual installed Swing global mouse listener. Only the window
+                // placement is replaced; production menu visibility and action callbacks run.
+                list.setComponentPopupMenu(new JPopupMenu(){
+                    @Override public void show(Component invoker,int x,int y) {
+                        for(var listener:menu.getPopupMenuListeners())listener.popupMenuWillBecomeVisible(new javax.swing.event.PopupMenuEvent(menu));
+                        visibleTargets.add(rename.isEnabled()?((SessionViewState)list.getSelectedValue()).sessionId():"disabled");
+                    }
+                });
+                for(int row:List.of(0,1,4)) {
+                    if(row==1)list.setSelectedIndex(0);
+                    var event=new java.awt.event.MouseEvent(list,java.awt.event.MouseEvent.MOUSE_RELEASED,System.currentTimeMillis(),0,5,row*24+5,1,true,java.awt.event.MouseEvent.BUTTON3);
+                    list.dispatchEvent(event);
+                    assertTrue(event.isConsumed(),"Swing's global popup handler must consume the trigger");
+                    if(row<2) {
+                        String expected=row==0?first.sessionId():second.sessionId();
+                        assertEquals(expected,visibleTargets.getLast(),"Target must be selected before menu visibility evaluates enabled state");
+                        assertTrue(rename.isEnabled());
+                        // A refresh or later selection must not redirect an already open menu.
+                        controller.observer.accept(controller.state);list.setSelectedIndex(1-row);
+                        int count=controller.events.size();rename.doClick();
+                        assertEquals(expected,prompted.getLast());
+                        var eventSent=assertInstanceOf(RenameSession.class,controller.events.get(count));
+                        assertEquals(Optional.of(expected),eventSent.meta().sessionId());assertEquals("重命名结果",eventSent.title());
+                    } else {
+                        assertEquals("disabled",visibleTargets.getLast());assertFalse(rename.isEnabled());
+                        int count=controller.events.size();rename.doClick();assertEquals(count,controller.events.size());
+                    }
+                }
+            }
+            return null;
+        });}finally {edt(()->{view.close();return null;});}
+    }
+    @Test void successfulAnswerWithEmptyDraftCannotOfferOrDispatchRetry() throws Exception {
+        var controller = new ApplyingController();
+        var old = controller.state; var first = old.sessions().getFirst();
+        var empty = new DraftView(first.draft().draftId(), first.draft().revision(), "", List.of(), SaveState.SAVED);
+        var session = new SessionViewState(first.sessionId(),first.title(),first.revision(),first.lifecycle(),empty,first.turns(),Optional.empty(),false,first.allowedActions(),List.of());
+        controller.state = new ProjectChatViewState(old.projectId(),old.projectInstanceId(),old.revision(),List.of(session),List.of(session.sessionId()),Optional.of(session.sessionId()),List.of());
+        var view = edt(() -> new CourseAssistantView(old.projectInstanceId(),controller,SyntheticControllers.application(SyntheticStates.application())));
+        try { edt(() -> {
+            var button=(JButton)find(view.component(),"submitDraft");
+            assertEquals("发送",button.getToolTipText()); assertFalse(button.isEnabled()); button.doClick();
+            assertTrue(controller.events.isEmpty()); return null;
+        }); } finally { edt(() -> {view.close();return null;}); }
+    }
+    @Test void eachDiffStaysWithItsOriginalAnswerWhenAnotherTurnArrives() throws Exception {
+        var controller=new ApplyingController();var old=SyntheticStates.project(SyntheticStates.Scenario.COMPLETED);var base=old.sessions().getFirst();
+        var first=base.turns().getFirst();var a=first.attempts().getFirst();var b=a.branches().getFirst();
+        var b2=new BranchView("branch-2",b.status(),b.basis(),b.steps());
+        var a2=new AttemptView("attempt-2","operation-2",a.viewRevision(),a.status(),a.saveState(),a.contextEligibility(),Optional.of(b2.branchId()),a.finalStepId(),List.of(b2));
+        var second=new TurnView("turn-2","request-2",first.userMessage(),List.of(a2));
+        var ref1=new edu.courseassist.contract.EditContracts.ProposalRef("old-proposal",0,"b1","a1");
+        var ref2=new edu.courseassist.contract.EditContracts.ProposalRef("new-proposal",0,"b2","a2");
+        var p1=new edu.courseassist.contract.EditContracts.ProposalView(ref1,edu.courseassist.contract.EditContracts.ReviewState.REJECTED,Optional.empty(),"X.java",first.turnId(),a.attemptId(),b.branchId());
+        var p2=new edu.courseassist.contract.EditContracts.ProposalView(ref2,edu.courseassist.contract.EditContracts.ReviewState.REVIEWABLE,Optional.empty(),"X.java",second.turnId(),a2.attemptId(),b2.branchId());
+        var session=new SessionViewState(base.sessionId(),base.title(),base.revision(),base.lifecycle(),base.draft(),List.of(first,second),Optional.empty(),false,base.allowedActions(),List.of(),List.of(p2,p1));
+        controller.state=new ProjectChatViewState(old.projectId(),old.projectInstanceId(),old.revision(),List.of(session),List.of(session.sessionId()),Optional.of(session.sessionId()),List.of());
+        var view=edt(()->new CourseAssistantView(old.projectInstanceId(),controller,SyntheticControllers.application(SyntheticStates.application())));
+        try {
+            List<String> expected=List.of(first.turnId(),a.attemptId()+":"+b.branchId(),"edit:old-proposal","turn-2","attempt-2:branch-2","edit:new-proposal");
+            long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(5);
+            while(edt(()->timelineIds(view.component())).size()<6&&System.nanoTime()<deadline)Thread.sleep(20);
+            assertEquals(expected,edt(()->timelineIds(view.component())));
+            var third=new TurnView("turn-3","request-3",first.userMessage(),List.of());
+            var updated=new SessionViewState(base.sessionId(),base.title(),base.revision()+1,base.lifecycle(),base.draft(),List.of(first,second,third),Optional.empty(),false,base.allowedActions(),List.of(),List.of(p2,p1));
+            edt(()->{controller.observer.accept(new ProjectChatViewState(old.projectId(),old.projectInstanceId(),old.revision()+1,List.of(updated),List.of(updated.sessionId()),Optional.of(updated.sessionId()),List.of()));return null;});
+            deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(5);
+            while(edt(()->timelineIds(view.component())).size()<7&&System.nanoTime()<deadline)Thread.sleep(20);
+            var all=new ArrayList<>(expected);all.add("turn-3");assertEquals(all,edt(()->timelineIds(view.component())));
+        } finally {edt(()->{view.close();return null;});}
+    }
+    private static List<String> timelineIds(Component component) {
+        List<String> result=new ArrayList<>();
+        if(component instanceof JComponent c&&c.getClientProperty("timelineRowId") instanceof String id)result.add(id);
+        if(component instanceof Container c)for(Component child:c.getComponents())result.addAll(timelineIds(child));
+        return result;
+    }
+    @Test void appliedReceiptShowsStateWithoutManualInspectionButton() throws Exception {
+        for(boolean blocked:List.of(false,true)) {
+        var controller = new ApplyingController();var old=controller.state;var first=old.sessions().getFirst();
+        var ref=new edu.courseassist.contract.EditContracts.ProposalRef("proposal",0,"before","after");
+        var receipt=new edu.courseassist.contract.EditContracts.ApplyReceipt("apply",ref,
+            blocked?edu.courseassist.contract.EditContracts.ApplyState.APPLYING:edu.courseassist.contract.EditContracts.ApplyState.APPLIED_TO_DOCUMENT,
+            blocked?edu.courseassist.contract.EditContracts.DiskState.UNKNOWN:edu.courseassist.contract.EditContracts.DiskState.SAVED,blocked?Optional.empty():Optional.of(9L));
+        var proposal=new edu.courseassist.contract.EditContracts.ProposalView(ref,edu.courseassist.contract.EditContracts.ReviewState.APPROVED,Optional.of(receipt),"src/X.java");
+        var session=new SessionViewState(first.sessionId(),first.title(),first.revision(),first.lifecycle(),first.draft(),first.turns(),Optional.empty(),blocked,first.allowedActions(),List.of(),List.of(proposal));
+        controller.state=new ProjectChatViewState(old.projectId(),old.projectInstanceId(),old.revision(),List.of(session),List.of(session.sessionId()),Optional.of(session.sessionId()),List.of());
+        var view=edt(()->new CourseAssistantView(old.projectInstanceId(),controller,SyntheticControllers.application(SyntheticStates.application())));
+        try {edt(()->{return null;});
+            long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(3);
+            while(edt(()->find(view.component(),"editProposalState"))==null&&System.nanoTime()<deadline)Thread.sleep(20);
+            edt(()->{assertNotNull(find(view.component(),"editProposalState"));return null;});
+            edt(()->{if(blocked)assertEquals("重试状态恢复",((JButton)find(view.component(),"openEditPreview")).getText());
+                else assertNull(find(view.component(),"openEditPreview"));assertTrue(controller.events.isEmpty());return null;});}
+        finally {edt(()->{view.close();return null;});}
+        }
+    }
     @Test void singleComposerStopsOriginalActiveOperationAndHasOnlyFourTopActions() throws Exception {
         var state = SyntheticStates.project(); var sessions = SyntheticControllers.session(state);
         var app = SyntheticControllers.application(SyntheticStates.application());
