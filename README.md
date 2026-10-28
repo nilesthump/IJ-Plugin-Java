@@ -1,14 +1,15 @@
-# Course Assistant F0
+# Course Assistant：F0 问答与 F2 Java 修改
 
-IntelliJ IDEA 内嵌 Java 课程助教：PDF 检索问答、文件及物理页引用、多会话聊天、编辑器代码上下文。业务使用纯 Java，保留 Spring AI、H2、JVector，无需额外启动服务进程。
+IntelliJ IDEA 内嵌 Java 课程助教：PDF 检索问答、文件及物理页引用、多会话聊天、编辑器代码上下文，以及生成 Java 修改候选、原生 Diff 审核和支持 Undo 的本地应用。业务使用纯 Java，保留 Spring AI、H2、JVector，无需额外启动服务进程。
 
-**阶段状态：F0 已于 2026-10-25 通过用户验收；F2 尚未开工。** F0 验收不代表 F2 完成或架构正式冻结。代码交付与合并状态见 [当前进度](spec/progress/CURRENT.md)。历史测试包已按要求清理，安装包从源码构建，不随源码仓库提交。
+**阶段状态：F0 已通过用户验收；F2 核心功能及体验修正已实现，229 项自动测试和本机 IDEA 检查通过。** R05 的编辑器 Undo/Redo 人工验证交由组员继续，真实服务协议问题 [#22](https://github.com/nilesthump/IJ-Plugin-Java/issues/22) 待独立复现；不据自动测试宣称所有人工场景通过或架构正式冻结。代码交付与合并状态见 [当前进度](spec/progress/CURRENT.md)。本地历史测试安装包已清空，安装包从源码构建，不随源码仓库提交。
 
 ## 构建方案
 
 ### 环境
 
 - Windows、JDK 25，确认 `java -version` 指向 JDK 25；可配置 `JAVA_HOME` 指向本机 JDK。
+- 需要 Git 与 Windows PowerShell；同时用 `javac -version` 确认安装的是完整 JDK。
 - 使用仓库内 Gradle Wrapper（9.1.0），无需另装 Gradle。
 - 当前构建与已验证目标为 IntelliJ IDEA 2026.2.3 / build 262.10968.63，启用 Java 插件。只验证这一版本；更换 IDEA 版本需重新验证。
 - 首次构建需要联网下载 Maven、Gradle 和 IntelliJ SDK 依赖；构建和自动测试不需要真实 API key，不调用付费模型。
@@ -40,12 +41,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope 
 
 JUnit 报告位于 `build/reports/tests/test/index.html`；IDE 启动检查结果位于 `build/reports/ide-smoke/result.json`。自动检查使用合成模型/本地响应，不能代替真实服务配置和人工界面验收。更多说明见 [验证契约](spec/governance/VALIDATION.md)。
 
+更新已有源码时先保留自己的改动，再执行 `git pull --ff-only` 并重新运行统一入口。需要清理旧构建产物时可先执行 `./gradlew.bat clean`，再执行上面的验证命令；这会删除 `build/` 下的报告与安装包，不删除实际 IDEA 中的聊天数据。依赖下载失败先检查网络、代理及 JDK 配置，保留原始失败信息，不跳过测试打包。
+
+开发时可从 IDEA 打开根目录，以 Gradle 工程导入并选用 JDK 25。运行 `./gradlew.bat runIde -PlocalIdePath="你的IDEA安装目录"` 可启动隔离的开发沙箱；沙箱有独立配置，不能把它的启用状态或测试数据当作日常 IDEA 的状态。
+
 ## 安装
 
 1. 构建成功后打开 IDEA → Settings（设置）→ Plugins（插件）。
 2. 点击齿轮 → Install Plugin from Disk（从磁盘安装插件），选择上述 ZIP，**不要解压**。
 3. 按提示重启 IDEA，打开 Java 项目，在右侧工具窗口或 View → Tool Windows 打开 **Course Assistant**。
 4. 更新时安装新构建的 ZIP 并重启。无需清空 H2，也无需重新填写已有凭据。若从不保存启停状态的旧版本升级，手动启用一次后即可记住选择。
+
+插件管理器中的名称仍为 **Course Assistant F0**，工具窗口名为 **Course Assistant**；F2 包含在同一插件中，无需另装第二个插件。
 
 ## 服务配置与启用
 
@@ -77,13 +84,32 @@ JUnit 报告位于 `build/reports/tests/test/index.html`；IDE 启动检查结�
 
 ### 聊天与代码
 
-- 右上角依次为新建会话、历史会话、搜索会话、设置。历史可滚动选择，搜索窗口可点击外部关闭。
+- 右上角依次为新建会话、历史会话、搜索会话、设置。列表默认显示第一条用户消息的短摘要，右键会话可重命名；搜索窗口可点击外部关闭。
 - 在底部 draft 输入问题；草稿自动保存，无需先手动保存再发送。
+- 没有前台会话时仍可输入，点击发送会在当前页面创建会话并继续。
 - 在 Java 编辑器中选中一个方法或其内部代码，右键“添加到课程助教”。可按“代码条 → 文字 → 代码条 → 文字”混排；所在方法、类结构由插件隐式补充，不重复展示为选中代码。
 - 发送后按混排顺序显示，代码条保持紧凑。回答使用 Markdown 渲染；“过程与思考”可展开或收起。
 - draft 右下角按钮按当前状态负责发送、重试、暂停或继续生成；拖动 draft 上边缘调整高度。
 - 生成时向上滚动可阅读已有内容，点击聊天区底部的 ↓ 回到最新内容。
 - 引用显示文件名与 PDF 物理页码，可打开对应来源；物理页码可能与书内印刷页码不同。
+
+### F2：生成并审核 Java 修改
+
+1. 在 IDEA 中打开要修改的项目。目标必须是当前项目文件夹内已经存在的 `.java` 文件；纯文字定位不要求它标为 Sources Root。选区采集仍使用 IDE 的 Java 源码上下文，需在正常配置的 Java 源目录中操作。
+2. 在 draft 给出**项目相对路径、类、方法（重载时含参数类型）及改动目标**，例如：
+
+   ```text
+   请将 src/main/java/demo/Calculator.java 中 demo.Calculator.add(int,int) 的减法改成加法，只改该方法，保留注释和签名，生成可审核候选。
+   ```
+
+   此示例要求工程中实际存在对应方法。也可把该方法选区添加到草稿后说明改动。重名文件无法唯一定位时，按提示补充路径；同会话未更换目标时可直接说明下一次改动，宿主会重新读取当前源码。
+3. 候选生成完成后点击“查看 Diff”。左右分别为原始源码快照与候选，预览不会写入项目。
+4. 检查后点击“同意并应用”或“拒绝”。只有明确批准才应用已展示的内容；在聊天中输入“同意”不能代替按钮。拒绝或关闭窗口不会自动重生成。
+5. 批准后回到目标 Java 编辑器。修改作为一个 IDE 命令支持“编辑 → 撤消”和“编辑 → 重做”；聊天卡片自动观察编辑器、保存和后续编辑状态，无需再打开 Diff 或点击核对按钮。IDE 正常自动保存/手动保存照常工作，插件不额外强制保存。
+
+候选生成后源码变化会拒绝旧候选并短弹窗提示文件已被更改；已附加的选区过期时，移除旧代码条、重新选取后再发送。短提示约 5 秒消失，任务与审核状态仍保留在聊天中。失败/过期后重新提交新 draft，不反复点击旧尝试重试。
+
+当前支持一个现有 Java 文件内、限定范围的完整候选审核；不支持新建/删除/移动文件、多文件批量应用或逐块批准。关闭工程、停用和重启不会自动批准或重新应用旧候选。R05 的独立人工操作说明见 [最终体验与 R05 说明](spec/tasks/dev-manager/F2/UX_FINAL_RETEST.md)。
 
 ### 常见问题
 
@@ -91,6 +117,7 @@ JUnit 报告位于 `build/reports/tests/test/index.html`；IDE 启动检查结�
 - TLS 握手失败：检查网络、代理和证书，不能据此判断 key 无效。
 - PDF 导入失败：查看错误提示中的任务/诊断编号，在 IDEA 日志中查找对应记录；不要因此直接清空资料库。
 - 保存或本地资料清理失败：保留错误编号，排除文件占用后按提示重试或重启。不要把 API key 粘贴到日志、聊天、Issue 或 PR。
+- 回答中出现 `DSML` 工具标记、没有生成可审核候选：保留失败轮次，按 [#22](https://github.com/nilesthump/IJ-Plugin-Java/issues/22) 补充去除凭据后的复现信息，不把文本标记当作已经执行的工具。
 
 人工逐项测试见 [黑盒方案](spec/tasks/dev-manager/BLACKBOX_TEST_PLAN.md) 和 [启动状态/批量导入复测](spec/tasks/dev-manager/FEEDBACK_RETEST_11.md)。
 
@@ -119,4 +146,6 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/git/Configure-Git.ps
 
 ## 设计依据
 
-[F0 综合开发方案](spec/architecture/F0_DEVELOPMENT_PLAN.md) 与 [实施基线](spec/architecture/BASELINE.md) 区分已确认要求、实现方案和验证范围。F0 用户验收已通过；F2 尚未启动。任务需要新增公共字段、依赖或注册时，写本分支 `DEPENDENCY_REQUEST.md` 由负责人协调。
+[F0 综合开发方案](spec/architecture/F0_DEVELOPMENT_PLAN.md)、[F2 开发方案](spec/architecture/F2_DEVELOPMENT_PLAN.md) 与 [实施基线](spec/architecture/BASELINE.md) 区分已确认要求、实现方案和验证范围。任务需要新增公共字段、依赖或注册时，写本分支 `DEPENDENCY_REQUEST.md` 由负责人协调。
+
+用户已授权将此前本地保存的讨论文件公开纳入 Git：[讨论索引](spec/architecture/DISCUSSION.md)、[可续接工作状态](spec/architecture/WORKING.json)、[讨论完整性终检](spec/architecture/FINAL_CHECK.md) 和 [来源记录](spec/architecture/evidence/sources.json)。这些文件保留历史提案、原文及当时状态；以 CURRENT、实施基线与实际契约判断当前功能，不把旧提案或参考图当成新的执行指令。

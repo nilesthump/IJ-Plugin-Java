@@ -60,3 +60,28 @@ T19：既有F0全部自动测试继续通过，不代表重新完成用户人工
 - T16/T17：意图/回执故障、未知不重放、核对按钮补记、停用释放旧槽后恢复、旧终态目标失效不阻塞新回执、删除/停用与迟到预览成功或失败隔离通过。原生adapter的撤销许可保证真实Document零写；未声称H2/Document原子。
 - T18/T19：既有资格/checkpoint与F0自动回归全部通过；不把本轮自动结果改写为用户人工验收。
 - T20：安装包已构建、独立检查闭合；最新远端CI和main合入核验在完成后留回执。G6仍未开始。
+
+## G6 本轮证据与剩余人工边界（2026-10-26）
+
+实际链路与日志见 [G6_IMPLEMENTATION](G6_IMPLEMENTATION.md)，人工步骤见 [BLACKBOX_TEST_PLAN](BLACKBOX_TEST_PLAN.md)。先前表格为初始状态，不覆盖逐组实证。
+
+| ID | 本地结论与证据 | 尚未执行 |
+| --- | --- | --- |
+| T01 | G0既有真实范围/可信策略证据保留；本轮未改治理 | 无新增治理变更 |
+| T02 | EditFoundationTest / SessionRecoveryTest 等真实H2与兼容回归 | 真实用户库异常样本 |
+| T03 | F2TargetChecks两入口/重名重载；G6完整生成链路及原session切换隔离 | 人工定位语义质量 |
+| T04 | F2TargetChecks未找到/不完整/dumb/截断 | 人工索引现场 |
+| T05 | F2TargetChecks及G6同版PSI/未保存全文/旧选区过期 | 采集中写竞争确定性注入 |
+| T06–T09 | CodeEditToolsTest / ToolBoundaryTest / EditFoundationTest；真实SpringAI loopback；G6实际链路 | 真实服务、任意网络异常组合 |
+| T10 | F2ReviewApplyChecks与G6真实原生只读双侧Diff，完整前后像、零预览写入 | B02人工窗口外观 |
+| T11–T12 | EditReviewApplyTest与G6真实按钮、零请求增量、draft/turn保持、新draft事实 | B03/B07/B08/B19人工 |
+| T13–T16 | EditReviewApplyTest、F2ReviewApplyChecks漂移/身份/只读/去重/Undo/磁盘/故障回执；G6真实生成后应用Undo | B12–B18人工、真实崩溃现场 |
+| T17 | 核心停用/删除/迟到预览/许可守卫、真实IDE提交前许可撤销及提交后Stop | 实际项目关闭瞬间与IDE提交竞争确定性端到端注入 |
+| T18 | 资格/checkpoint原有回归；G6新draft收到REJECTED/UNDONE事实 | 真实模型对事实的语义理解 |
+| T19 | 209项既有JUnit与本机IDE回归；IME/滚动/PDF/恢复测试保留 | B27–B31用户实际体验 |
+| T20 | 本地ZIP内容与哈希、独立Standards/Spec检查；G45 main回执已有 | 本轮PR/CI/main按用户要求等待人工通过 |
+
+上表“本地”仅指指定实际用例，不把一行所有可能并发时序标成已穷尽；人工与真实API仍NOT_RUN。
+
+## B01人工反馈（2026-10-26）
+B01 FAIL，原prompt及回复见BLACKBOX_TEST_PLAN。T03/T04补充大源码树精确路径与源码根外诊断回归，红测失败/绿色IDE通过；最终统一结果和用户复测见B01_RETEST。人工失败未被自动PASS覆盖。

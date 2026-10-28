@@ -1,0 +1,19 @@
+flowchart TD
+    A["用户在已展示 Diff 上批准"] --> B["宿主核验批准依据<br/>精确候选、before/after 哈希与范围"]
+    B -->|"无效 / 过期 / 未有效展示"| NO["不应用，说明原因"]
+    B -->|"有效"| ID{"同一 applyId 的原记录"}
+    ID -->|"已应用"| OLD["返回原操作的历史结果<br/>不重复修改"]
+    ID -->|"处理中 / 待核对"| WAIT["返回原状态或核验结果<br/>不盲目续写"]
+    ID -->|"新操作"| SLOT["获取新应用操作的 session 单槽"]
+    SLOT --> CHECK["复验项目、文件身份、可写性<br/>当前 Document 与批准基线一致"]
+    SLOT -.-> NOTE["占槽出口的统一收口约束：<br/>终态保存后释放槽；保存失败或待核对时<br/>结束本地执行，保持可见阻塞并等待恢复"]
+    CHECK -->|"已变化 / 归属失效"| STALE["候选失效，保留用户改动<br/>新候选须重新 Diff 与批准"]
+    CHECK -->|"一致"| INTENT["耐久保存获批应用意图"]
+    INTENT -->|"失败"| NO
+    INTENT -->|"成功"| WRITE["IDE 写命令内再次复验<br/>应用已批准 after，支持 Undo"]
+    WRITE -->|"提交前失效"| NO
+    WRITE -->|"明确未应用"| FAIL["报告未应用"]
+    WRITE -->|"结果不明"| WAIT
+    WRITE -->|"Document 已修改"| RECEIPT["记录真实 before/after 与操作回执"]
+    RECEIPT -->|"成功"| DONE["报告已应用到编辑器<br/>显示文件定位及撤销入口"]
+    RECEIPT -->|"回执失败"| REC["已应用，记录待恢复<br/>只核验补记，不重调模型或重写"]

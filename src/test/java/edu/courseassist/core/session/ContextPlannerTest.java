@@ -101,6 +101,22 @@ class ContextPlannerTest {
             for(int n=0;n<3;n++){e.text("a",s,"current-"+n+"q".repeat(1000));e.submit("a",s);e.idle("a",s);}
             assertEquals(1,summaries.get());assertEquals(AttemptStatus.SUCCEEDED,e.view("a",s).turns().getLast().attempts().getLast().status());
             assertTrue(ReactContext.json(e.requests.getLast()).contains("current-2"));assertTrue(ReactContext.utf8Budget().tokens(e.requests.getLast())<=18000);assertTrue(e.sessions.failure(s).isPresent());
+            assertFalse(e.view("a",s).notices().stream().anyMatch(n->n.code().equals("TASK_FAILED")));
+            assertTrue(e.view("a",s).notices().stream().anyMatch(n->n.code().equals("CONTEXT_FALLBACK")&&n.severity()==Severity.WARNING));
+            assertFalse(e.view("a",s).writesBlocked());
+        }
+    }
+    @Test void freshSuccessfulSendClearsOnlyPreviousGenerationFailure() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();e.open("a","a",false);String s=e.create("a");
+            e.model.set((r,l)->{l.failed(new IllegalStateException("generation failed"));return ()->{};});
+            e.text("a",s,"first");e.submit("a",s);e.idle("a",s);
+            assertTrue(e.view("a",s).notices().stream().anyMatch(n->n.code().equals("TASK_FAILED")));
+            e.model.set((r,l)->{finish(l,"success");return ()->{};});
+            e.text("a",s,"new instruction");e.submit("a",s);e.idle("a",s);
+            assertEquals(AttemptStatus.FAILED,e.view("a",s).turns().getFirst().attempts().getLast().status());
+            assertEquals(AttemptStatus.SUCCEEDED,e.view("a",s).turns().getLast().attempts().getLast().status());
+            assertFalse(e.view("a",s).notices().stream().anyMatch(n->n.code().equals("TASK_FAILED")));
         }
     }
 }

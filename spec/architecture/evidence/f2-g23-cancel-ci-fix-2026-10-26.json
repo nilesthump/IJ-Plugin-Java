@@ -1,0 +1,19 @@
+{
+  "kind": "agent-ci-failure-test-isolation",
+  "date": "2026-10-26",
+  "pr": 20,
+  "failedHead": "acf3203",
+  "failedRun": "40309275683",
+  "failedLog": "tmp/f2-g23-ci-failed.log",
+  "redLog": "tmp/f2-g23-cancel-red.log",
+  "greenLog": "tmp/f2-g23-cancel-green-all.log",
+  "greenLogHash": "30c03ffcfc2dbf1e992c3c858680bedf82aef030a20d0edf6a2b152ae98861ff",
+  "fixHead": "664b4c769780b0688d9eccd257c267954f96dd76",
+  "tests": 196,
+  "suites": 34,
+  "failures": 0,
+  "validationExitCode": 0,
+  "independentReview": "No blocking issues; CI sole root cause not proven, deterministic matching deadline race reproduced",
+  "productionChanges": false,
+  "ideRerun": false
+}

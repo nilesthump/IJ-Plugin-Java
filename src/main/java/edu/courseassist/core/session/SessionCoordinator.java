@@ -23,6 +23,54 @@ public final class SessionCoordinator implements SessionController, SelectionSin
     @FunctionalInterface public interface EditTargets { EditTargetPort bind(Identity identity,Input input,BooleanSupplier permitted); }
     public record EditHost(EditPreviewPort preview,EditApplyPort apply) {}
     private final Map<String,EditHost> editHosts=new ConcurrentHashMap<>();
+    private final Map<String,ViewSubscription> editObservations=new ConcurrentHashMap<>();
+    private record ObservationFailure(String session,Throwable cause,boolean blocks) {}
+    private final Map<String,Throwable> summaryFailures=new ConcurrentHashMap<>(),generationFailures=new ConcurrentHashMap<>();
+    private final Map<String,ObservationFailure> observationFailures=new ConcurrentHashMap<>();
+    private boolean observationFailed(String session){return observationFailures.values().stream().anyMatch(f->f.session().equals(session)&&f.blocks());}
+    private void detachEditHost(String instance) {
+        var subscription=editObservations.remove(instance);if(subscription!=null)subscription.close();
+        editHosts.remove(instance);
+    }
+    private void observeEditChanges(String instance,EditHost host) {
+        if(closed)return;
+        command(()->{
+            var p=projects.get(instance);
+            if(closed||p==null||!p.open.get()||editHosts.get(instance)!=host)return null;
+            boolean changed=false;
+            for(var session:repository.states(p.binding.projectId(),instance)) {
+                if(session.lifecycle()!=Lifecycle.LIVE)continue;
+                for(var request:repository.edits().applications(p.binding.projectId(),instance,session.id())) {
+                    if(applying.containsKey(request.applyId()))continue;
+                    var known=repository.edits().views(p.binding.projectId(),instance,session.id()).stream()
+                        .filter(v->v.proposal().equals(request.proposal().ref())).findFirst().orElseThrow().receipt();
+                    if(known.isEmpty()||known.get().state()!=ApplyState.APPLIED_TO_DOCUMENT)continue;
+                    try {
+                        var observed=host.apply().inspect(request,known).toCompletableFuture().join();
+                        if(closed||!p.open.get()||editHosts.get(instance)!=host)return null;
+                        if(observed.isEmpty())throw new IllegalStateException("Applied target could not be observed");
+                        if(!observed.get().applyId().equals(request.applyId())||!observed.get().proposal().equals(request.proposal().ref()))
+                            throw new IllegalStateException("Observation does not match the requested application");
+                        if(!observed.equals(known)) {
+                            repository.edits().observed(p.binding.projectId(),instance,session.id(),observed.get());changed=true;
+                        }
+                        if(observationFailures.remove(request.applyId())!=null)changed=true;
+                    }catch(RuntimeException failure) {
+                        if(closed||!p.open.get())return null;
+                        Throwable cause=ReactEngine.unwrap(failure);boolean blocks=false;
+                        var unknown=new ApplyReceipt(request.applyId(),request.proposal().ref(),ApplyState.APPLIED_TO_DOCUMENT,
+                            DiskState.UNKNOWN,known.get().documentStamp(),DocumentState.UNKNOWN);
+                        try {if(!known.get().equals(unknown))repository.edits().observed(p.binding.projectId(),instance,session.id(),unknown);}
+                        catch(RuntimeException saveFailure){cause.addSuppressed(ReactEngine.unwrap(saveFailure));blocks=true;}
+                        observationFailures.put(request.applyId(),new ObservationFailure(session.id(),cause,blocks));
+                        observerFailures.accept(cause);changed=true;
+                    }
+                }
+            }
+            if(changed)refresh(p);
+            return null;
+        }).whenComplete((v,failure)->{if(failure!=null&&!closed)observerFailures.accept(ReactEngine.unwrap(failure));});
+    }
     private final Map<String,ApplyRun> applying=new ConcurrentHashMap<>();
     private final Map<String,ApplyReceipt> pendingReceipts=new ConcurrentHashMap<>();
     private final Map<String,ApplyRequest> pendingApplies=new ConcurrentHashMap<>();
@@ -40,7 +88,10 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         synchronized void revoke(){permitted=false;}
     }
     public CompletionStage<Void> attachEditHost(String instance,EditHost host) {
-        return command(()->{project(instance);if(editHosts.putIfAbsent(instance,host)!=null)throw new IllegalStateException("F2 host already attached");return null;});
+        return command(()->{project(instance);if(editHosts.putIfAbsent(instance,host)!=null)throw new IllegalStateException("F2 host already attached");
+            try {editObservations.put(instance,host.apply().observeChanges(()->observeEditChanges(instance,host)));}
+            catch(RuntimeException failure){editHosts.remove(instance,host);throw failure;}
+            observeEditChanges(instance,host);return null;});
     }
     private final SessionRepository repository;
     private final RuntimeGate runtime;
@@ -54,6 +105,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
     private final Set<String> blocked=ConcurrentHashMap.newKeySet();
     private final Map<String,Reservation> reservations=new ConcurrentHashMap<>();
     private final Map<String,Throwable> failures=new ConcurrentHashMap<>();
+    private final Map<String,Notice> editNotices=new ConcurrentHashMap<>();
     private final Map<String,DraftView> unsavedDrafts=new ConcurrentHashMap<>();
     private final Consumer<Throwable> observerFailures;
     private volatile boolean closed;
@@ -71,7 +123,8 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         Reservation(SelectionStart start,CaptureTicket ticket,boolean create){this.start=start;this.ticket=ticket;this.create=create;}
     }
     private static final class Run {
-        final Operation operation; final AtomicBoolean allowed=new AtomicBoolean(true); volatile ReactEngine.Job job;
+        final Operation operation; final AtomicBoolean allowed=new AtomicBoolean(true);
+        final AtomicBoolean refreshQueued=new AtomicBoolean(); volatile ReactEngine.Job job;
         Run(Operation op){operation=op;}
         boolean cancel(){allowed.set(false);ReactEngine.Job j=job;return j==null||j.cancel();}
     }
@@ -91,7 +144,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
                 ProjectState old=projects.get(existing.instance().get());
                 if(old!=null&&!old.open.get()) {
                     for(State s:repository.states(existing.projectId(),old.instance))if(s.lifecycle()==Lifecycle.LIVE&&blocked.contains(s.id()))restore(old,s.id());
-                    repository.recover(existing.projectId(),existing.instance());projects.remove(old.instance,old);editHosts.remove(old.instance);
+                    repository.recover(existing.projectId(),existing.instance());projects.remove(old.instance,old);detachEditHost(old.instance);
                 }
             }
             Binding b=repository.open(location,instance,asNew);ProjectState p=new ProjectState(b,instance,capture);p.edits=edits;projects.put(instance,p);refresh(p);return b;});
@@ -115,7 +168,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
                 p.observers.clear();throw new Rejected(Rejection.UNSAVED_STATE);
             }
             repository.recover(p.binding.projectId(),Optional.of(instance));
-            p.observers.clear();projects.remove(instance,p);editHosts.remove(instance);return null;
+            p.observers.clear();projects.remove(instance,p);detachEditHost(instance);return null;
         });
     }
     /** Revoke synchronously, then coordinate local snapshots; never wait for remote acknowledgement. */
@@ -198,6 +251,20 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         String project=p.binding.projectId(),instance=p.instance;var meta=event.meta();String target=meta.sessionId().orElse("");
         if(blocked.contains(target)&&(event instanceof UpdateDraftText||event instanceof RemoveDraftCapture))
             throw new Rejected(Rejection.UNSAVED_STATE);
+        if(event instanceof SubmitNewSession e) {
+            if(repository.binding(project).active().isPresent())throw new Rejected(Rejection.STALE_REVISION);
+            if(!runtime.isCurrent(runtime.snapshot().epoch()))throw new Rejected(Rejection.PLUGIN_OFF);
+            String session=SessionData.id();var empty=SessionData.emptyDraft();
+            var draft=new DraftView(empty.draftId(),0,e.text(),List.of(),SaveState.SAVED);
+            repository.create(project,instance,session,"新会话",draft);
+            // Bind once on the command thread; subsequent view changes cannot redirect this message.
+            try {return apply(p,new SubmitDraft(new EventMeta(meta.commandId(),instance,Optional.of(session)),draft.draftId(),0));}
+            finally {refresh(p);} // A failed submission must still expose the durable draft for recovery.
+        }
+        if(event instanceof RenameSession e) {
+            repository.rename(project,instance,target,e.title());
+            return new CommandResult(meta.commandId(),Outcome.APPLIED,p.view.revision()+1,Optional.empty(),Optional.empty());
+        }
         if(event instanceof OpenEditPreview e) {
             var host=editHost(instance);
             var proposal=repository.edits().load(project,instance,target,e.proposal());
@@ -225,7 +292,10 @@ public final class SessionCoordinator implements SessionController, SelectionSin
                             ?new ApproveEditProposal(new EventMeta(decision.commandId(),instance,Optional.of(target)),decision.preview())
                             :new RejectEditProposal(new EventMeta(decision.commandId(),instance,Optional.of(target)),decision.preview())),
                             ()->command(()->{editDisplays.remove(displayId);repository.edits().dismiss(token);return null;}));
-                }catch(RuntimeException failure){display.close();if(!ReactEngine.isCancellation(ReactEngine.unwrap(failure)))failures.put(target,ReactEngine.unwrap(failure));if(p.open.get())refresh(p);}
+                }catch(RuntimeException failure){display.close();
+                    if(sourceChanged(failure))editNotice(target,meta.commandId(),false);
+                    else if(!ReactEngine.isCancellation(ReactEngine.unwrap(failure)))failures.put(target,ReactEngine.unwrap(failure));
+                    if(p.open.get())refresh(p);}
                 return null;
                 }).whenComplete((ignored,failure)->{if(failure!=null){if(display!=null)display.close();observerFailures.accept(ReactEngine.unwrap(failure));}});
             });
@@ -241,7 +311,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
                 return new CommandResult(meta.commandId(),Outcome.APPLIED,p.view.revision()+1,Optional.empty(),Optional.of(request.applyId()));
             }
             var observation=editHost(instance).apply().inspect(request,known).toCompletableFuture().join();
-            observation.ifPresent(r->repository.edits().observed(project,instance,target,r));
+            observation.ifPresent(r->{repository.edits().observed(project,instance,target,r);observationFailures.remove(request.applyId());});
             return new CommandResult(meta.commandId(),Outcome.APPLIED,p.view.revision()+1,Optional.empty(),Optional.of(request.applyId()));
         }
         if(event instanceof RejectEditProposal e) {
@@ -262,7 +332,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
                 try{repository.delete(project,instance,target);}
                 catch(RuntimeException failure){try{repository.deletionFailed(project,instance,target);refresh(p);}catch(RuntimeException mark){failure.addSuppressed(mark);}throw failure;}
             }
-            failures.remove(target);blocked.remove(target);unsavedDrafts.remove(target);reservations.entrySet().removeIf(e->e.getValue().ticket.targetSessionId().equals(target));
+            observationFailures.values().removeIf(f->f.session().equals(target));failures.remove(target);editNotices.remove(target);summaryFailures.remove(target);generationFailures.remove(target);blocked.remove(target);unsavedDrafts.remove(target);reservations.entrySet().removeIf(e->e.getValue().ticket.targetSessionId().equals(target));
             for(var entry:List.copyOf(pendingApplies.entrySet()))if(entry.getValue().operation().sessionId().equals(target)) {
                 pendingApplies.remove(entry.getKey());pendingReceipts.remove(entry.getKey());
             }
@@ -283,8 +353,9 @@ public final class SessionCoordinator implements SessionController, SelectionSin
             // Pin before committing a fresh attempt; a duplicate only closes this unused local lease.
             var lease=event instanceof ManualCompact?null:courses.openAttempt();
             Submission submission;
-            try{submission=repository.submit(project,event,epoch,()->!blocked.contains(target));}catch(RuntimeException error){if(lease!=null)lease.close();throw error;}
+            try{submission=repository.submit(project,event,epoch,()->!blocked.contains(target)&&!observationFailed(target));}catch(RuntimeException error){if(lease!=null)lease.close();throw error;}
             if(!submission.fresh()){if(lease!=null)lease.close();return submission.result();}
+            editNotices.remove(target);summaryFailures.remove(target);Throwable previous=generationFailures.remove(target);if(previous!=null)failures.remove(target,previous);
             RuntimeResources configured;
             try{configured=resources.get();}catch(RuntimeException error){if(lease!=null)lease.close();markBlocked(submission.operation().orElseThrow().identity(),error);throw error;}
             Run run=new Run(submission.operation().orElseThrow());runs.put(run.operation.identity().operationId(),run);
@@ -321,6 +392,17 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         return new CommandResult(meta.commandId(),Outcome.APPLIED,p.view.revision()+1,Optional.empty(),Optional.empty());
     }
     private EditHost editHost(String instance) {var host=editHosts.get(instance);if(host==null)throw new Rejected(Rejection.NOT_SUPPORTED);return host;}
+    private static boolean sourceChanged(Throwable failure) {
+        Throwable cause=ReactEngine.unwrap(failure);
+        return cause instanceof EditApplyPort.SourceChanged
+                ||cause instanceof EditApplyPort.NotApplied&&cause.getCause() instanceof EditApplyPort.SourceChanged;
+    }
+    private void editNotice(String session,String operation,boolean selection) {
+        editNotices.put(session,new Notice("edit-change:"+operation,Severity.WARNING,
+                selection?"EDIT_SELECTION_CHANGED":"EDIT_SOURCE_CHANGED",
+                selection?"原选区或其所在文件已被更改，请移除旧代码条并重新选择后发送。":"文件已被更改，本次未应用修改。请重新发送请求生成候选。",
+                Optional.of(session),Optional.of(operation)));
+    }
     private void closeProposalDisplays(ProposalRef ref){editDisplays.values().stream().filter(d->d.proposal().equals(ref)).forEach(d->d.display().close());}
     private CommandResult approve(ProjectState p,ApproveEditProposal event) {
         String project=p.binding.projectId(),session=event.meta().sessionId().orElseThrow();var host=editHost(p.instance);
@@ -330,8 +412,10 @@ public final class SessionCoordinator implements SessionController, SelectionSin
             repository.edits().validatePreview(project,event.meta(),event.preview());
             if(blocked.contains(session))throw new Rejected(Rejection.UNSAVED_STATE);
             var proposal=repository.edits().load(project,p.instance,session,event.preview().proposal());
-            try {long stamp=host.apply().validate(proposal).toCompletableFuture().join();if(stamp!=event.preview().documentStamp())throw new IllegalStateException("Document changed since Diff display");}
-            catch(RuntimeException failure){repository.edits().invalidate(project,p.instance,session,proposal.ref());closeProposalDisplays(proposal.ref());failures.put(session,ReactEngine.unwrap(failure));throw new Rejected(Rejection.STALE_REVISION);}
+            try {long stamp=host.apply().validate(proposal).toCompletableFuture().join();if(stamp!=event.preview().documentStamp())throw new EditApplyPort.SourceChanged();}
+            catch(RuntimeException failure){repository.edits().invalidate(project,p.instance,session,proposal.ref());closeProposalDisplays(proposal.ref());
+                if(sourceChanged(failure)){editNotice(session,event.meta().commandId(),false);refresh(p);throw new Rejected(Rejection.STALE_REVISION);}
+                throw failure;}
         }
         var request=repository.edits().beginApply(project,event.meta(),event.preview(),runtime.snapshot().epoch());
         closeProposalDisplays(request.proposal().ref());
@@ -345,6 +429,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
             }catch(RuntimeException failure){run.completion=CompletableFuture.failedFuture(new EditApplyPort.NotApplied(failure));}
             run.completion.whenComplete((r,error)->command(()->{
                 finishApply(run);
+                observeEditChanges(p.instance,host);
                 if(p.open.get())try{refresh(p);}catch(RuntimeException readFailure){markBlocked(edu.courseassist.storage.EditRepository.identity(request.operation()),ReactEngine.unwrap(readFailure));publishFailure(p,session);}
                 return null;
             }));
@@ -356,7 +441,9 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         ApplyReceipt result;
         try {result=run.completion.join();}
         catch(RuntimeException failure) {
-            Throwable cause=ReactEngine.unwrap(failure);failures.put(run.request.operation().sessionId(),cause);
+            Throwable cause=ReactEngine.unwrap(failure);
+            if(sourceChanged(cause))editNotice(run.request.operation().sessionId(),run.request.applyId(),false);
+            else failures.put(run.request.operation().sessionId(),cause);
             result=new ApplyReceipt(run.request.applyId(),run.request.proposal().ref(),cause instanceof EditApplyPort.NotApplied?ApplyState.FAILED_NOT_APPLIED:ApplyState.OUTCOME_UNKNOWN,DiskState.UNKNOWN,Optional.empty());
         }
         try {repository.edits().outcome(run.request,result);}
@@ -387,7 +474,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         try {
             List<HistoryTurn> history=repository.history(i.projectId(),i.projectInstanceId(),i.sessionId());
             ContextPlanner planner=new ContextPlanner(repository,configured.model(),configured.budget(),configured.context(),configured.policy(),
-                    failure->failures.put(i.sessionId(),failure));
+                    failure->{if(allowed(run))summaryFailures.put(i.sessionId(),failure);});
             if(run.operation.kind()==OperationKind.COMPACT) {
                 planner.manual(i,history,()->allowed(run));repository.finishCompact(i);complete(run,null);return;
             }
@@ -395,12 +482,32 @@ public final class SessionCoordinator implements SessionController, SelectionSin
             CourseTools tools=new CourseTools(Objects.requireNonNull(lease),configured.embeddings(),configured.search());
             if(!allowed(run))throw new CancellationException("Operation revoked before start");
             boolean originalSubmission=history.stream().anyMatch(turn->!turn.attempts().isEmpty()&&turn.attempts().getFirst().identity().equals(i));
-            Optional<ToolBoundary.EditTools> edits=originalSubmission?project(i.projectInstanceId()).edits.map(factory->new edu.courseassist.core.edit.CodeEditTools(i,input,factory.bind(i,input,()->allowed(run)),repository.edits(),configured.limits().outputTokens())):Optional.empty();
+            Optional<ToolBoundary.EditTools> edits=originalSubmission?project(i.projectInstanceId()).edits.map(factory->{
+                var target=factory.bind(i,input,()->allowed(run));
+                EditTargetPort notifying=(request,query)->target.resolveAndCapture(request,query).thenCompose(result->{
+                    if(result.status()==ResolutionStatus.STALE)return command(()->{
+                        var p=projects.get(i.projectInstanceId());
+                        if(p!=null&&p.open.get()&&allowed(run)) {
+                            editNotice(i.sessionId(),i.operationId(),request.captureId().isPresent());refresh(p);
+                        }
+                        return result;
+                    });
+                    return CompletableFuture.completedFuture(result);
+                });
+                return new edu.courseassist.core.edit.CodeEditTools(i,input,notifying,repository.edits(),configured.limits().outputTokens(),history);
+            }):Optional.empty();
             run.job=new ReactEngine(configured.model(),repository.react(),workers,configured.budget(),edits).start(i,input,history,tools,
                     configured.limits(),configured.policy(),()->allowed(run),snapshot->{
                         ProjectState p=projects.get(i.projectInstanceId());
                         if(p!=null&&p.open.get()&&runs.get(i.operationId())==run) {
-                            overlays.put(i.attemptId(),snapshot); command(()->{if(runs.get(i.operationId())==run&&p.open.get())refresh(p);return null;});
+                            overlays.put(i.attemptId(),snapshot);
+                            // Stream frames update the latest overlay, not an unbounded queue of DB projections.
+                            // Clear before refresh so a frame arriving during projection can enqueue one successor.
+                            if(run.refreshQueued.compareAndSet(false,true))command(()->{
+                                run.refreshQueued.set(false);
+                                if(runs.get(i.operationId())==run&&p.open.get())refresh(p);
+                                return null;
+                            });
                         }
                     },(earlier,request)->planner.plan(i,earlier,request,()->allowed(run)));
             if(!run.allowed.get())run.job.cancel();
@@ -416,7 +523,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         command(()->{
             Identity i=run.operation.identity();if(runs.get(i.operationId())!=run)return null;
             if(error!=null) {
-                Throwable cause=ReactEngine.unwrap(error);if(!ReactEngine.isCancellation(cause))failures.put(i.sessionId(),cause);
+                Throwable cause=ReactEngine.unwrap(error);if(!ReactEngine.isCancellation(cause)){failures.put(i.sessionId(),cause);generationFailures.put(i.sessionId(),cause);}
                 if(run.operation.kind()==OperationKind.COMPACT) {
                     try{repository.finishCompact(i);}catch(RuntimeException save){markBlocked(i,save);}
                 } else {
@@ -514,7 +621,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         return ()->{subscribed.set(false);p.observers.remove(listener);};
     }
     public ProjectChatViewState snapshot(String instance){return project(instance).view;}
-    public Optional<Throwable> failure(String session){return Optional.ofNullable(failures.get(session));}
+    public Optional<Throwable> failure(String session){return Optional.ofNullable(failures.get(session)).or(()->Optional.ofNullable(summaryFailures.get(session)));}
     public boolean hasUnsavedState(){return !blocked.isEmpty();}
     public CompletionStage<Void> recoverSession(String instance,String session){return command(()->{
         ProjectState p=project(instance);
@@ -540,7 +647,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         if(draft!=null)repository.edit(p.binding.projectId(),instance,session,s->{
             SessionRepository.requireDraft(s.draft(),draft.draftId(),draft.revision());
             return s.change(new DraftView(draft.draftId(),draft.revision()+1,draft.text(),draft.captures(),SaveState.SAVED,draft.captureOffsets(),draft.captureOrder()),s.turns(),s.operation());});
-        blocked.remove(session);unsavedDrafts.remove(session);failures.remove(session);overlays.entrySet().removeIf(e->e.getValue().identity().sessionId().equals(session));
+        blocked.remove(session);unsavedDrafts.remove(session);failures.remove(session);summaryFailures.remove(session);generationFailures.remove(session);overlays.entrySet().removeIf(e->e.getValue().identity().sessionId().equals(session));
     }
     /** Local command barrier for lifecycle integration and deterministic state observation. */
     public CompletionStage<Void> refreshAll(){return command(()->{for(ProjectState p:projects.values())refresh(p);return null;});}
@@ -549,19 +656,34 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         Binding b=repository.binding(p.binding.projectId());p.binding=b;var stored=repository.states(b.projectId(),p.instance);
         List<SessionViewState> sessions=new ArrayList<>();
         for(State s:stored) {
-            if(s.lifecycle()!=Lifecycle.LIVE){sessions.add(new SessionViewState(s.id(),s.title(),s.revision(),s.lifecycle(),s.draft(),List.of(),Optional.empty(),true,Set.of(SessionAction.DELETE),s.notices()));continue;}
+            if(s.lifecycle()!=Lifecycle.LIVE){sessions.add(new SessionViewState(s.id(),SessionData.displayTitle(s),s.revision(),s.lifecycle(),s.draft(),List.of(),Optional.empty(),true,Set.of(SessionAction.DELETE),s.notices()));continue;}
             List<HistoryTurn> history=repository.history(s.projectId(),p.instance,s.id());List<TurnView> turns=new ArrayList<>();
             for(int n=0;n<s.turns().size();n++) {
                 Turn turn=s.turns().get(n);List<MessagePart> parts=edu.courseassist.contract.ChatContracts.visibleParts(turn.input().question(),turn.input().code(),turn.input().captureOffsets(),turn.input().captureOrder());
                 var attempts=history.get(n).attempts().stream().map(a->{Snapshot overlay=overlays.get(a.identity().attemptId());return ReactViews.attempt(overlay!=null&&overlay.revision()>=a.revision()?overlay:a);}).toList();
                 turns.add(new TurnView(turn.id(),turn.requestId(),new MessageView(turn.id()+":message",Role.USER,parts,turn.createdAt()),attempts));
             }
-            boolean failed=s.blocked()||blocked.contains(s.id());Set<SessionAction> actions=EnumSet.of(SessionAction.CLOSE_TAB,SessionAction.DELETE);
+            boolean failed=s.blocked()||blocked.contains(s.id())||observationFailed(s.id());Set<SessionAction> actions=EnumSet.of(SessionAction.CLOSE_TAB,SessionAction.DELETE);
             if(!failed){actions.add(SessionAction.EDIT_DRAFT);actions.add(SessionAction.REMOVE_CAPTURE);
-                if(s.operation().isPresent())actions.add(SessionAction.STOP);else if(runtime.snapshot().state()==edu.courseassist.contract.ApplicationContracts.WorkState.ON){actions.add(SessionAction.SUBMIT);actions.add(SessionAction.RETRY);actions.add(SessionAction.COMPACT);}}
+                if(s.operation().isPresent())actions.add(SessionAction.STOP);else if(runtime.snapshot().state()==edu.courseassist.contract.ApplicationContracts.WorkState.ON){actions.add(SessionAction.SUBMIT);
+                    if(!history.isEmpty()&&!history.getLast().attempts().isEmpty()) {
+                        var previous=history.getLast().attempts().getLast();
+                        boolean terminal=switch(previous.status()){case STOPPED,INTERRUPTED,LIMITED,FAILED->true;default->false;};
+                        boolean editAttempt=previous.branches().stream().flatMap(branch->branch.steps().stream()).flatMap(step->step.tools().stream())
+                            .anyMatch(t->t.call().name().equals("resolveEditTarget")||t.call().name().equals("proposeCodeEdit"));
+                        if(terminal&&!editAttempt)actions.add(SessionAction.RETRY);
+                    }
+                    actions.add(SessionAction.COMPACT);}}
             else actions.add(SessionAction.RECOVER);
-            List<Notice> notices=new ArrayList<>(s.notices());if(failures.containsKey(s.id())&&notices.isEmpty())notices.add(SessionData.notice("TASK_FAILED","操作失败，请查看任务状态后重试",s.id(),null));
-            sessions.add(new SessionViewState(s.id(),s.title(),s.revision(),s.lifecycle(),unsavedDrafts.getOrDefault(s.id(),s.draft()),turns,s.operation().map(o->new ActiveOperation(o.identity().operationId(),o.kind(),
+            if(observationFailed(s.id())&&s.operation().isPresent())actions.add(SessionAction.STOP);
+            List<Notice> notices=new ArrayList<>(s.notices());
+            if(editNotices.containsKey(s.id()))notices.add(editNotices.get(s.id()));
+            if(observationFailures.values().stream().anyMatch(f->f.session().equals(s.id())))notices.add(SessionData.notice("EDIT_OBSERVATION_FAILED",
+                observationFailed(s.id())?"代码核验状态保存失败，暂不能发送；请重试状态恢复":"当前代码状态无法核验，已标记未知；可重试状态恢复",s.id(),null));
+            if(summaryFailures.containsKey(s.id())&&!failures.containsKey(s.id())&&s.operation().isEmpty())notices.add(new Notice("summary-fallback:"+s.id(),Severity.WARNING,"CONTEXT_FALLBACK",
+                "自动整理历史未完成，本轮已使用预算内的现有上下文",Optional.of(s.id()),Optional.empty()));
+            if(failures.containsKey(s.id())&&notices.stream().noneMatch(n->n.severity()==Severity.ERROR))notices.add(SessionData.notice("TASK_FAILED","操作失败，请查看任务状态后重试",s.id(),null));
+            sessions.add(new SessionViewState(s.id(),SessionData.displayTitle(s),s.revision(),s.lifecycle(),unsavedDrafts.getOrDefault(s.id(),s.draft()),turns,s.operation().map(o->new ActiveOperation(o.identity().operationId(),o.kind(),
                     o.kind()==OperationKind.GENERATE?Optional.of(o.identity().attemptId()):Optional.empty())),failed,actions,notices,repository.edits().views(s.projectId(),p.instance,s.id())));
         }
         long revision=p.view==null?0:p.view.revision()+1;
@@ -585,5 +707,5 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         try{commands.execute(()->{try{future.complete(work.call());}catch(Throwable failure){future.completeExceptionally(ReactEngine.unwrap(failure));}});}
         catch(RuntimeException failure){future.completeExceptionally(failure);}return future;
     }
-    @Override public void close(){closed=true;projects.values().forEach(p->p.open.set(false));reservations.values().forEach(r->r.valid.set(false));runs.values().forEach(Run::cancel);applying.values().forEach(ApplyRun::revoke);editDisplays.values().forEach(d->d.display().close());commands.shutdown();}
+    @Override public void close(){closed=true;projects.values().forEach(p->p.open.set(false));reservations.values().forEach(r->r.valid.set(false));runs.values().forEach(Run::cancel);applying.values().forEach(ApplyRun::revoke);editDisplays.values().forEach(d->d.display().close());editObservations.values().forEach(ViewSubscription::close);editObservations.clear();commands.shutdown();}
 }

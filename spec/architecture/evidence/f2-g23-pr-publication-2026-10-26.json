@@ -1,0 +1,40 @@
+{
+  "kind": "agent-verified-pr-publication",
+  "date": "2026-10-26",
+  "pr": {
+    "baseRefName": "main",
+    "headRefName": "dev-manager",
+    "headRefOid": "acf3203c618a106acdaa7829854a4038af374f90",
+    "number": 20,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "0001-01-01T00:00:00Z",
+        "conclusion": "",
+        "detailsUrl": "https://github.com/nilesthump/IJ-Plugin-Java/actions/runs/40309275683/job/121526137575",
+        "name": "validation",
+        "startedAt": "2026-10-26T10:40:55Z",
+        "status": "IN_PROGRESS",
+        "workflowName": "F0 validation"
+      },
+      {
+        "__typename": "StatusContext",
+        "context": "scope",
+        "startedAt": "2026-10-26T10:41:03Z",
+        "state": "SUCCESS",
+        "targetUrl": "https://github.com/nilesthump/IJ-Plugin-Java/actions/runs/40309295848"
+      }
+    ],
+    "url": "https://github.com/nilesthump/IJ-Plugin-Java/pull/20"
+  },
+  "localHead": "acf3203c618a106acdaa7829854a4038af374f90",
+  "implementation": "52fd92f86c3518923f197fab325c100cf4c0894f",
+  "validation": "All + IdeSmoke exit 0; 196 tests / 34 suites; IDEA PASS",
+  "sourceChangesAfterValidation": "Only public progress/handoff documents",
+  "independentReviewUnresolved": 0,
+  "workingTreeClean": true,
+  "merged": false,
+  "connectorAttempt": "create PR returned 403; authenticated CLI succeeded",
+  "createdPullRequests": 1
+}

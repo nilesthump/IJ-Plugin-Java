@@ -6,6 +6,8 @@ import edu.courseassist.contract.ApplicationContracts.ApplicationViewState;
 import edu.courseassist.contract.ChatContracts.AttemptView;
 import edu.courseassist.contract.ChatContracts.CloseSessionTab;
 import edu.courseassist.contract.ChatContracts.CreateSession;
+import edu.courseassist.contract.ChatContracts.SubmitNewSession;
+import edu.courseassist.contract.ChatContracts.RenameSession;
 import edu.courseassist.contract.ChatContracts.DeleteSession;
 import edu.courseassist.contract.ChatContracts.DraftCapture;
 import edu.courseassist.contract.ChatContracts.EventMeta;
@@ -44,7 +46,6 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -64,6 +65,10 @@ public final class CourseAssistantView implements AutoCloseable {
     private com.intellij.openapi.ui.popup.JBPopup popup;
     private final MixedDraftEditor draft = new MixedDraftEditor();
     private String shownDraftSession;
+    private static final String EMPTY_DRAFT_KEY="\u0000empty-foreground";
+    private String emptyText="";
+    private boolean emptySubmitting;
+    private Runnable refreshSessionList=()->{};
     private final ApplicationWorkspace applicationWorkspace;
     private final JButton create = button("createSession", "新会话");
     private final JButton closeTab = button("closeTab", "关闭标签");
@@ -72,7 +77,7 @@ public final class CourseAssistantView implements AutoCloseable {
     private final JButton compact = button("compactSession", "整理历史");
     private final JButton recover = button("recoverSession", "恢复未保存");
     private final JLabel status = new JLabel("等待状态");
-    private final JTextArea notices = area("notices");
+    private final edu.courseassist.ui.f2.TransientNotices notices;
     private final Map<String, LocalDraft> localDrafts = new HashMap<>();
     private final ViewSubscription sessionSubscription;
     private final ViewSubscription applicationSubscription;
@@ -101,7 +106,15 @@ public final class CourseAssistantView implements AutoCloseable {
 
     CourseAssistantView(String projectInstanceId, SessionController sessions, ApplicationController application,
                         CredentialUpdateSink credentials, Project project, Map<String, String> recovery) {
+        this(projectInstanceId,sessions,application,credentials,project,recovery,null);
+    }
+    CourseAssistantView(String projectInstanceId, SessionController sessions, ApplicationController application,
+                        CredentialUpdateSink credentials, Project project, Map<String, String> recovery,
+                        java.util.function.Consumer<List<Notice>> noticeDisplay) {
+        notices=noticeDisplay==null?new edu.courseassist.ui.f2.TransientNotices(root):new edu.courseassist.ui.f2.TransientNotices(noticeDisplay);
+        status.setName("sessionStatus");
         this.recovery = recovery;
+        emptyText=recovery.getOrDefault(EMPTY_DRAFT_KEY,"");
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("CourseAssistantView must be created on EDT");
         }
@@ -170,8 +183,7 @@ public final class CourseAssistantView implements AutoCloseable {
         bottom.add(status, BorderLayout.CENTER); bottom.add(submit, BorderLayout.EAST);
         composer.add(bottom, BorderLayout.SOUTH);
         JPanel footer = new JPanel(new BorderLayout(0, 4));
-        notices.setRows(2); notices.setVisible(false);
-        footer.add(notices, BorderLayout.NORTH); footer.add(composer, BorderLayout.CENTER);
+        footer.add(composer, BorderLayout.CENTER);
         footer.setMinimumSize(new java.awt.Dimension(100, 150));
         footer.setPreferredSize(new java.awt.Dimension(400, 230));
         timeline.component().setMinimumSize(new java.awt.Dimension(100, 100));
@@ -191,11 +203,24 @@ public final class CourseAssistantView implements AutoCloseable {
         if (!projectInstanceId.equals(next.projectInstanceId())) return;
         onEdt(() -> {
             if (closed || projectState != null && next.revision() < projectState.revision()) return;
+            ProjectChatViewState previous=projectState;
             projectState = next;
-            recovery.keySet().removeIf(key -> next.sessions().stream().noneMatch(session ->
+            refreshSessionList.run();
+            recovery.keySet().removeIf(key -> !key.equals(EMPTY_DRAFT_KEY) && next.sessions().stream().noneMatch(session ->
                     session.lifecycle() == edu.courseassist.contract.ChatContracts.Lifecycle.LIVE && key.equals(recoveryKey(session.sessionId(), session.draft().draftId()))));
             localDrafts.keySet().removeIf(id -> findSession(next, id) == null);
             next.sessions().forEach(this::reconcileDraft);
+            // Capturing code (or explicitly creating a session) can bind the empty composer first.
+            // Transfer only to a newly created, still-empty draft, never to reopened history.
+            next.activeSessionId().ifPresent(id->{
+                var session=findSession(next,id);var edit=localDrafts.get(id);
+                if(previous!=null&&previous.activeSessionId().isEmpty()&&findSession(previous,id)==null
+                        &&!emptySubmitting&&!emptyText.isEmpty()&&session.turns().isEmpty()&&edit.text.isEmpty()) {
+                    edit.text=emptyText;edit.dirty=true;
+                    recovery.put(recoveryKey(id,edit.draftId),rememberDraft(edit));
+                    emptyText="";recovery.remove(EMPTY_DRAFT_KEY);autosave.restart();
+                }
+            });
             if (closing) { finishCloseIfSettled(); return; }
             renderNotices();
             localDrafts.keySet().removeIf(id -> findSession(next, id) == null);
@@ -299,7 +324,9 @@ public final class CourseAssistantView implements AutoCloseable {
     private void draftChanged() {
         if (updatingDraft || closed || projectState == null) return;
         String id = selectedSessionId();
-        if (id == null) return;
+        if (id == null) {
+            emptyText=draft.getText();recovery.put(EMPTY_DRAFT_KEY,emptyText);updateActions();return;
+        }
         LocalDraft edit = localDrafts.get(id);
         SessionViewState session = findSession(projectState, id);
         if (edit == null || session == null) return;
@@ -348,11 +375,11 @@ public final class CourseAssistantView implements AutoCloseable {
     private void primaryAction() {
         String id = selectedSessionId();
         SessionViewState session = id == null ? null : findSession(projectState, id);
-        if (session == null) return;
+        if (session == null) { submitEmptyForeground();return; }
         if (session.activeOperation().isPresent()) { stopActiveOperation(); return; }
         LocalDraft edit = localDrafts.get(id);
         if (edit == null || edit.pending || edit.submitting) return;
-        if (edit.text.isBlank() && session.draft().captures().isEmpty()) { retryLatest(); return; }
+        if (edit.text.isBlank() && session.draft().captures().isEmpty()) { if (canRetry(session)) retryLatest(); return; }
         if (!session.allowedActions().contains(SessionAction.SUBMIT)) return;
         autosave.stop();
         if (!edit.dirty) { submitDraft(); return; }
@@ -381,6 +408,29 @@ public final class CourseAssistantView implements AutoCloseable {
             }));
     }
 
+    private void submitEmptyForeground() {
+        if(closed||closing||projectState==null||emptySubmitting||emptyText.isBlank())return;
+        String exact=emptyText;emptySubmitting=true;draft.setEditable(false);updateActions();
+        sessions.dispatch(new SubmitNewSession(new EventMeta(UUID.randomUUID().toString(),projectInstanceId,Optional.empty()),exact))
+            .whenComplete((result,failure)->onEdt(()->{
+                if(closed)return;
+                emptySubmitting=false;
+                if(failure==null&&result.outcome()==Outcome.APPLIED) {emptyText="";recovery.remove(EMPTY_DRAFT_KEY);}
+                if(closing){finishCloseIfSettled();return;}
+                if(selectedSessionId()==null)clearSession();else updateActions();
+                showFeedback(result,failure);
+            }));
+    }
+
+    private static boolean canRetry(SessionViewState session) {
+        if(session==null||!session.allowedActions().contains(SessionAction.RETRY)||session.turns().isEmpty())return false;
+        var attempts=session.turns().getLast().attempts();
+        if(attempts.isEmpty())return false;
+        return switch(attempts.getLast().status()) {
+            case STOPPED, INTERRUPTED, LIMITED, FAILED -> true;
+            default -> false;
+        };
+    }
     private static String retryLabel(SessionViewState session) {
         var turns = session.turns();
         if (!turns.isEmpty()) {
@@ -395,26 +445,50 @@ public final class CourseAssistantView implements AutoCloseable {
     }
 
     private void showSessions(boolean searching) {
-        if (projectState == null) return;
+        if(projectState==null)return;
+        JPanel content=sessionPicker(searching);
+        showPopup(content,(javax.swing.JComponent)content.getClientProperty("sessionFocus"),searching?search:history);
+    }
+    JPanel sessionPicker(boolean searching) {
+        return sessionPicker(searching,chosen->JOptionPane.showInputDialog(root,"会话名称（1–80字）",chosen.title()));
+    }
+    JPanel sessionPicker(boolean searching,java.util.function.Function<SessionViewState,String> titlePrompt) {
         JPanel content = new JPanel(new BorderLayout(6, 6));
         var model = new DefaultListModel<SessionViewState>();
-        var list = new JList<SessionViewState>(model); list.setName("sessionList");
+        var list = new JList<SessionViewState>(model) {
+            @Override public java.awt.Point getPopupLocation(java.awt.event.MouseEvent event) {
+                // Swing's global popup handler runs before this list's MouseListeners.
+                // Resolve the row before the menu freezes its target and enabled state.
+                if(event!=null) {
+                    int index=locationToIndex(event.getPoint());
+                    var bounds=index<0?null:getCellBounds(index,index);
+                    if(bounds!=null&&bounds.contains(event.getPoint()))setSelectedIndex(index);
+                    else clearSelection();
+                }
+                return super.getPopupLocation(event);
+            }
+        }; list.setName("sessionList");
         list.setCellRenderer((items, value, index, selected, focused) -> {
             var label = (JLabel) new javax.swing.DefaultListCellRenderer().getListCellRendererComponent(items, value, index, selected, focused);
+            label.putClientProperty("html.disable",Boolean.TRUE);
             if (value != null) label.setText(value.title()); return label;
         });
         javax.swing.JTextField query = new javax.swing.JTextField(); query.setName("sessionSearch");
         Runnable filter = () -> {
+            String selected=list.getSelectedValue()==null?null:list.getSelectedValue().sessionId();
             model.clear(); String needle = query.getText().strip().toLowerCase(java.util.Locale.ROOT);
             projectState.sessions().stream().filter(s -> s.title().toLowerCase(java.util.Locale.ROOT).contains(needle) ||
                 s.turns().stream().flatMap(t -> t.userMessage().parts().stream()).anyMatch(p ->
                     p instanceof TextPart t && t.text().toLowerCase(java.util.Locale.ROOT).contains(needle))).forEach(model::addElement);
+            if(selected!=null)for(int n=0;n<model.size();n++)if(model.get(n).sessionId().equals(selected)){list.setSelectedIndex(n);break;}
         };
+        refreshSessionList=filter;
         query.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { filter.run(); }
             public void removeUpdate(DocumentEvent e) { filter.run(); }
             public void changedUpdate(DocumentEvent e) { filter.run(); }
         });
+        content.putClientProperty("sessionFocus",searching?query:list);
         if (searching) content.add(query, BorderLayout.NORTH);
         filter.run(); content.add(new JScrollPane(list), BorderLayout.CENTER);
         Runnable openChoice = () -> {
@@ -422,6 +496,20 @@ public final class CourseAssistantView implements AutoCloseable {
             if (popup != null) popup.cancel();
             dispatch(new OpenSessionTab(meta(chosen.sessionId())));
         };
+        var menu=new javax.swing.JPopupMenu();var rename=new javax.swing.JMenuItem("重命名");rename.setName("renameSession");menu.add(rename);
+        list.setComponentPopupMenu(menu);
+        var renameTarget=new java.util.concurrent.atomic.AtomicReference<SessionViewState>();
+        menu.addPopupMenuListener(new javax.swing.event.PopupMenuListener(){
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent event){renameTarget.set(list.getSelectedValue());rename.setEnabled(renameTarget.get()!=null);}
+            public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent event){}
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent event){renameTarget.set(null);}
+        });
+        rename.addActionListener(event->{
+            var chosen=renameTarget.getAndSet(null);if(chosen==null)return;
+            if(popup!=null)popup.cancel();
+            String title=titlePrompt.apply(chosen);
+            if(title!=null)renameSession(chosen.sessionId(),title);
+        });
         list.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) { if (e.getButton() == 1) openChoice.run(); }
         });
@@ -430,7 +518,12 @@ public final class CourseAssistantView implements AutoCloseable {
             public void actionPerformed(java.awt.event.ActionEvent e) { openChoice.run(); }
         });
         content.setPreferredSize(new java.awt.Dimension(searching ? 540 : 360, 420));
-        showPopup(content, searching ? query : list, searching ? search : history);
+        return content;
+    }
+
+    void renameSession(String id,String title) {
+        try {dispatch(new RenameSession(meta(id),title));}
+        catch(IllegalArgumentException invalid){status.setText("名称须为1–80字，且不能包含换行");}
     }
 
     private void showSettings() {
@@ -481,8 +574,7 @@ public final class CourseAssistantView implements AutoCloseable {
         String id = selectedSessionId();
         if (id == null || projectState == null) return;
         SessionViewState session = findSession(projectState, id);
-        if (session == null || !session.allowedActions().contains(SessionAction.RETRY)
-                || session.turns().isEmpty()) return;
+        if (!canRetry(session)) return;
         TurnView turn = session.turns().get(session.turns().size() - 1);
         if (turn.attempts().isEmpty()) return;
         AttemptView attempt = turn.attempts().get(turn.attempts().size() - 1);
@@ -493,17 +585,21 @@ public final class CourseAssistantView implements AutoCloseable {
         String id = selectedSessionId();
         SessionViewState session = id == null || projectState == null ? null : findSession(projectState, id);
         LocalDraft edit = id == null ? null : localDrafts.get(id);
-        create.setEnabled(!closed && projectState != null);
+        create.setEnabled(!closed && !emptySubmitting && projectState != null);
         closeTab.setEnabled(session != null && session.allowedActions().contains(SessionAction.CLOSE_TAB));
         delete.setEnabled(session != null && session.allowedActions().contains(SessionAction.DELETE));
         boolean running = session != null && session.activeOperation().isPresent();
         boolean hasInput = edit != null && (!edit.text.isBlank() || !session.draft().captures().isEmpty());
-        boolean canRetry = session != null && session.allowedActions().contains(SessionAction.RETRY) && !session.turns().isEmpty();
+        boolean canRetry = canRetry(session);
         submit.setText(running ? "■" : hasInput ? "↑" : canRetry ? retryLabel(session) : "↑");
         submit.setToolTipText(running ? "暂停生成" : hasInput ? "发送" : canRetry ? retryLabel(session) : "发送");
         submit.setEnabled(session != null && edit != null && !edit.submitting &&
                 (running ? session.allowedActions().contains(SessionAction.STOP) :
                  hasInput ? !edit.pending && session.allowedActions().contains(SessionAction.SUBMIT) : canRetry));
+        if(session==null) {
+            submit.setText("↑");submit.setToolTipText("发送");
+            submit.setEnabled(!closed&&!closing&&projectState!=null&&!emptySubmitting&&!emptyText.isBlank());
+        }
         compact.setEnabled(session != null && session.allowedActions().contains(SessionAction.COMPACT));
         recover.setEnabled(session != null && session.allowedActions().contains(SessionAction.RECOVER));
     }
@@ -515,26 +611,36 @@ public final class CourseAssistantView implements AutoCloseable {
     }
 
     private void showFeedback(CommandResult result, Throwable failure) {
-        if (failure != null) status.setText("操作失败：" + failure.getClass().getSimpleName());
-        else if (result == null) status.setText("草稿状态尚未确认，请重试");
-        else if (result.outcome() == Outcome.REJECTED) status.setText("操作未应用：" + result.rejection().orElseThrow());
-        else status.setText("操作已应用");
+        status.setText("");
+        String message;
+        if (failure != null) message="操作未完成，请查看对应任务状态。";
+        else if (result == null) message="草稿状态尚未确认，请稍后重试。";
+        else if (result.outcome() == Outcome.REJECTED) message=switch(result.rejection().orElseThrow()) {
+            case STALE_REVISION->"状态已变化，请重新操作；未发送的草稿已保留。";
+            case BUSY->"当前任务尚未结束，请稍后再操作。";
+            case PLUGIN_OFF->"请先启用课程助教。";
+            case UNSAVED_STATE->"保存尚未完成，请先恢复保存后再发送。";
+            case CAPTURE_NOT_READY->"代码选区尚未准备好，请稍后再发送。";
+            case PROJECT_CLOSED,SESSION_DELETED,INVALID_TARGET->"原项目或会话已不可用，请重新打开后操作。";
+            case OPERATION_TERMINATED->"该任务已结束，请使用新的请求继续。";
+            default->"本次操作未执行，请检查输入后重试。";
+        };
+        else return;
+        notices.show(new Notice(result==null?UUID.randomUUID().toString():result.commandId(),
+                failure==null?edu.courseassist.contract.CommonContracts.Severity.WARNING:edu.courseassist.contract.CommonContracts.Severity.ERROR,
+                "COMMAND_FEEDBACK",message,Optional.ofNullable(selectedSessionId()),result==null?Optional.empty():result.operationId()));
     }
 
     private void renderNotices() {
-        StringBuilder text = new StringBuilder();
+        var current = new java.util.ArrayList<Notice>();
         if (projectState != null) {
-            projectState.notices().forEach(notice -> appendNotice(text, notice));
-            projectState.sessions().forEach(session ->
-                    session.notices().forEach(notice -> appendNotice(text, notice)));
+            current.addAll(projectState.notices());
+            projectState.sessions().forEach(session -> session.notices().forEach(notice ->
+                    current.add(new Notice(notice.noticeId(),notice.severity(),notice.code(),
+                            "会话「"+session.title()+"」："+notice.message(),notice.sessionId(),notice.operationId()))));
         }
-        applicationNotices.forEach(notice -> appendNotice(text, notice));
-        notices.setText(text.toString());
-        notices.setVisible(!text.isEmpty());
-    }
-
-    private static void appendNotice(StringBuilder text, Notice notice) {
-        text.append(notice.severity()).append(" · ").append(notice.message()).append('\n');
+        current.addAll(applicationNotices);
+        notices.update(current);
     }
 
     private EventMeta meta(String sessionId) {
@@ -550,11 +656,11 @@ public final class CourseAssistantView implements AutoCloseable {
     }
 
     private void clearSession() {
-        timeline.clear();
+        timeline.showEmpty();
         updatingDraft = true;
-        try { draft.render("",List.of(),Map.of(),capture->{}); shownDraftSession=null; } finally { updatingDraft = false; }
-        draft.setEditable(false);
-        status.setText("没有打开的会话");
+        try { draft.render(emptyText,List.of(),Map.of(),capture->{}); shownDraftSession=null; } finally { updatingDraft = false; }
+        draft.setEditable(!closed&&!closing&&!emptySubmitting&&projectState!=null);
+        status.setText("发送消息开始新会话");
         updateActions();
     }
 
@@ -588,7 +694,7 @@ public final class CourseAssistantView implements AutoCloseable {
             value = new HashMap<>(); project.putUserData(RECOVERY, value);
             Map<String, String> owned = value;
             ViewSubscription subscription = sessions.observe(instance, state -> onEdt(() ->
-                owned.keySet().removeIf(key -> state.sessions().stream().noneMatch(session ->
+                owned.keySet().removeIf(key -> !key.equals(EMPTY_DRAFT_KEY) && state.sessions().stream().noneMatch(session ->
                     session.lifecycle() == edu.courseassist.contract.ChatContracts.Lifecycle.LIVE &&
                     key.equals(recoveryKey(session.sessionId(), session.draft().draftId()))))));
             com.intellij.openapi.util.Disposer.register(project, () -> { subscription.close(); owned.clear(); });
@@ -632,15 +738,6 @@ public final class CourseAssistantView implements AutoCloseable {
         }
     }
 
-    private static JTextArea area(String name) {
-        JTextArea value = new JTextArea();
-        value.setName(name);
-        value.setEditable(false);
-        value.setLineWrap(true);
-        value.setWrapStyleWord(true);
-        return value;
-    }
-
     private static void onEdt(Runnable action) {
         if (SwingUtilities.isEventDispatchThread()) action.run();
         else SwingUtilities.invokeLater(action);
@@ -650,6 +747,7 @@ public final class CourseAssistantView implements AutoCloseable {
         onEdt(() -> {
             if (closed || closing) return;
             closing = true;
+            notices.close();
             autosave.stop();
             if (popup != null) popup.cancel();
             timeline.close();
@@ -659,7 +757,7 @@ public final class CourseAssistantView implements AutoCloseable {
         });
     }
     private void finishCloseIfSettled() {
-        if (localDrafts.values().stream().anyMatch(edit -> edit.pending || edit.submitting)) return;
+        if (emptySubmitting || localDrafts.values().stream().anyMatch(edit -> edit.pending || edit.submitting)) return;
         // Latest unsaved text remains in project-owned recovery until a matching durable
         // snapshot confirms it, the draft is consumed, or the session is deleted.
         if (localDrafts.values().stream().anyMatch(edit -> edit.dirty)) {

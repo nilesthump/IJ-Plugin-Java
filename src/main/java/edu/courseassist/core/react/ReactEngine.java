@@ -119,6 +119,7 @@ public final class ReactEngine {
                 boolean allowTools = hasMaterials && !generalFallback;
                 base = List.copyOf(planner.plan(earlier, request(base,branch,allowTools)));
                 ReactContext.validateProtocol(base); check();
+                List<Message> plannedHistory=base;editTools.ifPresent(edits->edits.plannedHistory(plannedHistory));
                 while (true) {
                     check();
                     if (++stepCount > limits.maxSteps()) throw new Limited("Model step limit");

@@ -1,0 +1,19 @@
+{
+  "main": "8fac78899ecffb612f3af9904d220faf1646f692",
+  "prs": {
+    "13": "54ac0897265d4ca911cebbe39764f46ef210bf98",
+    "14": "6c7ac93e8c6677147d86f12931df17ebf000b4cc",
+    "16": "2cba84cc66a0f357631f52b08b4b9e4b75ed9e02",
+    "15": "8fac78899ecffb612f3af9904d220faf1646f692"
+  },
+  "gates": "validation and scope passed before each merge",
+  "tests": 169,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "mergeTreeEqualsTestedTree": true,
+  "ide": "PASS on f10872e; product/build/scripts/ideSmoke unchanged at final tested head",
+  "f0": "user accepted and merged",
+  "f2Implementation": "NOT_STARTED",
+  "workspace": "dev-manager fast-forwarded; F2 discussion additions retained; backup stash kept"
+}

@@ -239,7 +239,7 @@ public final class ChatContracts {
         }
     }
 
-    public sealed interface ViewEvent permits CreateSession, SelectSession, UpdateDraftText, SubmitDraft,
+    public sealed interface ViewEvent permits CreateSession, SubmitNewSession, RenameSession, SelectSession, UpdateDraftText, SubmitDraft,
             CloseSessionTab, OpenSessionTab, DeleteSession, RemoveDraftCapture, StopOperation, RetryAttempt,
             ManualCompact, ReorderTabs, OpenCitation, RecoverSession, OpenEditPreview, ApproveEditProposal, RejectEditProposal, InspectEditApplication { EventMeta meta(); }
     public record InspectEditApplication(EventMeta meta,EditContracts.ProposalRef proposal) implements ViewEvent {
@@ -266,6 +266,15 @@ public final class ChatContracts {
             Objects.requireNonNull(meta, "meta"); Objects.requireNonNull(title, "title");
             if (meta.sessionId().isPresent()) throw new IllegalArgumentException("Core assigns the new session identity");
         }
+    }
+    /** Submit the empty-foreground composer; core assigns and binds the new session. */
+    public record SubmitNewSession(EventMeta meta,String text) implements ViewEvent {
+        public SubmitNewSession { Objects.requireNonNull(meta);Objects.requireNonNull(text);
+            if(meta.sessionId().isPresent()||text.isBlank())throw new IllegalArgumentException("Untargeted nonblank message required"); }
+    }
+    public record RenameSession(EventMeta meta,String title) implements ViewEvent {
+        public RenameSession { target(meta);Objects.requireNonNull(title);title=title.strip();
+            if(title.isBlank()||title.codePointCount(0,title.length())>80||title.contains("\n")||title.contains("\r"))throw new IllegalArgumentException("Title must be 1–80 characters on one line"); }
     }
     public record SelectSession(EventMeta meta) implements ViewEvent { public SelectSession { target(meta); } }
     public record OpenSessionTab(EventMeta meta) implements ViewEvent { public OpenSessionTab { target(meta); } }

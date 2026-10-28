@@ -1,0 +1,243 @@
+{
+  "observedDate": "2026-10-16",
+  "timezone": "Asia/Shanghai",
+  "kind": "executed-isolated-jvector-command-line-probe",
+  "status": "success",
+  "rawResult": {
+    "status": "PASS",
+    "scope": "synthetic in-memory graph build and COSINE query only",
+    "artifact": "io.github.jbellis:jvector:4.0.1",
+    "timestamp": "2026-10-16T06:05:49.296196800Z",
+    "javaRuntimeVersion": "25.0.2+10-LTS-69",
+    "jvmArguments": [],
+    "vectorizationProvider": "io.github.jbellis.jvector.vector.DefaultVectorizationProvider",
+    "vectorTypeSupport": "io.github.jbellis.jvector.vector.ArrayVectorProvider",
+    "vectorUtilSupport": "io.github.jbellis.jvector.vector.DefaultVectorUtilSupport",
+    "incubatorVectorModuleResolved": false,
+    "nativeVectorizationRequested": false,
+    "forcedProviderProperty": null,
+    "similarity": "COSINE",
+    "scoreSemantics": "(1 + cosine) / 2; higher is closer",
+    "dimension": 4,
+    "graphNodeCount": 8,
+    "query": [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "topK": 3,
+    "probeOnlyConstruction": {
+      "maxDegree": 4,
+      "beamWidth": 16,
+      "neighborOverflow": 1.5,
+      "alpha": 1.2,
+      "ownedPoolParallelism": 1
+    },
+    "ordinalMapping": [
+      {
+        "ordinal": 0,
+        "syntheticChunkId": "synthetic-chunk-0",
+        "vector": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "ordinal": 1,
+        "syntheticChunkId": "synthetic-chunk-1",
+        "vector": [
+          0.9,
+          0.1,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "ordinal": 2,
+        "syntheticChunkId": "synthetic-chunk-2",
+        "vector": [
+          0.8,
+          0.2,
+          0.1,
+          0.0
+        ]
+      },
+      {
+        "ordinal": 3,
+        "syntheticChunkId": "synthetic-chunk-3",
+        "vector": [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "ordinal": 4,
+        "syntheticChunkId": "synthetic-chunk-4",
+        "vector": [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ]
+      },
+      {
+        "ordinal": 5,
+        "syntheticChunkId": "synthetic-chunk-5",
+        "vector": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "ordinal": 6,
+        "syntheticChunkId": "synthetic-chunk-6",
+        "vector": [
+          -1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "ordinal": 7,
+        "syntheticChunkId": "synthetic-chunk-7",
+        "vector": [
+          0.1,
+          0.1,
+          0.9,
+          0.1
+        ]
+      }
+    ],
+    "topResults": [
+      {
+        "rank": 1,
+        "ordinal": 0,
+        "syntheticChunkId": "synthetic-chunk-0",
+        "score": 1.0
+      },
+      {
+        "rank": 2,
+        "ordinal": 1,
+        "syntheticChunkId": "synthetic-chunk-1",
+        "score": 0.99694186
+      },
+      {
+        "rank": 3,
+        "ordinal": 2,
+        "syntheticChunkId": "synthetic-chunk-2",
+        "score": 0.9815434
+      }
+    ],
+    "limitations": [
+      "No IntelliJ plugin runtime exercised",
+      "No persistence/reload exercised",
+      "No representative PDF embeddings",
+      "No performance/recall conclusion"
+    ]
+  },
+  "apiProvenance": {
+    "artifact": "io.github.jbellis:jvector:4.0.1:jar:sources",
+    "officialSourceUrl": "https://repo.maven.apache.org/maven2/io/github/jbellis/jvector/4.0.1/jvector-4.0.1-sources.jar",
+    "sourceJar": "H:\\IJ-Plugin-Java\\tmp\\architecture\\probes\\maven-repository\\io\\github\\jbellis\\jvector\\4.0.1\\jvector-4.0.1-sources.jar",
+    "sha256": "6A2CE2601C5F52AEF1F0BD5E8DC01F949D9D8A17046293BCC8974818443C11E5",
+    "extractedFiles": [
+      "GraphIndexBuilder.java",
+      "GraphSearcher.java",
+      "ListRandomAccessVectorValues.java",
+      "SearchResult.java",
+      "ImmutableGraphIndex.java",
+      "DefaultSearchScoreProvider.java",
+      "VectorizationProvider.java",
+      "VectorSimilarityFunction.java",
+      "VectorTypeSupport.java",
+      "Bits.java"
+    ]
+  },
+  "sourceInputs": {
+    "pom.xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\n  <modelVersion>4.0.0</modelVersion>\n  <groupId>local.architecture.probe</groupId>\n  <artifactId>jvector-smoke</artifactId>\n  <version>1.0-SNAPSHOT</version>\n  <description>Isolated synthetic JVector API smoke probe; not the IntelliJ plugin.</description>\n  <properties>\n    <maven.compiler.release>25</maven.compiler.release>\n    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>\n  </properties>\n  <dependencies>\n    <dependency>\n      <groupId>io.github.jbellis</groupId>\n      <artifactId>jvector</artifactId>\n      <version>4.0.1</version>\n    </dependency>\n  </dependencies>\n</project>\n",
+    "src/JVectorSmoke.java": "import io.github.jbellis.jvector.graph.GraphIndexBuilder;\nimport io.github.jbellis.jvector.graph.GraphSearcher;\nimport io.github.jbellis.jvector.graph.ListRandomAccessVectorValues;\nimport io.github.jbellis.jvector.graph.SearchResult;\nimport io.github.jbellis.jvector.graph.similarity.DefaultSearchScoreProvider;\nimport io.github.jbellis.jvector.util.Bits;\nimport io.github.jbellis.jvector.vector.VectorSimilarityFunction;\nimport io.github.jbellis.jvector.vector.VectorizationProvider;\nimport io.github.jbellis.jvector.vector.types.VectorFloat;\n\nimport java.lang.management.ManagementFactory;\nimport java.nio.charset.StandardCharsets;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.time.Instant;\nimport java.util.ArrayList;\nimport java.util.Arrays;\nimport java.util.List;\nimport java.util.StringJoiner;\nimport java.util.concurrent.ForkJoinPool;\n\n/** Synthetic in-memory API smoke probe, not a performance/recall evaluation. */\npublic final class JVectorSmoke {\n    public static void main(String[] args) throws Exception {\n        if (args.length != 1) {\n            throw new IllegalArgumentException(\"Pass one result JSON path\");\n        }\n        var jvmArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();\n        boolean vectorModuleResolved = ModuleLayer.boot().findModule(\"jdk.incubator.vector\").isPresent();\n        boolean nativeRequested = Boolean.getBoolean(\"jvector.experimental.enable_native_vectorization\");\n        String forcedProvider = System.getProperty(\"jvector.vectorization_provider\");\n        if (vectorModuleResolved || nativeRequested || forcedProvider != null) {\n            throw new IllegalStateException(\"Probe requires default provider discovery without vector module/native/forced-provider flags\");\n        }\n\n        var provider = VectorizationProvider.getInstance();\n        var typeSupport = provider.getVectorTypeSupport();\n        float[][] rawVectors = {\n                {1.0f, 0.0f, 0.0f, 0.0f},\n                {0.9f, 0.1f, 0.0f, 0.0f},\n                {0.8f, 0.2f, 0.1f, 0.0f},\n                {0.0f, 1.0f, 0.0f, 0.0f},\n                {0.0f, 0.0f, 1.0f, 0.0f},\n                {0.0f, 0.0f, 0.0f, 1.0f},\n                {-1.0f, 0.0f, 0.0f, 0.0f},\n                {0.1f, 0.1f, 0.9f, 0.1f}\n        };\n        float[] rawQuery = {1.0f, 0.0f, 0.0f, 0.0f};\n        List<VectorFloat<?>> vectors = new ArrayList<>();\n        for (float[] rawVector : rawVectors) {\n            vectors.add(typeSupport.createFloatVector(rawVector.clone()));\n        }\n        var vectorValues = new ListRandomAccessVectorValues(vectors, rawQuery.length);\n        var query = typeSupport.createFloatVector(rawQuery.clone());\n        var similarity = VectorSimilarityFunction.COSINE;\n\n        // Small probe-only construction parameters; no production defaults are proposed.\n        int maxDegree = 4;\n        int constructionBeamWidth = 16;\n        float neighborOverflow = 1.5f;\n        float alpha = 1.2f;\n        int topK = 3;\n        SearchResult result;\n        int graphNodeCount;\n        try (var pool = new ForkJoinPool(1);\n             var builder = GraphIndexBuilder.builder(vectorValues, similarity, maxDegree)\n                     .withBeamWidth(constructionBeamWidth)\n                     .withNeighborOverflow(neighborOverflow)\n                     .withAlpha(alpha)\n                     .withSimdExecutor(pool)\n                     .withParallelExecutor(pool)\n                     .build();\n             var graph = builder.build(vectorValues);\n             var searcher = new GraphSearcher(graph)) {\n            graphNodeCount = graph.size(0);\n            result = searcher.search(DefaultSearchScoreProvider.exact(query, similarity, vectorValues),\n                    topK, Bits.ALL);\n        }\n        if (graphNodeCount != rawVectors.length || result.getNodes().length != topK) {\n            throw new IllegalStateException(\"Unexpected graph/result size\");\n        }\n        int[] expectedSyntheticTop = {0, 1, 2};\n        for (int rank = 0; rank < topK; rank++) {\n            var node = result.getNodes()[rank];\n            if (node.node != expectedSyntheticTop[rank] || !Float.isFinite(node.score)) {\n                throw new IllegalStateException(\"Unexpected synthetic top result at rank \" + rank + \": \" + node);\n            }\n        }\n\n        var mappingRows = new StringJoiner(\",\\n\");\n        for (int ordinal = 0; ordinal < rawVectors.length; ordinal++) {\n            mappingRows.add(\"    {\\\"ordinal\\\": \" + ordinal + \", \\\"syntheticChunkId\\\": \"\n                    + quoted(chunkId(ordinal)) + \", \\\"vector\\\": \" + Arrays.toString(rawVectors[ordinal]) + \"}\");\n        }\n        var topRows = new StringJoiner(\",\\n\");\n        for (int rank = 0; rank < result.getNodes().length; rank++) {\n            var node = result.getNodes()[rank];\n            topRows.add(\"    {\\\"rank\\\": \" + (rank + 1) + \", \\\"ordinal\\\": \" + node.node\n                    + \", \\\"syntheticChunkId\\\": \" + quoted(chunkId(node.node))\n                    + \", \\\"score\\\": \" + node.score + \"}\");\n        }\n        String json = \"\"\"\n                {\n                  \"status\": \"PASS\",\n                  \"scope\": \"synthetic in-memory graph build and COSINE query only\",\n                  \"artifact\": \"io.github.jbellis:jvector:4.0.1\",\n                  \"timestamp\": %s,\n                  \"javaRuntimeVersion\": %s,\n                  \"jvmArguments\": %s,\n                  \"vectorizationProvider\": %s,\n                  \"vectorTypeSupport\": %s,\n                  \"vectorUtilSupport\": %s,\n                  \"incubatorVectorModuleResolved\": %s,\n                  \"nativeVectorizationRequested\": %s,\n                  \"forcedProviderProperty\": null,\n                  \"similarity\": \"COSINE\",\n                  \"scoreSemantics\": \"(1 + cosine) / 2; higher is closer\",\n                  \"dimension\": %d,\n                  \"graphNodeCount\": %d,\n                  \"query\": %s,\n                  \"topK\": %d,\n                  \"probeOnlyConstruction\": {\"maxDegree\": %d, \"beamWidth\": %d, \"neighborOverflow\": %s, \"alpha\": %s, \"ownedPoolParallelism\": 1},\n                  \"ordinalMapping\": [\n                %s\n                  ],\n                  \"topResults\": [\n                %s\n                  ],\n                  \"limitations\": [\"No IntelliJ plugin runtime exercised\", \"No persistence/reload exercised\", \"No representative PDF embeddings\", \"No performance/recall conclusion\"]\n                }\n                \"\"\".formatted(\n                quoted(Instant.now().toString()), quoted(System.getProperty(\"java.runtime.version\")),\n                jsonStrings(jvmArguments), quoted(provider.getClass().getName()),\n                quoted(typeSupport.getClass().getName()), quoted(provider.getVectorUtilSupport().getClass().getName()),\n                vectorModuleResolved, nativeRequested, rawQuery.length, graphNodeCount, Arrays.toString(rawQuery),\n                topK, maxDegree, constructionBeamWidth, neighborOverflow, alpha, mappingRows, topRows);\n        Files.writeString(Path.of(args[0]), json, StandardCharsets.UTF_8);\n        System.out.print(json);\n    }\n\n    private static String chunkId(int ordinal) {\n        return \"synthetic-chunk-\" + ordinal;\n    }\n\n    private static String jsonStrings(List<String> values) {\n        return values.stream().map(JVectorSmoke::quoted).collect(java.util.stream.Collectors.joining(\", \", \"[\", \"]\"));\n    }\n\n    private static String quoted(String value) {\n        return \"\\\"\" + value.replace(\"\\\\\", \"\\\\\\\\\").replace(\"\\\"\", \"\\\\\\\"\")\n                .replace(\"\\n\", \"\\\\n\").replace(\"\\r\", \"\\\\r\") + \"\\\"\";\n    }\n}\n",
+    "run.ps1": "$ErrorActionPreference = 'Stop'\n$probeRoot = $PSScriptRoot\n$env:JAVA_HOME = 'H:\\jdk-25.0.2'\n$settings = 'H:\\IJ-Plugin-Java\\tmp\\architecture\\probes\\spring-ai-dependencies\\settings.xml'\n$repository = 'H:\\IJ-Plugin-Java\\tmp\\architecture\\probes\\maven-repository'\n$maven = 'H:\\apache-maven-3.9.15\\bin\\mvn.cmd'\n\n& $maven '-s' $settings \"-Dmaven.repo.local=$repository\" '-f' (Join-Path $probeRoot 'pom.xml') 'org.apache.maven.plugins:maven-dependency-plugin:3.8.1:build-classpath' \"-Dmdep.outputFile=$(Join-Path $probeRoot 'classpath.txt')\" '-B' '-ntp' *> (Join-Path $probeRoot 'classpath.log')\n$mavenExit = $LASTEXITCODE\nif ($mavenExit -ne 0) { exit $mavenExit }\n\n$classpath = (Get-Content -LiteralPath (Join-Path $probeRoot 'classpath.txt') -Raw).Trim()\n$classes = Join-Path $probeRoot 'classes'\nNew-Item -ItemType Directory -Path $classes -Force | Out-Null\n& 'H:\\jdk-25.0.2\\bin\\javac.exe' '--release' '25' '-encoding' 'UTF-8' '-classpath' $classpath '-d' $classes (Join-Path $probeRoot 'src\\JVectorSmoke.java') *> (Join-Path $probeRoot 'compile.log')\n$compileExit = $LASTEXITCODE\nif ($compileExit -ne 0) { exit $compileExit }\n\n$runtimeClasspath = $classes + [IO.Path]::PathSeparator + $classpath\n& 'H:\\jdk-25.0.2\\bin\\java.exe' '-classpath' $runtimeClasspath 'JVectorSmoke' (Join-Path $probeRoot 'result.json') *> (Join-Path $probeRoot 'run.log')\nexit $LASTEXITCODE\n"
+  },
+  "artifacts": [
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/pom.xml",
+      "sha256": "a37d5b4232abbd6ac3ecf32a6169a9b5b48e5ee765b6deaea9a92102b7e1f080"
+    },
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/src/JVectorSmoke.java",
+      "sha256": "d4b483f1ff0fa2919fc8aaa750c0f6c6f4e3f997958e6611805927df56e16a21"
+    },
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/run.ps1",
+      "sha256": "2e82bc6ce18422d059261c2195878e603e4befa30d061c06f6986c348ab32b33"
+    },
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/api-provenance.json",
+      "sha256": "e8a7ebb42479479a04f7a32a341c542a306f1514ec54bf9233ed75f6523db10d"
+    },
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/sources-download.log",
+      "sha256": "4b9d3009ec8d644c8d52331beaa91603ec11053766d47a892e3fcb5da98fe923"
+    },
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/classpath.txt",
+      "sha256": "914f9c791045065678721113d8bfb88d5c675a5bda3f8e152ecc71690dce4e32"
+    },
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/classpath.log",
+      "sha256": "ba0cb1e5df7ec6f5dda2a92038c7afb64048de4aed5aa67b773045030c52111b"
+    },
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/run.log",
+      "sha256": "24e113f79c39d5e3eae3b9b1bb4824813a4ea82b0272c3da1fbf4ae363f6490b"
+    },
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/result.json",
+      "sha256": "03fc188964014c3c29cbf41c6d8392aef66eb94fe4d86865ef06e7cc34057da4"
+    },
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/exit-code.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ],
+  "classpathArtifacts": [
+    {
+      "path": "H:\\IJ-Plugin-Java\\tmp\\architecture\\probes\\maven-repository\\io\\github\\jbellis\\jvector\\4.0.1\\jvector-4.0.1.jar",
+      "sha256": "1a3294c25654fa0bc257714c6a91abc56dbf9d7959541bb7219e5626920950de"
+    },
+    {
+      "path": "H:\\IJ-Plugin-Java\\tmp\\architecture\\probes\\maven-repository\\org\\apache\\commons\\commons-math3\\3.6.1\\commons-math3-3.6.1.jar",
+      "sha256": "1e56d7b058d28b65abd256b8458e3885b674c1d588fa43cd7d1cbb9c7ef2b308"
+    },
+    {
+      "path": "H:\\IJ-Plugin-Java\\tmp\\architecture\\probes\\maven-repository\\org\\agrona\\agrona\\1.20.0\\agrona-1.20.0.jar",
+      "sha256": "66277ecb27990f2f3523e090b8c16c8393177ddef7fb985fc27e72d2a5e93a8f"
+    },
+    {
+      "path": "H:\\IJ-Plugin-Java\\tmp\\architecture\\probes\\maven-repository\\org\\slf4j\\slf4j-api\\2.0.16\\slf4j-api-2.0.16.jar",
+      "sha256": "a12578dde1ba00bd9b816d388a0b879928d00bab3c83c240f7013bf4196c579a"
+    },
+    {
+      "path": "H:\\IJ-Plugin-Java\\tmp\\architecture\\probes\\maven-repository\\org\\yaml\\snakeyaml\\2.4\\snakeyaml-2.4.jar",
+      "sha256": "ef779af5d29a9dde8cc70ce0341f5c6f7735e23edff9685ceaa9d35359b7bb7f"
+    }
+  ],
+  "limits": [
+    "Java25.0.2 command line only; no IntelliJ plugin class-loader/JBR runtime verification.",
+    "Eight synthetic four-dimensional vectors, not representative PDF embeddings or ANN recall/latency evaluation.",
+    "No H2 persistence, generation reload/switch, concurrent shared queries or unload/JMX lifecycle test.",
+    "Version and construction/search parameters are probe pins, not final project configuration."
+  ]
+}

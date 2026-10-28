@@ -1,0 +1,82 @@
+{
+  "kind": "f2-documentation-pr-publication",
+  "recordedDate": "2026-10-25",
+  "timezone": "Asia/Shanghai",
+  "authorization": "spec/architecture/evidence/user-turn-077.md",
+  "repository": "nilesthump/IJ-Plugin-Java",
+  "headBranch": "dev-manager",
+  "baseBranch": "main",
+  "commit": "e3cc634ffb29fee5c6a1b26f302fc8d6b3066750",
+  "prUrl": "https://github.com/nilesthump/IJ-Plugin-Java/pull/17",
+  "prNumber": 17,
+  "remote": {
+    "headVerified": true,
+    "prState": "open",
+    "merged": false,
+    "changedFiles": 19,
+    "headSha": "e3cc634ffb29fee5c6a1b26f302fc8d6b3066750",
+    "baseSha": "8fac78899ecffb612f3af9904d220faf1646f692",
+    "mergeable": true,
+    "workflowRuns": [
+      {
+        "id": 40207983181,
+        "name": "F0 validation",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 55,
+        "jobs_url": "https://api.github.com/repos/nilesthump/IJ-Plugin-Java/actions/runs/40207983181/jobs",
+        "logs_url": "https://api.github.com/repos/nilesthump/IJ-Plugin-Java/actions/runs/40207983181/logs",
+        "workflow_id": 388188662
+      }
+    ],
+    "statuses": []
+  },
+  "localValidation": {
+    "entry": "scripts/validate.ps1 -Scope All -LocalIdePath 'H:\\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\\IJ-Plugin-Java\\tmp\\gradle-user-home'",
+    "exitCode": 0,
+    "suites": 30,
+    "tests": 169,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "checkBuildPlugin": "PASS",
+    "scope": "PASS 19 paths",
+    "whitespace": "PASS after new architecture document LF normalization",
+    "secretPatterns": "NO_MATCH",
+    "log": "tmp/f2-plan-pr/validation-all.log",
+    "ideSmoke": "NOT_RUN",
+    "realApi": "NOT_RUN",
+    "f2ProductScenarios": "NOT_RUN"
+  },
+  "paths": [
+    "spec/architecture/F2_DEVELOPMENT_PLAN.md",
+    "spec/contracts/F2_API_PROPOSAL.md",
+    "spec/tasks/dev-manager/F2/README.md",
+    "spec/tasks/dev-manager/F2/GROUP_0.md",
+    "spec/tasks/dev-manager/F2/GROUP_1.md",
+    "spec/tasks/dev-manager/F2/GROUP_2.md",
+    "spec/tasks/dev-manager/F2/GROUP_3.md",
+    "spec/tasks/dev-manager/F2/GROUP_4.md",
+    "spec/tasks/dev-manager/F2/GROUP_5.md",
+    "spec/tasks/dev-manager/F2/GROUP_6.md",
+    "spec/tasks/dev-manager/F2/VALIDATION_MATRIX.md",
+    "spec/tasks/dev-manager/F2/STATUS.md",
+    "spec/tasks/dev-manager/F2/HANDOFF.md",
+    "spec/architecture/BASELINE.md",
+    "spec/progress/CURRENT.md",
+    "spec/tasks/README.md",
+    "spec/tasks/dev-manager/README.md",
+    "spec/tasks/dev-manager/STATUS.md",
+    "spec/tasks/dev-manager/HANDOFF.md"
+  ],
+  "independentReview": "Publication review found no blockers; no raw answers, ignored evidence or credentials staged.",
+  "creationPath": "GitHub connector create returned 403 Resource not accessible by integration; configured existing Git credentials were then used in memory with the official GitHub API, without logging or saving credential values.",
+  "failuresAndCorrections": [
+    "Staged whitespace check first failed because new architecture MD is covered by byte-preserving -text attributes; normalized only F2_DEVELOPMENT_PLAN.md to LF and rechecked.",
+    "First native API helper mishandled an empty PR array and ended before POST; readback confirmed zero matching PRs, array handling corrected, POST then created PR17.",
+    "No hooks or policy were disabled; no new branch, force push, merge or branch deletion."
+  ],
+  "outcome": "PUSHED_PR_CREATED_CI_IN_PROGRESS_NOT_MERGED",
+  "validationLogSha256": "d69e3989e5b8c584e17e66d6190127311e20fd856421ee04dd9c72b010d83ebb",
+  "cleanWorktree": true
+}
