@@ -184,6 +184,7 @@ class ReactEngineTest {
             eventually(()->h.views.stream().anyMatch(v->!v.branches().isEmpty()&&!v.branches().getFirst().steps().isEmpty()&&v.branches().getFirst().steps().getFirst().body().contains("sentinel")));
             job.cancel();assertInstanceOf(CancellationException.class,assertThrows(ExecutionException.class,()->h.done(job)).getCause());
             Snapshot old=job.snapshot();listener.get().frame(new Body("late"));assertEquals(old,job.snapshot());assertTrue(cancellations.get()>0);
+            assertEquals(FailureCode.CANCELLED.name(),old.failureCode());assertEquals(FailurePhase.LIFECYCLE.name(),old.failurePhase());
             assertTrue(old.branches().getFirst().steps().getFirst().body().contains("stopped-prefix-sentinel"));
             var next=new Identity(h.identity.projectId(),h.identity.projectInstanceId(),h.identity.sessionId(),h.identity.turnId(),h.identity.operationId(),"retry",7);
             var retry=h.start((r,l)->{assertFalse(ReactContext.json(r).contains("stopped-prefix-sentinel"));
@@ -223,6 +224,7 @@ class ReactEngineTest {
             var job=h.start((r,l)->{l.frame(new Body("epoch-prefix"));ready.countDown();return ()->{};},LIMITS,ErrorPolicy.PRODUCT,permitted::get,h.journal,List.of(),h.identity,h.tools());
             assertTrue(ready.await(10,TimeUnit.SECONDS));h.epoch();permitted.set(false);
             assertInstanceOf(CancellationException.class,assertThrows(ExecutionException.class,()->h.done(job)).getCause());assertTrue(job.snapshot().saved());assertEquals(AttemptStatus.STOPPED,h.journal.load(h.identity).orElseThrow().status());
+            assertEquals(FailureCode.CANCELLED.name(),job.snapshot().failureCode());assertEquals(FailurePhase.LIFECYCLE.name(),job.snapshot().failurePhase());
         }
     }
     @Test void stopAndFinalCommitHaveAnAtomicNonblockingDecision() throws Exception {
@@ -242,18 +244,97 @@ class ReactEngineTest {
             assertTrue(h.done(job).eligible());
         }
     }
+    private static void assertFailure(Snapshot snapshot, AttemptStatus status, FailureCode code, FailurePhase phase) {
+        assertEquals(status, snapshot.status());
+        assertEquals(code.name(), snapshot.failureCode());
+        assertEquals(phase.name(), snapshot.failurePhase());
+        assertFalse(snapshot.eligible());
+        assertEquals(Optional.of(new FailureView(code, phase)), ReactViews.attempt(snapshot).failure());
+    }
+    @Test void codedDiagnosticsDistinguishOutputTimeoutBudgetProtocolProviderAndUnknown() throws Exception {
+        try(var h=new ReactTestEnvironment(temp.resolve("output"),true)) {
+            var job=h.start((r,l)->{l.frame(new Body("visible-prefix"));l.frame(new End("length"));l.complete();return ()->{};});
+            assertThrows(ExecutionException.class,()->h.done(job));
+            assertFailure(job.snapshot(),AttemptStatus.LIMITED,FailureCode.MODEL_OUTPUT_LIMIT,FailurePhase.MODEL_GENERATION);
+        }
+        try(var h=new ReactTestEnvironment(temp.resolve("timeout"),false)) {
+            var limits=new Limits(6,8,16000,32000,200000,1024,Duration.ofMillis(150),12);
+            var job=h.start((r,l)->{l.frame(new Body("waiting-prefix"));return ()->{};},limits,ErrorPolicy.DEVELOPMENT,
+                    ()->true,h.journal,List.of(),h.identity,h.tools());
+            assertThrows(ExecutionException.class,()->h.done(job));
+            assertFailure(job.snapshot(),AttemptStatus.LIMITED,FailureCode.ATTEMPT_TIMEOUT,FailurePhase.MODEL_GENERATION);
+        }
+        try(var h=new ReactTestEnvironment(temp.resolve("budget"),true)) {
+            AtomicInteger measures=new AtomicInteger();
+            var engine=new ReactEngine((r,l)->{l.frame(new ToolDelta(0,"c","searchCourse","{\"query\":\"x\"}"));
+                    l.frame(new End("tool_calls"));l.complete();return ()->{};},h.journal,h.workers,
+                    r->measures.incrementAndGet()==1?1:Long.MAX_VALUE);
+            var job=engine.start(h.identity,h.input,List.of(),h.tools(),LIMITS,ErrorPolicy.DEVELOPMENT,()->true,h.views::add);
+            assertThrows(ExecutionException.class,()->h.done(job));
+            assertFailure(job.snapshot(),AttemptStatus.LIMITED,FailureCode.CONTEXT_BUDGET,FailurePhase.MODEL_GENERATION);
+        }
+        try(var h=new ReactTestEnvironment(temp.resolve("protocol"),false)) {
+            var job=h.start((r,l)->{l.frame(new Body("accepted"));l.frame(new End("future_reason"));l.complete();return ()->{};});
+            assertThrows(ExecutionException.class,()->h.done(job));
+            assertFailure(job.snapshot(),AttemptStatus.FAILED,FailureCode.MODEL_PROTOCOL,FailurePhase.MODEL_GENERATION);
+        }
+        try(var h=new ReactTestEnvironment(temp.resolve("provider"),false)) {
+            var job=h.start((r,l)->{l.failed(new java.io.IOException("provider-private-sentinel"));return ()->{};});
+            assertThrows(ExecutionException.class,()->h.done(job));
+            assertFailure(job.snapshot(),AttemptStatus.FAILED,FailureCode.PROVIDER_FAILURE,FailurePhase.MODEL_GENERATION);
+        }
+        try(var h=new ReactTestEnvironment(temp.resolve("unknown"),false)) {
+            var job=h.start((r,l)->{l.failed(new IllegalStateException("unknown-private-sentinel"));return ()->{};});
+            assertThrows(ExecutionException.class,()->h.done(job));
+            assertFailure(job.snapshot(),AttemptStatus.FAILED,FailureCode.INTERNAL,FailurePhase.INTERNAL);
+        }
+    }
+    @Test void generationDiagnosticLogCarriesCodePhaseTypeAndIdentityWithoutExceptionText() throws Exception {
+        var messages=new java.util.concurrent.CopyOnWriteArrayList<String>();
+        var logger=java.util.logging.Logger.getLogger("edu.courseassist.generation");
+        var handler=new java.util.logging.Handler() {
+            public void publish(java.util.logging.LogRecord record) { messages.add(record.getMessage()); }
+            public void flush() {} public void close() {}
+        };
+        logger.addHandler(handler);
+        try(var h=new ReactTestEnvironment(temp.resolve("log"),false)) {
+            String sentinel="provider-private-log-sentinel";
+            var job=h.start((r,l)->{l.failed(new java.io.IOException(sentinel));return ()->{};});
+            assertThrows(ExecutionException.class,()->h.done(job));
+            String line=messages.stream().filter(m->m.contains("code=PROVIDER_FAILURE")).findFirst().orElseThrow();
+            assertTrue(line.contains("phase=MODEL_GENERATION"));assertTrue(line.contains("type=java.io.IOException"));
+            assertTrue(line.contains("attempt="+h.identity.attemptId()));assertTrue(line.contains("operation="+h.identity.operationId()));
+            assertFalse(line.contains(sentinel),"Exception text must never be logged");
+        } finally {logger.removeHandler(handler);}
+    }
+    @Test void legacySnapshotWithoutCodedFailureReadsAsNoDiagnostic() throws Exception {
+        var json=tools.jackson.databind.json.JsonMapper.builder().build();
+        var identity=new Identity("project","instance","session","turn","operation","attempt",0);
+        var snapshot=new Snapshot(identity,new Input("question",List.of()),1,1,AttemptStatus.FAILED,true,"","",
+                List.of(),List.of(),"java.lang.IllegalStateException",FailureCode.INTERNAL.name(),FailurePhase.INTERNAL.name());
+        var node=(tools.jackson.databind.node.ObjectNode)json.readTree(json.writeValueAsString(snapshot));
+        node.remove(List.of("failureCode","failurePhase"));
+        var legacy=json.readValue(json.writeValueAsString(node),Snapshot.class);
+        assertEquals("",legacy.failureCode());assertEquals("",legacy.failurePhase());
+        assertTrue(ReactViews.attempt(legacy).failure().isEmpty());
+    }
     @Test void finiteStepsToolCountResultSizeOutputAndElapsedLimitsStopWithoutSuccess() throws Exception {
         List<Limits> limits=List.of(new Limits(1,8,16000,32000,200000,1024,Duration.ofSeconds(15),12),
                 new Limits(6,0,16000,32000,200000,1024,Duration.ofSeconds(15),12),
                 new Limits(6,8,25,32000,200000,1024,Duration.ofSeconds(15),12),
                 new Limits(6,8,16000,2,200000,1024,Duration.ofSeconds(15),12),
                 new Limits(6,8,16000,32000,200000,1024,Duration.ofMillis(200),12));
+        List<FailureCode> codes=List.of(FailureCode.GENERATION_LIMIT,FailureCode.GENERATION_LIMIT,
+                FailureCode.RESULT_SIZE_LIMIT,FailureCode.RESULT_SIZE_LIMIT,FailureCode.ATTEMPT_TIMEOUT);
+        List<FailurePhase> phases=List.of(FailurePhase.MODEL_GENERATION,FailurePhase.TOOL_RESULT,
+                FailurePhase.TOOL_RESULT,FailurePhase.MODEL_GENERATION,FailurePhase.MODEL_GENERATION);
         for(int i=0;i<limits.size();i++)try(var h=new ReactTestEnvironment(temp.resolve("limit"+i),true)) {
             int scenario=i;AtomicInteger calls=new AtomicInteger();
             var job=h.start((r,l)->{calls.incrementAndGet();if(scenario==4){l.frame(new Body("waiting-prefix"));}
                 else if(scenario==3)finish(l,"over-output");else{l.frame(new ToolDelta(0,"c","searchCourse","{\"query\":\"x\"}"));l.frame(new End("tool_calls"));l.complete();}return ()->{};},
                     limits.get(i),ErrorPolicy.DEVELOPMENT,()->true,h.journal,List.of(),h.identity,h.tools());
             assertThrows(ExecutionException.class,()->h.done(job));assertEquals(AttemptStatus.LIMITED,job.snapshot().status());assertFalse(job.snapshot().eligible());assertTrue(calls.get()<=1);
+            assertEquals(codes.get(i).name(),job.snapshot().failureCode());assertEquals(phases.get(i).name(),job.snapshot().failurePhase());
         }
     }
     @Test void strictToolJsonAndViewFailureDoNotCorruptTheArchive() throws Exception {

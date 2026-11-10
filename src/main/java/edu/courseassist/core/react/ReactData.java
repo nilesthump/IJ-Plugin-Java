@@ -71,16 +71,43 @@ public final class ReactData {
     }
     public record Snapshot(Identity identity, Input input, long revision, long throughSeq, AttemptStatus status,
                            boolean saved, String effectiveBranchId, String finalStepId,
-                           List<Branch> branches, List<Citation> citations, String failureType) {
-        public Snapshot { branches = List.copyOf(branches); citations = List.copyOf(citations); }
+                           List<Branch> branches, List<Citation> citations, String failureType,
+                           String failureCode, String failurePhase) {
+        /** Legacy persisted snapshots and older callers have no coded diagnostic. */
+        public Snapshot(Identity identity, Input input, long revision, long throughSeq, AttemptStatus status,
+                        boolean saved, String effectiveBranchId, String finalStepId,
+                        List<Branch> branches, List<Citation> citations, String failureType) {
+            this(identity, input, revision, throughSeq, status, saved, effectiveBranchId, finalStepId,
+                    branches, citations, failureType, "", "");
+        }
+        public Snapshot {
+            branches = List.copyOf(branches); citations = List.copyOf(citations);
+            failureType = failureType == null ? "" : failureType;
+            failureCode = failureCode == null ? "" : failureCode;
+            failurePhase = failurePhase == null ? "" : failurePhase;
+        }
         public boolean eligible() {
             return saved && status == AttemptStatus.SUCCEEDED && branches.stream().anyMatch(b -> b.id().equals(effectiveBranchId)
                     && b.status() == BranchStatus.COMPLETED && b.steps().stream().anyMatch(s -> s.id().equals(finalStepId) && s.status() == StepStatus.FINISHED));
         }
     }
     public record HistoryTurn(Input input, List<Snapshot> attempts) { public HistoryTurn { attempts = List.copyOf(attempts); } }
-    public static class ProtocolFailure extends IllegalStateException { public ProtocolFailure(String message) { super(message); } }
-    public static final class Limited extends IllegalStateException { public Limited(String message) { super(message); } }
+    /** Exceptions that already know their fixed generation/F2 failure category. */
+    public interface CodedFailure { FailureView failure(); }
+    public static class ProtocolFailure extends IllegalStateException implements CodedFailure {
+        private final FailureView failure;
+        public ProtocolFailure(String message) { this(message, FailureCode.MODEL_PROTOCOL, FailurePhase.MODEL_GENERATION); }
+        public ProtocolFailure(String message, FailureCode code, FailurePhase phase) { this(message, new FailureView(code, phase)); }
+        private ProtocolFailure(String message, FailureView failure) { super(message); this.failure = Objects.requireNonNull(failure); }
+        @Override public FailureView failure() { return failure; }
+    }
+    public static final class Limited extends IllegalStateException implements CodedFailure {
+        private final FailureView failure;
+        public Limited(String message) { this(message, FailureCode.GENERATION_LIMIT, FailurePhase.MODEL_GENERATION); }
+        public Limited(String message, FailureCode code, FailurePhase phase) { this(message, new FailureView(code, phase)); }
+        private Limited(String message, FailureView failure) { super(message); this.failure = Objects.requireNonNull(failure); }
+        @Override public FailureView failure() { return failure; }
+    }
     @FunctionalInterface public interface Budget { long tokens(Request completeRequest); }
     /** Must check ownership/LIVE/instance/operation in the same transaction as the write. */
     public interface Journal { void create(Snapshot initial); void save(Snapshot snapshot, boolean coordinator); }

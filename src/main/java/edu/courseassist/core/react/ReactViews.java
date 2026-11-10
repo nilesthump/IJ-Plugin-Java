@@ -33,7 +33,8 @@ public final class ReactViews {
         return new AttemptView(snapshot.identity().attemptId(), snapshot.identity().operationId(), snapshot.revision(), snapshot.status(),
                 snapshot.saved() ? SaveState.SAVED : SaveState.UNSAVED,
                 snapshot.eligible() ? ContextEligibility.ELIGIBLE_DURABLE_SUCCESS : ContextEligibility.INELIGIBLE,
-                optional(snapshot.effectiveBranchId()), optional(snapshot.finalStepId()), branches);
+                optional(snapshot.effectiveBranchId()), optional(snapshot.finalStepId()), branches,
+                FailureView.parse(snapshot.failureCode(), snapshot.failurePhase()));
     }
     private static Optional<String> optional(String id) { return id.isEmpty() ? Optional.empty() : Optional.of(id); }
     private static Citation citation(Evidence e) {

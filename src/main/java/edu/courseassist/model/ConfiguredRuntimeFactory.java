@@ -65,8 +65,10 @@ public final class ConfiguredRuntimeFactory implements ApplicationCoordinator.Fa
             var space=new EmbeddingSpace(e.provider(),e.endpoint(),e.modelId(),dimensions,"","","explicit-profile-v1");
             // Conservative local byte estimates and finite MVP limits. They are not claims about
             // the configured provider's context window/tokenizer; real API calibration is separate.
-            var limits=new Limits(6,8,16000,32000,34816,2048,Duration.ofMinutes(2),256);
-            var context=new ContextPlanner.Settings(32768,24576,1024,2,8000,Duration.ofSeconds(30),g.modelId());
+            // 128K input budget + 32K output reservation, with room for framing.
+            var limits=new Limits(6,8,16000,131072,163840,32768,Duration.ofMinutes(2),256);
+            // Compaction keeps the last two turns; trigger at 75% of the 128K input budget.
+            var context=new ContextPlanner.Settings(131072,98304,8192,2,32768,Duration.ofSeconds(30),g.modelId());
             var ownedTransport=transport;var ownedOpenAi=openAi;
             return new RuntimeResources(model,CourseEmbeddings.springAi(embeddingModel,space),
                     new Settings(space,new Processing("pdf-port-v1",1200,120),new IndexSettings(16,100,1.5f,1.2f)),

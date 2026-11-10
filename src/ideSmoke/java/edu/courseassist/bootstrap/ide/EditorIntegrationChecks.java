@@ -92,6 +92,18 @@ final class EditorIntegrationChecks {
             var whitespace=frozenSelection(service,virtualFile,source,methodStart-4,methodStart);
             var empty=service.codeCapture().capture(whitespace).toCompletableFuture().get(15,TimeUnit.SECONDS);
             require(empty.start().equals(whitespace) && empty.automaticContexts().stream().allMatch(c->c.status()==edu.courseassist.contract.CaptureContracts.ContextStatus.NOT_APPLICABLE),"Whitespace-only capture has no invented context");
+            // Both boundaries can sit outside methods (class body, fields, comments). The raw
+            // selection must still enter the draft; only the automatic method context is absent.
+            var classWide=frozenSelection(service,virtualFile,source,0,source.lastIndexOf('}')+1);
+            var classCapture=service.codeCapture().capture(classWide).toCompletableFuture().get(15,TimeUnit.SECONDS);
+            require(classCapture.start().equals(classWide),"Class-wide selection retained exactly");
+            require(classCapture.automaticContexts().stream().filter(c->c.kind()==ContextKind.METHOD).findFirst().orElseThrow()
+                    .status()==edu.courseassist.contract.CaptureContracts.ContextStatus.NOT_APPLICABLE,"Class-wide selection has no invented method context");
+            var partial=frozenSelection(service,virtualFile,source,source.indexOf("int field"),source.indexOf("return x * 2;")+13);
+            var partialCapture=service.codeCapture().capture(partial).toCompletableFuture().get(15,TimeUnit.SECONDS);
+            require(partialCapture.start().equals(partial),"Partial-method selection retained exactly");
+            require(partialCapture.automaticContexts().stream().filter(c->c.kind()==ContextKind.METHOD).findFirst().orElseThrow()
+                    .status()==edu.courseassist.contract.CaptureContracts.ContextStatus.NOT_APPLICABLE,"Partial-method selection has no invented method context");
         } finally {
             ApplicationManager.getApplication().invokeAndWait(() -> projects.forceCloseProject(project, true));
         }

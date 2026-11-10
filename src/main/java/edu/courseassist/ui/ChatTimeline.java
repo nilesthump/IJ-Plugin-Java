@@ -140,11 +140,7 @@ final class ChatTimeline implements AutoCloseable {
                     else if (attempt.finalStepId().filter(step.stepId()::equals).isPresent() ||
                             (branch.steps().stream().noneMatch(candidate -> attempt.finalStepId().filter(candidate.stepId()::equals).isPresent()) && step == branch.steps().getLast())) answer.addAll(markdown(step.markdown(), branch.basis().citations()));
                 }
-                String state = switch (attempt.status()) {
-                    case RUNNING -> "正在生成"; case SAVING -> "正在保存"; case SUCCEEDED -> "已完成";
-                    case STOPPED -> "已暂停 · 继续将从原问题重新生成"; case INTERRUPTED -> "已中断";
-                    case LIMITED -> "达到限制"; case FAILED -> "生成失败，请检查服务配置";
-                };
+                String state = edu.courseassist.ui.f2.FailurePresentation.state(attempt.status(), attempt.failure());
                 if (branch.status() == BranchStatus.INVALIDATED) state += " · 旧分支已失效";
                 state += " · " + branch.basis().explanation();
                 var refs = attempt.contextEligibility()==ContextEligibility.ELIGIBLE_DURABLE_SUCCESS && attempt.effectiveBranchId().filter(branch.branchId()::equals).isPresent() && branch.status() != BranchStatus.INVALIDATED ? branch.basis().citations() : List.<Citation>of();

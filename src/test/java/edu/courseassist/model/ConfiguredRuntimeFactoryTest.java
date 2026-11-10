@@ -33,8 +33,9 @@ class ConfiguredRuntimeFactoryTest {
         assertArrayEquals(new char[copied.length],copied);
     }
     @Test void productionFactoryConstructsLocallyAndUsesOnlyExplicitLoopbackEndpoints() throws Exception {
-        AtomicInteger requests=new AtomicInteger();var server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
-        server.createContext("/chat/completions",exchange->{requests.incrementAndGet();exchange.getRequestBody().readAllBytes();
+        AtomicInteger requests=new AtomicInteger();var chatBody=new AtomicReference<String>();
+        var server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
+        server.createContext("/chat/completions",exchange->{requests.incrementAndGet();chatBody.set(new String(exchange.getRequestBody().readAllBytes(),StandardCharsets.UTF_8));
             byte[] body="data: {\"id\":\"configured-local\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"configured answer\"},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n".getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type","text/event-stream");exchange.sendResponseHeaders(200,body.length);try(exchange){exchange.getResponseBody().write(body);}});
         server.createContext("/embeddings",exchange->{requests.incrementAndGet();exchange.getRequestBody().readAllBytes();
@@ -46,11 +47,21 @@ class ConfiguredRuntimeFactoryTest {
         var generation=new ProviderProfile("g","synthetic",endpoint,"configured-generation",Optional.empty());
         var embedding=new ProviderProfile("e","synthetic",endpoint,"configured-embedding",Optional.of(3));
         try(var configured=new ConfiguredRuntimeFactory().create(new ProviderConfiguration(generation,embedding),vault)) {
+            assertEquals(32768,configured.limits().outputTokens());
+            assertEquals(163840,configured.limits().contextTokens());
+            assertEquals(131072,configured.context().inputLimit());
+            assertEquals(98304,configured.context().autoTrigger());
+            assertEquals(8192,configured.context().summaryOutput());
+            assertEquals(32768,configured.context().maxSummaryChars());
+            assertTrue(configured.limits().contextTokens()-configured.limits().outputTokens()>=configured.context().inputLimit());
+            assertTrue(configured.limits().maxOutputChars()>=configured.limits().outputTokens()*4);
             assertEquals(0,requests.get());assertArrayEquals(new float[]{1,0,0},configured.embeddings().query("exact query"));
             CountDownLatch complete=new CountDownLatch(1);AtomicReference<Throwable> error=new AtomicReference<>();List<Frame> frames=new CopyOnWriteArrayList<>();
-            Cancel cancel=configured.model().subscribe(new Request(List.of(Message.text("user","question")),List.of(),32),new Listener(){
+            Cancel cancel=configured.model().subscribe(new Request(List.of(Message.text("user","question")),List.of(),
+                    configured.limits().outputTokens()),new Listener(){
                 public void frame(Frame frame){frames.add(frame);}public void failed(Throwable failure){error.set(failure);complete.countDown();}public void complete(){complete.countDown();}});
             assertTrue(complete.await(10,TimeUnit.SECONDS));cancel.cancel();assertNull(error.get());assertTrue(frames.contains(new Body("configured answer")));assertEquals(2,requests.get());
+            assertNotNull(chatBody.get());assertTrue(chatBody.get().contains("\"max_tokens\":32768"),chatBody.get());
         }finally{server.stop(0);}
     }
 }

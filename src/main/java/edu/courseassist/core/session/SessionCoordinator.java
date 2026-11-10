@@ -213,7 +213,7 @@ public final class SessionCoordinator implements SessionController, SelectionSin
         List<Branch> branches=s.branches().stream().map(b->new Branch(b.id(),b.status(),b.retrieval(),b.explanation(),b.steps().stream()
                 .map(step->new Step(step.id(),step.throughSeq(),step.status()==StepStatus.STREAMING||step.status()==StepStatus.TOOLS_RUNNING?StepStatus.INCOMPLETE:step.status(),
                         step.body(),step.thinking(),step.tools(),step.finishReason(),step.usage(),step.suppliedEvidence())).toList(),b.protocol())).toList();
-        return new Snapshot(s.identity(),s.input(),s.revision()+1,s.throughSeq(),AttemptStatus.INTERRUPTED,true,"","",branches,List.of(),"lifecycle-interrupted");
+        return new Snapshot(s.identity(),s.input(),s.revision()+1,s.throughSeq(),AttemptStatus.INTERRUPTED,true,"","",branches,List.of(),"lifecycle-interrupted",FailureCode.CANCELLED.name(),FailurePhase.LIFECYCLE.name());
     }
     @Override public CompletionStage<CommandResult> dispatch(ViewEvent event) {
         if(event instanceof DeleteSession)revokeReservations(event.meta().projectInstanceId(),event.meta().sessionId());
@@ -682,7 +682,11 @@ public final class SessionCoordinator implements SessionController, SelectionSin
                 observationFailed(s.id())?"代码核验状态保存失败，暂不能发送；请重试状态恢复":"当前代码状态无法核验，已标记未知；可重试状态恢复",s.id(),null));
             if(summaryFailures.containsKey(s.id())&&!failures.containsKey(s.id())&&s.operation().isEmpty())notices.add(new Notice("summary-fallback:"+s.id(),Severity.WARNING,"CONTEXT_FALLBACK",
                 "自动整理历史未完成，本轮已使用预算内的现有上下文",Optional.of(s.id()),Optional.empty()));
-            if(failures.containsKey(s.id())&&notices.stream().noneMatch(n->n.severity()==Severity.ERROR))notices.add(SessionData.notice("TASK_FAILED","操作失败，请查看任务状态后重试",s.id(),null));
+            if(failures.containsKey(s.id())&&notices.stream().noneMatch(n->n.severity()==Severity.ERROR)) {
+                String message=Optional.ofNullable(generationFailures.get(s.id()))
+                        .flatMap(GenerationDiagnostics::notice).orElse("操作失败，请查看任务状态后重试");
+                notices.add(SessionData.notice("TASK_FAILED",message,s.id(),null));
+            }
             sessions.add(new SessionViewState(s.id(),SessionData.displayTitle(s),s.revision(),s.lifecycle(),unsavedDrafts.getOrDefault(s.id(),s.draft()),turns,s.operation().map(o->new ActiveOperation(o.identity().operationId(),o.kind(),
                     o.kind()==OperationKind.GENERATE?Optional.of(o.identity().attemptId()):Optional.empty())),failed,actions,notices,repository.edits().views(s.projectId(),p.instance,s.id())));
         }

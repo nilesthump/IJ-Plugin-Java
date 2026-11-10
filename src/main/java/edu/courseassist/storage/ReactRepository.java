@@ -80,7 +80,7 @@ public final class ReactRepository implements Journal {
                 new Step(s.id(), s.throughSeq(), s.status() == StepStatus.STREAMING || s.status() == StepStatus.TOOLS_RUNNING ? StepStatus.INCOMPLETE : s.status(),
                         s.body(), s.thinking(), s.tools(), s.finishReason(), s.usage(), s.suppliedEvidence())).toList(), b.protocol())).toList();
         Snapshot interrupted = new Snapshot(old.identity(), old.input(), old.revision()+1, old.throughSeq(), AttemptStatus.INTERRUPTED, true,
-                "", "", branches, List.of(), "recovered-interrupted");
+                "", "", branches, List.of(), "recovered-interrupted", FailureCode.CANCELLED.name(), FailurePhase.LIFECYCLE.name());
         save(interrupted, true); return interrupted;
     }
     /** Called under the session deletion fence; shared PDFs/indices remain untouched. */
