@@ -50,11 +50,12 @@ class CodeEditToolsTest {
     @Test void realSpringAiLoopbackProtocol(){assertDoesNotThrow(()->edu.courseassist.bootstrap.ide.F2GenerationChecks.run(root));}
     static final String BEFORE="class X { int n=1; }\n";
     static String patch(){int at=BEFORE.indexOf("1");return ReactContext.json(Map.of("changes",List.of(Map.of("start",at,"end",at+1,"before","1","after","2"))));}
-    String open(SessionTestEnvironment e) throws Exception {
+    String open(SessionTestEnvironment e) throws Exception { return open(e,List.of(new Span(0,BEFORE.length()))); }
+    String open(SessionTestEnvironment e,List<Span> allowed) throws Exception {
         e.configureAndEnable();
         e.sessions.open(new Location("C:/synthetic/edit","edit"),"i",()->start->CompletableFuture.completedFuture(SessionTestEnvironment.group(start)),true,
                 Optional.of((identity,input,permitted)->(request,query)->CompletableFuture.completedFuture(new TargetResolution(ResolutionStatus.UNIQUE,
-                        List.of(new Target("file:///X.java","X.java","m","X")),Optional.of(new EditSnapshot(1,UUID.randomUUID().toString(),request,new Target("file:///X.java","X.java","m","X"),7,BEFORE,List.of(new Span(0,BEFORE.length()))))))))
+                        List.of(new Target("file:///X.java","X.java","m","X")),Optional.of(new EditSnapshot(1,UUID.randomUUID().toString(),request,new Target("file:///X.java","X.java","m","X"),7,BEFORE,allowed))))))
                 .toCompletableFuture().get(10,TimeUnit.SECONDS);
         String session=e.create("i");e.text("i",session,"Change n from 1 to 2 in X.java");return session;
     }
@@ -114,6 +115,70 @@ class CodeEditToolsTest {
             assertEquals(invalid?AttemptStatus.FAILED:AttemptStatus.SUCCEEDED,e.repository.history(project,"i",session).getFirst().attempts().getLast().status());
         }
     }
+    @Test void invalidCandidateBodiesMapToDistinctPatchDiagnostics() throws Exception {
+        record Case(String body,List<Span> allowed,FailureCode code) {}
+        List<Case> cases=List.of(
+                new Case("not-json",List.of(new Span(0,BEFORE.length())),FailureCode.CANDIDATE_FORMAT),
+                new Case("{\"changes\":[{\"start\":0,\"end\":999,\"before\":\"class\",\"after\":\"X\"}]}",List.of(new Span(0,BEFORE.length())),FailureCode.CANDIDATE_RANGE_BOUNDS),
+                new Case("{\"changes\":[{\"start\":0,\"end\":5,\"before\":\"class\",\"after\":\"X\"},{\"start\":2,\"end\":3,\"before\":\"s\",\"after\":\"Y\"}]}",List.of(new Span(0,BEFORE.length())),FailureCode.CANDIDATE_RANGE_OVERLAP),
+                new Case("{\"changes\":[{\"start\":0,\"end\":1,\"before\":\"c\",\"after\":\"X\"}]}",List.of(new Span(1,BEFORE.length())),FailureCode.CANDIDATE_RANGE_OUTSIDE_ALLOWED),
+                new Case("{\"changes\":[{\"start\":0,\"end\":5,\"before\":\"wrong\",\"after\":\"X\"}]}",List.of(new Span(0,BEFORE.length())),FailureCode.CANDIDATE_BEFORE_MISMATCH)
+        );
+        for(int i=0;i<cases.size();i++) {
+            var scenario=cases.get(i);
+            try(var e=new SessionTestEnvironment(root.resolve("case"+i))) {
+                String session=open(e,scenario.allowed());
+                AtomicInteger parent=new AtomicInteger(),child=new AtomicInteger();
+                e.model.set(model(parent,child,scenario.body(),false,false));
+                e.submit("i",session);e.idle("i",session);
+                String project=e.sessions.snapshot("i").projectId();
+                var attempt=e.repository.history(project,"i",session).getFirst().attempts().getLast();
+                assertEquals(AttemptStatus.FAILED,attempt.status());
+                assertEquals(scenario.code().name(),attempt.failureCode());
+                assertEquals(FailurePhase.PATCH_VALIDATION.name(),attempt.failurePhase());
+                assertTrue(e.repository.edits().views(project,"i",session).isEmpty());
+                assertTrue(e.view("i",session).notices().stream().anyMatch(n->n.code().equals("TASK_FAILED")
+                        &&n.message().contains(scenario.code().name())),"Specific failure notice expected");
+            }
+        }
+    }
+    @Test void unknownSnapshotRefReturnsRecoverableObservationInsteadOfFailing() throws Exception {
+        try(var e=new SessionTestEnvironment(root.resolve("stale-ref"))) {
+            String session=open(e),project=e.sessions.snapshot("i").projectId();
+            var submission=e.repository.submit(project,e.submitEvent("i",session),e.runtime.snapshot().epoch());
+            Identity id=submission.operation().orElseThrow().identity();
+            Input input=e.repository.react().load(id).orElseThrow().input();
+            var adapter=new CodeEditTools(id,input,(request,query)->{
+                throw new AssertionError("A stale ref must not trigger target resolution");
+            },e.repository.edits(),1024);
+            String observation=adapter.execute(ToolBoundary.Capability.PROPOSAL,id,"branch",
+                    new Call("p","proposeCodeEdit",ReactContext.json(Map.of("ref","ref-from-an-earlier-attempt"))),
+                    ()->true).get(5,TimeUnit.SECONDS);
+            assertTrue(observation.contains("INVALID_SNAPSHOT_REF"));
+            assertTrue(observation.contains("resolveEditTarget"));
+            assertEquals(0,e.repository.edits().views(project,"i",session).size());
+        }
+    }
+    @Test void childOutputLengthIsCodedAsCandidateLimit() throws Exception {
+        try(var e=new SessionTestEnvironment(root.resolve("child-output"))) {
+            String session=open(e);AtomicInteger parent=new AtomicInteger(),child=new AtomicInteger();
+            var normal=model(parent,child,patch(),false,false);
+            e.model.set((request,listener)->{
+                if(request.tools().isEmpty()) {
+                    child.incrementAndGet();listener.frame(new Body("truncated-candidate-prefix"));
+                    listener.frame(new End("length"));listener.complete();return ()->{};
+                }
+                return normal.subscribe(request,listener);
+            });
+            e.submit("i",session);e.idle("i",session);
+            String project=e.sessions.snapshot("i").projectId();
+            var attempt=e.repository.history(project,"i",session).getFirst().attempts().getLast();
+            assertEquals(AttemptStatus.LIMITED,attempt.status());
+            assertEquals(FailureCode.MODEL_OUTPUT_LIMIT.name(),attempt.failureCode());
+            assertEquals(FailurePhase.CANDIDATE_GENERATION.name(),attempt.failurePhase());
+            assertTrue(e.repository.edits().views(project,"i",session).isEmpty());
+        }
+    }
     @Test void outsideSourceRootExplainsBoundaryWithoutChildOrCandidate() throws Exception {
         try(var e=new SessionTestEnvironment(root)) {
             e.configureAndEnable();
@@ -144,15 +209,26 @@ class CodeEditToolsTest {
             assertTrue(e.repository.history(binding.projectId(),"i",session).getFirst().attempts().getLast().eligible());
         }
     }
+    private static void assertPatchFailure(FailureCode code,org.junit.jupiter.api.function.Executable action) {
+        Throwable failure=assertThrows(RuntimeException.class,action);
+        var coded=assertInstanceOf(ReactData.CodedFailure.class,failure);
+        assertEquals(code,coded.failure().code());
+        assertEquals(FailurePhase.PATCH_VALIDATION,coded.failure().phase());
+    }
     @Test void exactPatchRejectsOverlapScopeMismatchDuplicatesAndTrailingData() {
         var origin=new Origin("p","i","s","t","a","o",0);var request=new EditRequest("r",origin,"t",0,"change",Optional.empty());
         var snapshot=new EditSnapshot(1,"s",request,new Target("file","X.java","",""),1,"abcdef",List.of(new Span(1,5)));
         assertEquals("aXdef",EditPatch.apply(snapshot,"{\"changes\":[{\"start\":1,\"end\":3,\"before\":\"bc\",\"after\":\"X\"}]}"));
-        for(String body:List.of(
-                "{\"changes\":[{\"start\":0,\"end\":1,\"before\":\"a\",\"after\":\"X\"}]}",
-                "{\"changes\":[{\"start\":1,\"end\":3,\"before\":\"bc\",\"after\":\"X\"},{\"start\":2,\"end\":4,\"before\":\"cd\",\"after\":\"Y\"}]}",
-                "{\"changes\":[{\"start\":1,\"end\":2,\"before\":\"z\",\"after\":\"X\"}]}",
-                "{\"changes\":[],\"changes\":[]}","{\"changes\":[]} trailing","{\"changes\":[],\"approved\":true}"))assertThrows(RuntimeException.class,()->EditPatch.apply(snapshot,body));
+        assertPatchFailure(FailureCode.CANDIDATE_RANGE_OUTSIDE_ALLOWED,()->EditPatch.apply(snapshot,"{\"changes\":[{\"start\":0,\"end\":1,\"before\":\"a\",\"after\":\"X\"}]}"));
+        assertPatchFailure(FailureCode.CANDIDATE_RANGE_OVERLAP,()->EditPatch.apply(snapshot,"{\"changes\":[{\"start\":1,\"end\":3,\"before\":\"bc\",\"after\":\"X\"},{\"start\":2,\"end\":4,\"before\":\"cd\",\"after\":\"Y\"}]}"));
+        assertPatchFailure(FailureCode.CANDIDATE_BEFORE_MISMATCH,()->EditPatch.apply(snapshot,"{\"changes\":[{\"start\":1,\"end\":2,\"before\":\"z\",\"after\":\"X\"}]}"));
+        assertPatchFailure(FailureCode.CANDIDATE_RANGE_BOUNDS,()->EditPatch.apply(snapshot,"{\"changes\":[{\"start\":1,\"end\":99,\"before\":\"bc\",\"after\":\"X\"}]}"));
+        for(String body:List.of("{\"changes\":[],\"changes\":[]}","{\"changes\":[]} trailing","{\"changes\":[],\"approved\":true}",
+                "not-json","{\"changes\":[{\"start\":1,\"end\":2}]}"))
+            assertPatchFailure(FailureCode.CANDIDATE_FORMAT,()->EditPatch.apply(snapshot,body));
+        var hugeSnapshot=new EditSnapshot(1,"s",request,new Target("file","X.java","",""),1,"a",List.of(new Span(0,1)));
+        String huge="{\"changes\":[{\"start\":0,\"end\":0,\"before\":\"\",\"after\":\""+"x".repeat(edu.courseassist.contract.EditContracts.MAX_DOCUMENT_CHARS)+"\"}]}";
+        assertPatchFailure(FailureCode.RESULT_SIZE_LIMIT,()->EditPatch.apply(hugeSnapshot,huge));
     }
     @Test void concurrentAndFailedRequestsReserveOnceAndFallbackCannotResolveAgain() throws Exception {
         for(boolean fail:List.of(false,true))try(var e=new SessionTestEnvironment(root.resolve("race-"+fail))) {
@@ -182,7 +258,8 @@ class CodeEditToolsTest {
             if(fail)assertThrows(ExecutionException.class,again::get);else assertEquals(first.get(),again.get());
             assertEquals(1,subscriptions.get());
             assertTrue(adapter.execute(ToolBoundary.Capability.TARGET,id,"fallback",resolve,()->true).get().contains("NEW_DRAFT_REQUIRED"));assertEquals(1,reads.get());
-            assertThrows(ProtocolFailure.class,()->adapter.execute(ToolBoundary.Capability.PROPOSAL,id,"fallback",new Call("p4","proposeCodeEdit",ReactContext.json(Map.of("ref",ref))),()->true,generate));
+            String otherBranch=adapter.execute(ToolBoundary.Capability.PROPOSAL,id,"fallback",new Call("p4","proposeCodeEdit",ReactContext.json(Map.of("ref",ref))),()->true,generate).get();
+            assertTrue(otherBranch.contains("INVALID_SNAPSHOT_REF"));
             assertEquals(1L,e.store.transaction(c->{try(var s=c.createStatement();var r=s.executeQuery("SELECT COUNT(*) FROM ca_edit_generation")){r.next();return r.getLong(1);}}).join());
         }
     }

@@ -22,6 +22,27 @@ public final class ChatContracts {
     public enum CaptureState { PENDING, READY, FAILED, RECAPTURE_REQUIRED }
     public enum OperationKind { GENERATE, COMPACT, APPLY }
     public enum AttemptStatus { RUNNING, SAVING, SUCCEEDED, STOPPED, INTERRUPTED, LIMITED, FAILED }
+    /** Fixed, non-secret generation/F2 failure categories. Codes are stable for logs and UI. */
+    public enum FailureCode {
+        MODEL_OUTPUT_LIMIT, ATTEMPT_TIMEOUT, CONTEXT_BUDGET,
+        CANDIDATE_FORMAT, CANDIDATE_RANGE_BOUNDS, CANDIDATE_RANGE_OVERLAP, CANDIDATE_RANGE_OUTSIDE_ALLOWED,
+        CANDIDATE_BEFORE_MISMATCH, RESULT_SIZE_LIMIT, MODEL_PROTOCOL, PROVIDER_FAILURE, CANCELLED,
+        GENERATION_LIMIT, COMPACTION_REJECTED, INTERNAL
+    }
+    public enum FailurePhase {
+        MODEL_GENERATION, CANDIDATE_GENERATION, PATCH_VALIDATION, TOOL_RESULT, CONTEXT, LIFECYCLE, INTERNAL
+    }
+    /** Missing/unknown stored values degrade to an empty diagnostic, never to an invented cause. */
+    public record FailureView(FailureCode code, FailurePhase phase) {
+        public FailureView {
+            Objects.requireNonNull(code, "code"); Objects.requireNonNull(phase, "phase");
+        }
+        public static java.util.Optional<FailureView> parse(String code, String phase) {
+            if (code == null || code.isBlank() || phase == null || phase.isBlank()) return java.util.Optional.empty();
+            try { return java.util.Optional.of(new FailureView(FailureCode.valueOf(code), FailurePhase.valueOf(phase))); }
+            catch (IllegalArgumentException unknown) { return java.util.Optional.empty(); }
+        }
+    }
     public enum BranchStatus { ACTIVE, COMPLETED, INVALIDATED }
     public enum StepStatus { STREAMING, TOOL_CALLS_READY, TOOLS_RUNNING, FINISHED, INCOMPLETE }
     public enum ToolStatus { REQUESTED, RUNNING, SUCCEEDED, FAILED, CANCELED }
@@ -170,13 +191,22 @@ public final class ChatContracts {
     public record AttemptView(String attemptId, String operationId, long viewRevision, AttemptStatus status,
                               SaveState saveState, ContextEligibility contextEligibility,
                               Optional<String> effectiveBranchId, Optional<String> finalStepId,
-                              List<BranchView> branches) {
+                              List<BranchView> branches, Optional<FailureView> failure) {
+        /** Source compatibility for callers that do not project a diagnostic. */
+        public AttemptView(String attemptId, String operationId, long viewRevision, AttemptStatus status,
+                           SaveState saveState, ContextEligibility contextEligibility,
+                           Optional<String> effectiveBranchId, Optional<String> finalStepId,
+                           List<BranchView> branches) {
+            this(attemptId, operationId, viewRevision, status, saveState, contextEligibility,
+                    effectiveBranchId, finalStepId, branches, Optional.empty());
+        }
         public AttemptView {
             requireId(attemptId, "attemptId"); requireId(operationId, "operationId"); requireRevision(viewRevision);
             Objects.requireNonNull(status, "status"); Objects.requireNonNull(saveState, "saveState");
             Objects.requireNonNull(contextEligibility, "contextEligibility");
             effectiveBranchId = Objects.requireNonNull(effectiveBranchId, "effectiveBranchId");
             finalStepId = Objects.requireNonNull(finalStepId, "finalStepId"); branches = List.copyOf(branches);
+            failure = Objects.requireNonNull(failure, "failure");
             if (contextEligibility == ContextEligibility.ELIGIBLE_DURABLE_SUCCESS
                     && (status != AttemptStatus.SUCCEEDED || saveState != SaveState.SAVED
                     || effectiveBranchId.isEmpty() || finalStepId.isEmpty())) {
