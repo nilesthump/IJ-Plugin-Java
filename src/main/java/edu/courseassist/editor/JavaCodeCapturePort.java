@@ -111,12 +111,15 @@ public final class JavaCodeCapturePort implements CodeCapturePort {
         PsiMethod startMethod = enclosingMethod(file.findElementAt(startOffset));
         PsiMethod endMethod = enclosingMethod(file.findElementAt(endOffset - 1));
         if (startMethod == null && endMethod == null) {
-            if (intersectsMethod(file, startOffset, endOffset)) {
-                throw new IllegalArgumentException("Selection crosses a method boundary");
-            }
-            return absent(ContextKind.METHOD, "no-enclosing-method");
+            return absent(ContextKind.METHOD, intersectsMethod(file, startOffset, endOffset)
+                    ? "outside-method-boundaries" : "no-enclosing-method");
         }
-        if (startMethod == null || startMethod != endMethod) {
+        if (startMethod == null || endMethod == null) {
+            // A class header/field plus part of a method is not one method; keep the raw selection
+            // and mark only the automatic method context as not applicable.
+            return absent(ContextKind.METHOD, "partial-method-selection");
+        }
+        if (startMethod != endMethod) {
             throw new IllegalArgumentException("Selection crosses a method boundary");
         }
         return captured(ContextKind.METHOD, startMethod.getText(),
