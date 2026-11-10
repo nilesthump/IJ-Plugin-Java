@@ -21,15 +21,120 @@ import static edu.courseassist.bootstrap.ide.SessionTestEnvironment.*;
 
 class SessionCoordinatorTest {
     @TempDir Path root;
+    @Test void emptyForegroundSubmitsOnceAndTitlesSurviveRenameAndLaterTurns() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();var binding=e.open("i","directory",false);
+            var send=new SubmitNewSession(e.meta("i",null),"  第一段用户消息\n说明问题  ");
+            assertEquals(Outcome.APPLIED,e.dispatch(send).outcome());
+            String id=e.sessions.snapshot("i").activeSessionId().orElseThrow();e.idle("i",id);
+            assertEquals("第一段用户消息 说明问题",e.view("i",id).title());
+            assertEquals(1,e.view("i",id).turns().size());
+            assertEquals(send.text(),e.repository.history(binding.projectId(),"i",id).getFirst().input().question());
+            assertEquals(Outcome.REJECTED,e.dispatch(send).outcome());
+            assertEquals(1,e.requests.size());assertEquals(1,e.sessions.snapshot("i").sessions().size());
+            // Even a manual name resembling an old generated title remains explicit.
+            assertEquals(Outcome.APPLIED,e.dispatch(new RenameSession(e.meta("i",id),"新会话 1")).outcome());
+            e.text("i",id,"第二段不能覆盖名称");e.submit("i",id);e.idle("i",id);
+            assertEquals("新会话 1",e.view("i",id).title());
+            assertTrue(e.repository.states(binding.projectId(),"i").getFirst().titleExplicit());
+            e.dispatch(new CloseSessionTab(e.meta("i",id)));
+            assertTrue(e.sessions.snapshot("i").activeSessionId().isEmpty());
+            e.dispatch(new SubmitNewSession(e.meta("i",null),"另一个话题"));
+            String second=e.sessions.snapshot("i").activeSessionId().orElseThrow();e.idle("i",second);
+            assertNotEquals(id,second);assertEquals(2,e.sessions.snapshot("i").sessions().size());
+            e.dispatch(new OpenSessionTab(e.meta("i",id)));assertEquals("新会话 1",e.view("i",id).title());
+        }
+    }
+    @Test void legacyTitleFieldAndBlockedRenameSurviveDatabaseReopen() throws Exception {
+        String id;
+        try(var e=new SessionTestEnvironment(root)) {
+            var binding=e.open("i","directory",false);id=e.create("i");
+            String session=id;
+            e.store.transaction(db->{
+                try(var query=db.prepareStatement("SELECT payload FROM ca_session WHERE id=?")) {
+                    query.setString(1,session);try(var rows=query.executeQuery()) {assertTrue(rows.next());
+                        String payload=rows.getString(1);assertTrue(payload.contains("\"titleExplicit\":false"));
+                        try(var update=db.prepareStatement("UPDATE ca_session SET payload=? WHERE id=?")) {
+                            update.setString(1,payload.replace(",\"titleExplicit\":false",""));update.setString(2,session);update.executeUpdate();
+                        }
+                    }
+                }return null;
+            }).join();
+            var legacy=e.repository.states(binding.projectId(),"i").getFirst();assertFalse(legacy.titleExplicit());
+            e.repository.edit(binding.projectId(),"i",id,s->new State(s.id(),s.projectId(),s.title(),s.revision()+1,s.lifecycle(),true,s.draft(),s.turns(),s.operation(),s.notices(),s.titleExplicit()));
+            e.sessions.refreshAll().toCompletableFuture().get();
+            assertEquals(Outcome.APPLIED,e.dispatch(new RenameSession(e.meta("i",id),"手动名称保留")).outcome());
+            assertTrue(e.repository.states(binding.projectId(),"i").getFirst().blocked());
+            assertEquals(legacy.draft(),e.view("i",id).draft());
+            e.sessions.closeProject("i").toCompletableFuture().get();
+        }
+        try(var e=new SessionTestEnvironment(root)) {
+            var binding=e.open("j","directory",false);
+            assertEquals("手动名称保留",e.view("j",id).title());
+            assertTrue(e.repository.states(binding.projectId(),"j").getFirst().titleExplicit());
+        }
+    }
+    @Test void emptyForegroundWhileDisabledDoesNotCreateOrLoseSessionState() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.open("i","directory",false);
+            var result=e.dispatch(new SubmitNewSession(e.meta("i",null),"keep locally"));
+            assertEquals(Rejection.PLUGIN_OFF,result.rejection().orElseThrow());
+            assertTrue(e.sessions.snapshot("i").sessions().isEmpty());assertTrue(e.requests.isEmpty());
+        }
+    }
+
+    @Test void completedAttemptDoesNotAdvertiseRetry() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();e.open("a","a",false);String session=e.create("a");
+            e.model.set((r,l)->{finish(l,"completed");return ()->{};});
+            e.text("a",session,"question");e.submit("a",session);e.idle("a",session);
+            assertFalse(e.view("a",session).allowedActions().contains(SessionAction.RETRY));
+        }
+    }
+    @Test void removedCitationShowsNoticeAndKeepsChatWritableAfterReopen() throws Exception {
+        Citation citation; String session;
+        try(var e=new SessionTestEnvironment(root, request -> new edu.courseassist.contract.PdfContracts.PdfReadResult(request,1,
+                List.of(new edu.courseassist.contract.PdfContracts.PdfPage(1,"synthetic course",edu.courseassist.contract.PdfContracts.PageTextStatus.TEXT,Optional.empty()))))) {
+            e.configureAndEnable(); e.open("a","a",false); session=e.create("a");
+            var resources=e.app.resources();
+            var imported=e.courses.importPdf(Files.writeString(root.resolve("source.pdf"),"synthetic bytes"),"source",e.courses.snapshot().get().base(),resources.corpus(),resources.embeddings(),()->true);
+            imported.completion().toCompletableFuture().get(); imported.settled().toCompletableFuture().get();
+            String chunk;
+            try(var lease=e.courses.openAttempt()) { chunk=lease.search("course",resources.embeddings(),resources.search(),()->true).get().getFirst().chunkId(); }
+            e.model.set((request,listener)->{finish(listener,"preserved answer [[course:"+chunk+"]]");return ()->{};});
+            e.text("a",session,"question");e.submit("a",session);e.idle("a",session);
+            citation=e.repository.history(e.sessions.snapshot("a").projectId(),"a",session).getFirst().attempts().getFirst().citations().getFirst();
+            var snapshot=e.courses.snapshot().get();var material=snapshot.materials().getFirst();
+            e.courses.remove(snapshot.base(),new MaterialTarget(material.documentId(),material.sourceVersionId(),material.materialRevision()),()->true).completion().toCompletableFuture().get();
+            e.sessions.citationOpener(c->e.courses.sourcePath(c.sourceVersionId()).join());
+            assertEquals(Outcome.APPLIED,e.dispatch(new OpenCitation(e.meta("a",session),citation)).outcome());
+            assertEquals("资料已删除",e.sessions.snapshot("a").notices().getFirst().message());
+            assertFalse(e.view("a",session).writesBlocked());assertEquals(1,e.view("a",session).turns().size());
+            e.model.set((request,listener)->{finish(listener,"next answer");return ()->{};});
+            e.text("a",session,"next question");e.submit("a",session);e.idle("a",session);
+            assertFalse(e.view("a",session).writesBlocked());assertEquals(2,e.view("a",session).turns().size());
+        }
+        try(var e=new SessionTestEnvironment(root)) {
+            e.open("b","a",false);e.sessions.citationOpener(c->e.courses.sourcePath(c.sourceVersionId()).join());
+            e.dispatch(new OpenCitation(e.meta("b",session),citation));
+            assertEquals("资料已删除",e.sessions.snapshot("b").notices().getFirst().message());
+            assertEquals(2,e.view("b",session).turns().size());
+        }
+    }
     @Test void dedupPrecedesBusyAndRevisionAndNewDraftSurvives() throws Exception {
         try(var e=new SessionTestEnvironment(root)) {
             e.configureAndEnable();e.open("a","a",false);String session=e.create("a");e.text("a",session,"original");
             AtomicReference<Listener> listener=new AtomicReference<>();e.model.set((r,l)->{listener.set(l);return ()->{};});
-            SubmitDraft event=e.submitEvent("a",session);CommandResult first=e.dispatch(event);await(()->listener.get()!=null);
+            // Hold the reserved operation before model startup: BUSY/dedup assertions must
+            // not race the synthetic model's real elapsed-time limit on slow runners.
+            e.pauseGeneration.set(true);
+            SubmitDraft event=e.submitEvent("a",session);CommandResult first=e.dispatch(event);
+            assertEquals(Outcome.APPLIED,first.outcome());
             e.text("a",session,"next draft");CommandResult duplicate=e.dispatch(event);
-            assertEquals(first.operationId(),duplicate.operationId());assertEquals(1,e.requests.size());
+            assertEquals(first.operationId(),duplicate.operationId());assertEquals(0,e.requests.size());
             assertEquals(Rejection.BUSY,e.dispatch(e.submitEvent("a",session)).rejection().orElseThrow());
             assertEquals(1,e.view("a",session).turns().size());assertEquals("next draft",e.view("a",session).draft().text());
+            e.resumeGeneration();await(()->listener.get()!=null);assertEquals(1,e.requests.size());
             finish(listener.get(),"answer");e.idle("a",session);
             assertEquals("next draft",e.view("a",session).draft().text());assertEquals(ContextEligibility.ELIGIBLE_DURABLE_SUCCESS,e.view("a",session).turns().getFirst().attempts().getFirst().contextEligibility());
             assertEquals(Rejection.STALE_REVISION,e.dispatch(new SubmitDraft(e.meta("a",session),event.draftId(),event.expectedDraftRevision())).rejection().orElseThrow());
@@ -44,7 +149,8 @@ class SessionCoordinatorTest {
             e.sessions.captureCompletion("capture").toCompletableFuture().get(10,TimeUnit.SECONDS);e.sessions.refreshAll().toCompletableFuture().get();
             assertEquals(a,ticket.targetSessionId());assertEquals(CaptureState.READY,e.view("a",a).draft().captures().getFirst().state());
             assertEquals("edited during capture",e.view("a",a).draft().text());assertTrue(e.view("a",b).draft().captures().isEmpty());
-            e.submit("a",a);e.idle("a",a);var turn=e.view("a",a).turns().getFirst();assertEquals(4,turn.userMessage().parts().size());
+            e.submit("a",a);e.idle("a",a);var turn=e.view("a",a).turns().getFirst();assertEquals(2,turn.userMessage().parts().size());
+            assertEquals(PartKind.SELECTION,((CodePart)turn.userMessage().parts().getLast()).kind());
             assertTrue(e.requests.getFirst().messages().stream().anyMatch(m->m.content().contains("CLASS_STRUCTURE")));
         }
     }

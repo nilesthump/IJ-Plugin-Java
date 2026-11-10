@@ -41,6 +41,11 @@ foreach ($path in $changed) {
     if (-not $path) { continue }
     if ($Branch -eq 'dev-manager') {
         $outside = @($policy.managerExcluded | Where-Object { $path.StartsWith($_, [StringComparison]::Ordinal) }).Count -gt 0
+        if ($outside -and $policy.managerExceptions) {
+            $exception = @($policy.managerExceptions.prefixes | Where-Object { $path.StartsWith($_, [StringComparison]::Ordinal) }).Count -gt 0
+            $exception = $exception -or @($policy.managerExceptions.files | Where-Object { $path.Equals($_, [StringComparison]::Ordinal) }).Count -gt 0
+            $outside = -not $exception
+        }
     } else {
         $allowed = $policy.owners.$Branch
         $outside = @($allowed | Where-Object { $path.StartsWith($_, [StringComparison]::Ordinal) }).Count -eq 0

@@ -1,0 +1,82 @@
+{
+  "kind": "agent-local-implementation-validation",
+  "date": "2026-10-26",
+  "branch": "dev-manager",
+  "base": "1ec4b9412d8c70b20a404da6c9a499d82bae1654",
+  "groups": [
+    "G2",
+    "G3"
+  ],
+  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:\\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\\IJ-Plugin-Java\\tmp\\gradle-user-home'",
+  "exitCode": 0,
+  "suites": 34,
+  "tests": 196,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "ide": {
+    "status": "PASS",
+    "timestamp": "2026-10-26T10:35:07.734203600Z",
+    "ideBuild": "IU-262.10968.63",
+    "javaRuntime": "25.0.4+1-b508.27",
+    "checks": [
+      "plugin-loaded",
+      "application-project-services",
+      "project-isolation-disposal",
+      "background-work",
+      "Swing-ToolWindow-content-release",
+      "Java-PSI-read",
+      "production-configured-runtime-construction-no-network",
+      "H2-commit-reopen",
+      "JVector-build-query",
+      "SpringAI-local-chat-stream-embedding-no-retry",
+      "corpus-managed-PDF-H2-generation-physical-page",
+      "corpus-local-vector-recovery-fixed-attempt",
+      "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation",
+      "production-session-roots-dedup-typed-code-draft-tabs-restore-hard-delete",
+      "native-directory-identity-same-volume-move-copy-isolation",
+      "registered-PDF-reader-real-three-page-file",
+      "registered-editor-action-port",
+      "production-ToolWindow-controller-draft-save-reopen",
+      "registered-editor-action-Java-PSI-durable-three-part-capture",
+      "F2-project-source-roots-ambiguous-overload-nested-class-unsaved-document-stale-selection",
+      "F2-real-dumb-mode-and-bounded-incomplete-search",
+      "F2-SpringAI-loopback-parent-child-protocol-guarded-H2-candidate"
+    ],
+    "limitations": [
+      "headless IDE command; no visual interaction",
+      "synthetic loopback HTTP only",
+      "synthetic models/embeddings; no human visual acceptance or real provider validation"
+    ]
+  },
+  "log": "tmp/f2-g23-final.log",
+  "logSha256": "e2e26b0a8253f0e0529c1d888aa17ee744b9ceb3c74ba2aad54fe2de6d2bd3f6",
+  "independentReview": {
+    "increments": [
+      "H2 outside platform read callback",
+      "retry capability fence",
+      "cancellation archive isolation",
+      "Spring AI loopback protocol"
+    ],
+    "unresolved": 0,
+    "agent": "g23_independent_review",
+    "fixed": [
+      "attempt-wide resolution branch fence",
+      "independent VFS file identity",
+      "explicit zero-parameter overload"
+    ]
+  },
+  "priorFailures": [
+    "IDE fixture duplicate module names",
+    "CancellationException direct wrapping mismatch",
+    "reused fixture directory retained 257 files and correctly returned INCOMPLETE"
+  ],
+  "notRun": [
+    "paid provider",
+    "human F2 acceptance",
+    "native Diff and Undo/source apply",
+    "deterministic mid-capture write race",
+    "actual project-close race",
+    "session switch during capture"
+  ]
+}

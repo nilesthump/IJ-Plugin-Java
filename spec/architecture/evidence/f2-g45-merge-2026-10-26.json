@@ -1,0 +1,57 @@
+{
+  "recordedDate": "2026-10-26",
+  "status": "G4_G5_DONE",
+  "singlePullRequest": true,
+  "pr": {
+    "baseRefName": "main",
+    "headRefName": "dev-manager",
+    "headRefOid": "053aa37ce06049694f98dd513af45e86d0f0caf4",
+    "mergeCommit": {
+      "oid": "9ac4448ec649890646979215fa35601314168761"
+    },
+    "mergedAt": "2026-10-26T13:44:43Z",
+    "number": 21,
+    "state": "MERGED",
+    "url": "https://github.com/nilesthump/IJ-Plugin-Java/pull/21"
+  },
+  "premergeChecks": {
+    "baseRefName": "main",
+    "headRefName": "dev-manager",
+    "headRefOid": "053aa37ce06049694f98dd513af45e86d0f0caf4",
+    "mergeStateStatus": "CLEAN",
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-26T13:43:29Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/nilesthump/IJ-Plugin-Java/actions/runs/40330796236/job/121599739795",
+        "name": "validation",
+        "startedAt": "2026-10-26T13:28:43Z",
+        "status": "COMPLETED",
+        "workflowName": "F0 validation"
+      },
+      {
+        "__typename": "StatusContext",
+        "context": "scope",
+        "startedAt": "2026-10-26T13:43:41Z",
+        "state": "SUCCESS",
+        "targetUrl": "https://github.com/nilesthump/IJ-Plugin-Java/actions/runs/40333101834"
+      }
+    ]
+  },
+  "localBranch": "dev-manager",
+  "localHead": "9ac4448ec649890646979215fa35601314168761",
+  "originMain": "9ac4448ec649890646979215fa35601314168761",
+  "sourceBranchRetained": true,
+  "mergeAndHeadAncestorChecks": "PASS",
+  "workspaceClean": true,
+  "localValidation": "209 tests / 35 suites, All + IdeSmoke PASS",
+  "independentReview": "PASS; findings resolved",
+  "limitations": [
+    "G6 NOT_STARTED",
+    "Human visual interaction NOT_RUN",
+    "Real paid API NOT_RUN"
+  ],
+  "mainPushCI": "Not required for merge receipt; latest PR head checks passed before merge"
+}

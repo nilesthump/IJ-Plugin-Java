@@ -45,7 +45,9 @@ jobs:
                   {...context.repo, pull_number: target.number, per_page: 100});
                 if (files.length !== target.changed_files) errors.push(`PR ${target.number}: incomplete changed-file list.`);
                 const allowed = path => target.head.ref === 'dev-manager'
-                  ? !policy.managerExcluded.some(prefix => path.startsWith(prefix))
+                  ? (!policy.managerExcluded.some(prefix => path.startsWith(prefix)) ||
+                    (policy.managerExceptions?.prefixes ?? []).some(prefix => path.startsWith(prefix)) ||
+                    (policy.managerExceptions?.files ?? []).includes(path))
                   : (policy.owners[target.head.ref] ?? []).some(prefix => path.startsWith(prefix));
                 for (const file of files) {
                   for (const path of [file.filename, file.previous_filename].filter(Boolean)) {

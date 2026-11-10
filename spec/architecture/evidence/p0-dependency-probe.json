@@ -1,0 +1,267 @@
+{
+  "observedDate": "2026-10-16",
+  "timezone": "Asia/Shanghai",
+  "kind": "executed-dependency-metadata-probe",
+  "springAiVersion": "2.0.1",
+  "dependencyPluginVersion": "3.7.0",
+  "repository": "Maven Central only",
+  "probePom": {
+    "path": "tmp\\architecture\\probes\\spring-ai-dependencies\\pom.xml",
+    "sha256": "4d6f13a978796aca79956a9ba3096c1fe21eebaad3d887830a7c022c91a433e9"
+  },
+  "runs": [
+    {
+      "id": "deepseek-2.0.1",
+      "profiles": [],
+      "status": "success",
+      "treePath": "spec/architecture/evidence/p0-deepseek-2.0.1-tree.txt",
+      "treeSha256": "b7df3478fbf7a9e62439edf5ba47265960d049a0d6a65ba4d21c8d2f38111264",
+      "dependencyEntryCount": 36,
+      "countMeaning": "resolved coordinate entries, not runtime JAR bytes or package size",
+      "bootRuntimeCoordinates": [],
+      "selectedCoordinates": [
+        {
+          "groupId": "tools.jackson.core",
+          "artifactId": "jackson-core",
+          "version": "3.0.3",
+          "scope": "compile"
+        },
+        {
+          "groupId": "tools.jackson.core",
+          "artifactId": "jackson-databind",
+          "version": "3.1.5",
+          "scope": "compile"
+        },
+        {
+          "groupId": "com.fasterxml.jackson.core",
+          "artifactId": "jackson-annotations",
+          "version": "2.21",
+          "scope": "compile"
+        }
+      ],
+      "runLogPath": "tmp/architecture/probes/spring-ai-dependencies/deepseek-2.0.1-run.log",
+      "runLogSha256": "4c0a44ea16e603a72d2fb9af57170d18d9830510a6f96f87078bd16644bf5fe9",
+      "totalTimeLine": "[INFO] Total time:  01:04 min"
+    },
+    {
+      "id": "deepseek-openai-2.0.1",
+      "profiles": [
+        "openai-embedding"
+      ],
+      "status": "success",
+      "treePath": "spec/architecture/evidence/p0-deepseek-openai-2.0.1-tree.txt",
+      "treeSha256": "99a48c3f4d4c4e504b2c9c4dd7e86b447cafe60238f9d1c10b4c23797d12259c",
+      "dependencyEntryCount": 54,
+      "countMeaning": "resolved coordinate entries, not runtime JAR bytes or package size",
+      "bootRuntimeCoordinates": [],
+      "selectedCoordinates": [
+        {
+          "groupId": "tools.jackson.core",
+          "artifactId": "jackson-core",
+          "version": "3.0.3",
+          "scope": "compile"
+        },
+        {
+          "groupId": "tools.jackson.core",
+          "artifactId": "jackson-databind",
+          "version": "3.1.5",
+          "scope": "compile"
+        },
+        {
+          "groupId": "com.openai",
+          "artifactId": "openai-java-core",
+          "version": "4.49.0",
+          "scope": "compile"
+        },
+        {
+          "groupId": "com.fasterxml.jackson.core",
+          "artifactId": "jackson-core",
+          "version": "2.18.9",
+          "scope": "compile"
+        },
+        {
+          "groupId": "com.fasterxml.jackson.core",
+          "artifactId": "jackson-databind",
+          "version": "2.18.9",
+          "scope": "compile"
+        },
+        {
+          "groupId": "org.jetbrains.kotlin",
+          "artifactId": "kotlin-stdlib-jdk8",
+          "version": "1.8.0",
+          "scope": "compile"
+        },
+        {
+          "groupId": "org.jetbrains.kotlin",
+          "artifactId": "kotlin-stdlib",
+          "version": "1.8.0",
+          "scope": "compile"
+        },
+        {
+          "groupId": "org.jetbrains.kotlin",
+          "artifactId": "kotlin-stdlib-common",
+          "version": "1.8.0",
+          "scope": "compile"
+        },
+        {
+          "groupId": "org.jetbrains.kotlin",
+          "artifactId": "kotlin-stdlib-jdk7",
+          "version": "1.8.0",
+          "scope": "compile"
+        },
+        {
+          "groupId": "com.fasterxml.jackson.core",
+          "artifactId": "jackson-annotations",
+          "version": "2.18.9",
+          "scope": "compile"
+        },
+        {
+          "groupId": "org.jetbrains.kotlin",
+          "artifactId": "kotlin-reflect",
+          "version": "1.8.10",
+          "scope": "runtime"
+        },
+        {
+          "groupId": "com.squareup.okhttp3",
+          "artifactId": "okhttp",
+          "version": "4.12.0",
+          "scope": "compile"
+        }
+      ],
+      "runLogPath": "tmp/architecture/probes/spring-ai-dependencies/deepseek-openai-2.0.1-run.log",
+      "runLogSha256": "81b94e831e618555907166788cd451875bd0e342450c1a9895e609786dbc4fd2",
+      "totalTimeLine": "[INFO] Total time:  15.745 s"
+    },
+    {
+      "id": "deepseek-aligned-2.0.1",
+      "profiles": [
+        "platform-alignment"
+      ],
+      "status": "success",
+      "treePath": "spec/architecture/evidence/p0-deepseek-aligned-2.0.1-tree.txt",
+      "treeSha256": "019168b679c05ca2abce36859a354f62a4412d746394fb0dce1ae4ce02136818",
+      "dependencyEntryCount": 36,
+      "countMeaning": "resolved coordinate entries, not runtime JAR bytes or package size",
+      "bootRuntimeCoordinates": [],
+      "selectedCoordinates": [
+        {
+          "groupId": "tools.jackson.core",
+          "artifactId": "jackson-core",
+          "version": "3.1.5",
+          "scope": "compile"
+        },
+        {
+          "groupId": "tools.jackson.core",
+          "artifactId": "jackson-databind",
+          "version": "3.1.5",
+          "scope": "compile"
+        },
+        {
+          "groupId": "com.fasterxml.jackson.core",
+          "artifactId": "jackson-annotations",
+          "version": "2.21",
+          "scope": "compile"
+        }
+      ],
+      "runLogPath": "tmp/architecture/probes/spring-ai-dependencies/deepseek-aligned-2.0.1-run.log",
+      "runLogSha256": "83c650bf414f6d2379d655955505ab0105809df484eb8a3b23fa402abe9fb0c0",
+      "totalTimeLine": "[INFO] Total time:  19.125 s"
+    },
+    {
+      "id": "deepseek-openai-aligned-2.0.1",
+      "profiles": [
+        "platform-alignment",
+        "openai-embedding"
+      ],
+      "status": "success",
+      "treePath": "spec/architecture/evidence/p0-deepseek-openai-aligned-2.0.1-tree.txt",
+      "treeSha256": "de2d23c6cff7e2077f7ca0f7048e67c7c337a6ae77d09a5f16eca58326d1c939",
+      "dependencyEntryCount": 54,
+      "countMeaning": "resolved coordinate entries, not runtime JAR bytes or package size",
+      "bootRuntimeCoordinates": [],
+      "selectedCoordinates": [
+        {
+          "groupId": "tools.jackson.core",
+          "artifactId": "jackson-core",
+          "version": "3.1.5",
+          "scope": "compile"
+        },
+        {
+          "groupId": "tools.jackson.core",
+          "artifactId": "jackson-databind",
+          "version": "3.1.5",
+          "scope": "compile"
+        },
+        {
+          "groupId": "com.openai",
+          "artifactId": "openai-java-core",
+          "version": "4.49.0",
+          "scope": "compile"
+        },
+        {
+          "groupId": "com.fasterxml.jackson.core",
+          "artifactId": "jackson-core",
+          "version": "2.21.5",
+          "scope": "compile"
+        },
+        {
+          "groupId": "com.fasterxml.jackson.core",
+          "artifactId": "jackson-databind",
+          "version": "2.21.5",
+          "scope": "compile"
+        },
+        {
+          "groupId": "org.jetbrains.kotlin",
+          "artifactId": "kotlin-stdlib-jdk8",
+          "version": "2.3.21",
+          "scope": "compile"
+        },
+        {
+          "groupId": "org.jetbrains.kotlin",
+          "artifactId": "kotlin-stdlib",
+          "version": "2.3.21",
+          "scope": "compile"
+        },
+        {
+          "groupId": "org.jetbrains.kotlin",
+          "artifactId": "kotlin-stdlib-jdk7",
+          "version": "2.3.21",
+          "scope": "compile"
+        },
+        {
+          "groupId": "com.fasterxml.jackson.core",
+          "artifactId": "jackson-annotations",
+          "version": "2.21",
+          "scope": "compile"
+        },
+        {
+          "groupId": "org.jetbrains.kotlin",
+          "artifactId": "kotlin-reflect",
+          "version": "2.3.21",
+          "scope": "runtime"
+        },
+        {
+          "groupId": "com.squareup.okhttp3",
+          "artifactId": "okhttp",
+          "version": "4.12.0",
+          "scope": "compile"
+        },
+        {
+          "groupId": "org.jetbrains.kotlin",
+          "artifactId": "kotlin-stdlib-common",
+          "version": "1.9.10",
+          "scope": "compile"
+        }
+      ],
+      "runLogPath": "tmp/architecture/probes/spring-ai-dependencies/deepseek-openai-aligned-2.0.1-run.log",
+      "runLogSha256": "03b48751d2b2ac27c6c34b16bd3931d2cecaf005f74f648adf729e7051b8b97b",
+      "totalTimeLine": "[INFO] Total time:  11.076 s"
+    }
+  ],
+  "limits": [
+    "Dependency tree and metadata resolution only; no Java production source compiled.",
+    "No client instantiated and no model API called.",
+    "No IDE plugin sandbox, class-loader, Plugin Verifier, package-size or performance result.",
+    "BOM alignment is build metadata, not a Boot runtime/server decision."
+  ]
+}

@@ -14,6 +14,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ConfiguredRuntimeFactoryTest {
+    @Test void rejectsChatOnlyDeepSeekEmbeddingBeforeCredentialsOrNetwork() {
+        var g = new ProviderProfile("g", "deepseek", URI.create("https://api.deepseek.com"), "deepseek-flash", Optional.empty());
+        var e = new ProviderProfile("e", "deepseek", URI.create("https://api.deepseek.com"), "deepseek-flash", Optional.of(1024));
+        CredentialVault vault = new CredentialVault() {
+            public char[] read(Slot slot) { fail("invalid embedding must be rejected before reading credentials"); return null; }
+            public void write(Slot slot, char[] value) { fail("no write"); }
+        };
+        var failure = assertThrows(IllegalArgumentException.class, () -> new ConfiguredRuntimeFactory().create(new ProviderConfiguration(g,e), vault));
+        assertTrue(failure.getMessage().contains("嵌入"));
+    }
     @Test void firstCredentialCopyIsClearedWhenReadingSecondSlotFails() {
         char[] copied="synthetic-sensitive-copy".toCharArray();
         CredentialVault vault=new CredentialVault(){public char[] read(Slot slot){if(slot==Slot.EMBEDDING)throw new IllegalStateException("synthetic vault failure");return copied;}

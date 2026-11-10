@@ -1,0 +1,58 @@
+{
+  "schema": "f0-plan-pdf-export-1",
+  "identity": "edu.courseassist.f0.development-plan",
+  "edition": "2026-10-18-export-01",
+  "status": "development-plan-not-frozen",
+  "formalCandidateCreated": false,
+  "architectureFrozen": false,
+  "statePointerChanged": false,
+  "source": "spec/architecture/F0_DEVELOPMENT_PLAN.md",
+  "sourceSha256": "db8d8ad65c11ea2cc5378d69f27ced63f1aacbf9d4f5cb9c7ab75528dfa08b5b",
+  "model": "output/pdf/F0_DEVELOPMENT_PLAN.model.json",
+  "modelSha256": "c218f223603fe53a32e0570eb92438779400c8abddeb24860495e90eaf7eca7e",
+  "pdf": "output/pdf/F0_DEVELOPMENT_PLAN.pdf",
+  "pdfSha256": "228dad85619b361c11bdacb43bb946b01047f129d26ddfd8d0ebad2eade2d503",
+  "sectionIds": [
+    "goals",
+    "architecture",
+    "corpus",
+    "react",
+    "sessions",
+    "context",
+    "activation",
+    "persistence",
+    "failure",
+    "delivery",
+    "verification"
+  ],
+  "diagrams": [
+    {
+      "id": "D01",
+      "sectionIds": [
+        "architecture"
+      ],
+      "source": "spec/architecture/diagrams/f0-components.puml",
+      "image": "spec/architecture/diagrams/f0-components.png",
+      "sourceSha256": "f3c78de487f6eb92142ad4b1055ffc670610efb01c20450cd84c15ba17c5ae85",
+      "imageSha256": "77737a0d4c5965b19c7fd27e127e8d1c0789d49e5df42cf9b5a44ee50c0c635c"
+    },
+    {
+      "id": "D02",
+      "sectionIds": [
+        "react"
+      ],
+      "source": "spec/architecture/diagrams/f0-react.puml",
+      "image": "spec/architecture/diagrams/f0-react.png",
+      "sourceSha256": "3726948cf38687b6984fd731a07df1e9a5995567505d0cc3fd209a6e4df81bc6",
+      "imageSha256": "1670adb874e37a2c5c40f6cc0495555b95904f6d85df51cac942064fcbd1f93a"
+    }
+  ],
+  "tooling": {
+    "pdf": "ReportLab 4.4.9",
+    "plantumlJarSha256": "aa4a1d06f8911c4b842beff4828dd955be431692b631a312d04c0e9fab9581de",
+    "fontSha256": "e051009b42b454352a90ae0c9b8adb58bbdbcd168768750b35bc3357510de141",
+    "boldFontSha256": "236df24be867e527bdf810d00eb5c38f18244e776238a9f5ca937363267a9169"
+  },
+  "verification": "output/pdf/F0_DEVELOPMENT_PLAN.verification.json",
+  "verificationSha256": "a4f3a45b47195ae90a10db4cf31c787528d17b4bc81987c4bf836fe5d5edc041"
+}

@@ -1,0 +1,44 @@
+{
+  "textParity": "PASS",
+  "independentExtractor": "pypdf",
+  "verifiedFragments": 158,
+  "pages": 15,
+  "bookmarks": 15,
+  "sectionBookmarks": 11,
+  "pageSafeArea": "PASS",
+  "layoutChecker": "pdfplumber",
+  "visualReview": "PASS",
+  "pdfSha256": "228dad85619b361c11bdacb43bb946b01047f129d26ddfd8d0ebad2eade2d503",
+  "visualEvidence": {
+    "renderer": "Poppler pdftoppm",
+    "renderedPages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "review": "All-page contact sheets, plus full-size final TOC and eligibility-table pages; UML pages independently inspected.",
+    "findingsResolved": [
+      "CJK hanging punctuation right gutter",
+      "Eligibility-table column proportions",
+      "TOC section and diagram hierarchy"
+    ],
+    "notAFormalArchitectureReview": true
+  },
+  "repositoryValidation": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope Repository",
+    "exitCode": 0,
+    "allGradleIdeApiRerun": false
+  }
+}

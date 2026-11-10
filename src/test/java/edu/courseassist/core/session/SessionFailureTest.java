@@ -83,6 +83,86 @@ class SessionFailureTest {
             assertFalse(payload.contains(sentinel));assertFalse(payload.contains(ref));
         }
     }
+    @Test void adjacentCaptureOrderPersistsWithEmptyLegacyMetadataCompatible() throws Exception {
+        var json=tools.jackson.databind.json.JsonMapper.builder().build();
+        assertTrue(json.readValue("{\"draftId\":\"d\",\"revision\":0,\"text\":\"old\",\"captures\":[],\"saveState\":\"SAVED\"}",DraftView.class).captureOrder().isEmpty());
+        assertTrue(json.readValue("{\"question\":\"old\",\"code\":[]}",edu.courseassist.core.react.ReactData.Input.class).captureOffsets().isEmpty());
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();e.open("a","a",false);String session=e.create("a");
+            e.sessions.beginCapture(SessionTestEnvironment.selection("first","a"));e.sessions.beginCapture(SessionTestEnvironment.selection("second","a"));
+            await(()->e.view("a",session).draft().captures().size()==2&&e.view("a",session).draft().captures().stream().allMatch(c->c.state()==CaptureState.READY));
+            var d=e.view("a",session).draft();
+            e.dispatch(new UpdateDraftText(e.meta("a",session),d.draftId(),d.revision(),"tail",Optional.of(Map.of("first",0,"second",0)),Optional.of(List.of("second","first"))));
+            e.sessions.closeProject("a").toCompletableFuture().get();e.open("b","a",false);assertEquals(List.of("second","first"),e.view("b",session).draft().captureOrder());
+            e.submit("b",session);await(()->!e.requests.isEmpty());e.idle("b",session);
+            var parts=e.view("b",session).turns().getFirst().userMessage().parts();assertEquals("second",((CodePart)parts.get(0)).captureId());assertEquals("first",((CodePart)parts.get(1)).captureId());
+        }
+    }
+
+    @Test void mixedOrderPersistsAndImplicitContextIsNotRendered() throws Exception {
+        try(var e=new SessionTestEnvironment(root)) {
+            e.configureAndEnable();e.open("a","a",false);String session=e.create("a");
+            e.sessions.beginCapture(SessionTestEnvironment.selection("first","a"));
+            e.sessions.beginCapture(SessionTestEnvironment.selection("second","a"));
+            await(()->e.view("a",session).draft().captures().size()==2 && e.view("a",session).draft().captures().stream().allMatch(c->c.state()==CaptureState.READY));
+            var draft=e.view("a",session).draft();var offsets=Map.of("first",0,"second",6);
+            e.dispatch(new UpdateDraftText(e.meta("a",session),draft.draftId(),draft.revision(),"beforeafter",Optional.of(offsets)));
+            e.sessions.closeProject("a").toCompletableFuture().get();e.open("a2","a",false);
+            assertEquals(offsets,e.view("a2",session).draft().captureOffsets());
+            e.submit("a2",session);await(()->!e.requests.isEmpty());e.idle("a2",session);
+            var parts=e.view("a2",session).turns().getFirst().userMessage().parts();
+            assertEquals(4,parts.size());assertInstanceOf(CodePart.class,parts.get(0));assertEquals("before",((TextPart)parts.get(1)).text());
+            assertEquals(PartKind.SELECTION,((CodePart)parts.get(2)).kind());assertEquals("after",((TextPart)parts.get(3)).text());
+            String request=ReactContext.json(e.requests.getFirst());assertTrue(request.contains("CLASS_STRUCTURE"));assertTrue(request.contains("METHOD"));
+            e.sessions.closeProject("a2").toCompletableFuture().get();e.open("a3","a",false);
+            assertEquals(parts,e.view("a3",session).turns().getFirst().userMessage().parts());
+        }
+    }
+
+    @Test void materialFailureHasSearchableSafeLogAndRetainsTaskCause() throws Exception {
+        var messages = new java.util.concurrent.CopyOnWriteArrayList<String>();
+        var logger = java.util.logging.Logger.getLogger(ApplicationCoordinator.class.getName());
+        var handler = new java.util.logging.Handler() {
+            public void publish(java.util.logging.LogRecord record) { messages.add(record.getMessage()); }
+            public void flush() {} public void close() {}
+        };
+        logger.addHandler(handler);
+        try (var e = new SessionTestEnvironment(root)) {
+            e.configureAndEnable();
+            var result = e.app.dispatch(new ImportCoursePdf(e.appMeta(),
+                    Path.of("spec/tasks/dev-manager/blackbox-fixtures/course-a-v1.pdf").toAbsolutePath(),
+                    e.app.snapshot().corpusBase())).toCompletableFuture().get();
+            String id = result.operationId().orElseThrow();
+            await(() -> messages.stream().anyMatch(m -> m.contains("F0 material diagnostic " + id)));
+            assertInstanceOf(UnsupportedOperationException.class, e.app.failure(id).orElseThrow());
+            String log = messages.stream().filter(m -> m.contains(id)).findFirst().orElseThrow();
+            assertFalse(log.contains("No PDF adapter in session test"), "Raw exception message must not be logged");
+            assertTrue(log.contains("SessionTestEnvironment"));
+        } finally { logger.removeHandler(handler); }
+    }
+
+    @Test void removalSavesMissingStatusAndReplacementRestoresOnlySelectedSlot() throws Exception {
+        try (var e = new SessionTestEnvironment(root)) {
+            var p = new ProviderProfile("p", "synthetic", java.net.URI.create("https://example.invalid"), "model", Optional.of(3));
+            e.vault.write(CredentialUpdate.Slot.GENERATION, "old-synthetic".toCharArray());
+            e.vault.write(CredentialUpdate.Slot.EMBEDDING, "embedding-synthetic".toCharArray());
+            for (var action : List.of(CredentialUpdate.Action.REMOVE, CredentialUpdate.Action.REPLACE)) {
+                String ref;
+                try (var update = new CredentialUpdate(List.of(new CredentialUpdate.Change(CredentialUpdate.Slot.GENERATION,
+                        action, action == CredentialUpdate.Action.REMOVE ? new char[0] : "replacement-synthetic".toCharArray())))) {
+                    ref = e.app.stage(update).toCompletableFuture().get();
+                }
+                var result = e.app.dispatch(new UpdateProviderConfig(e.appMeta(), e.app.snapshot().configRevision(),
+                        new ProviderConfiguration(p,p), Optional.of(ref))).toCompletableFuture().get();
+                assertEquals(Outcome.APPLIED, result.outcome());
+                assertEquals(action == CredentialUpdate.Action.REMOVE ? CredentialStatus.MISSING : CredentialStatus.CONFIGURED,
+                        e.app.snapshot().generationProfile().orElseThrow().credentialStatus());
+                assertEquals(CredentialStatus.CONFIGURED, e.app.snapshot().embeddingProfile().orElseThrow().credentialStatus());
+                assertFalse(ReactContext.json(e.app.snapshot()).contains("replacement-synthetic"));
+            }
+        }
+    }
+
     @Test void closeAfterSaveFailurePreservesTailUntilReopenCanPersistIt() throws Exception {
         try(var e=new SessionTestEnvironment(root)) {
             e.configureAndEnable();var binding=e.open("a","a",false);String s=e.create("a");e.text("a",s,"question");

@@ -62,7 +62,11 @@ public final class CorpusRuntimeChecks {
                 require(lease.search("question", queryOnly, new SearchSettings(1, 0.9f), () -> true).get(10, TimeUnit.SECONDS).getFirst().physicalPage() == 3, "Corpus local-vector recovery query");
                 var state = library.snapshot().get(10, TimeUnit.SECONDS); var material = state.materials().getFirst();
                 library.remove(state.base(), new MaterialTarget(material.documentId(), material.sourceVersionId(), material.materialRevision()), () -> true).completion().toCompletableFuture().get(10, TimeUnit.SECONDS);
-                require(lease.search("question", queryOnly, new SearchSettings(1, 0.9f), () -> true).get(10, TimeUnit.SECONDS).getFirst().source().versionId().equals(oldSource), "Old attempt survives removal");
+                boolean revoked=false;
+                try { lease.search("question", queryOnly, new SearchSettings(1, 0.9f), () -> true); }
+                catch (java.util.concurrent.CancellationException expected) { revoked=true; }
+                require(revoked, "Explicit deletion revokes old retrieval lease");
+                require(library.snapshot().get(10, TimeUnit.SECONDS).materials().isEmpty(), "Hard deletion leaves no material row");
             }
         }
     }

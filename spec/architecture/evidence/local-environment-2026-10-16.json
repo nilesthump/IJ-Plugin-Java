@@ -1,0 +1,57 @@
+{
+  "observedDate": "2026-10-16",
+  "timezone": "Asia/Shanghai",
+  "kind": "local-observation-not-user-decision",
+  "compatibilityTargetFromUser": "262.9437.185",
+  "ide": {
+    "installDirectory": "H:\\IntelliJ IDEA 2026.1.1",
+    "sourcePath": "H:\\IntelliJ IDEA 2026.1.1\\product-info.json",
+    "sourceSha256": "789a25502451140b044838bbff67704edf9f9cc92798c9a07b9722723d2a2fa7",
+    "name": "IntelliJ IDEA",
+    "version": "2026.2.3",
+    "buildNumber": "262.10968.63",
+    "productCode": "IU",
+    "windowsLaunch": [
+      {
+        "os": "Windows",
+        "arch": "amd64",
+        "javaExecutablePath": "jbr/bin/java.exe"
+      }
+    ]
+  },
+  "ideJbrRelease": {
+    "sourcePath": "H:\\IntelliJ IDEA 2026.1.1\\jbr\\release",
+    "sourceSha256": "15d7e9d1050765acd25c4de9e5f2955f9c790fa9689a104f5497d10fdd26e566",
+    "observedLines": [
+      "JAVA_VERSION=\"25.0.4\"",
+      "IMPLEMENTOR=\"JetBrains s.r.o.\"",
+      "JAVA_RUNTIME_VERSION=\"25.0.4+1-b508.27\"",
+      "OS_ARCH=\"x86_64\""
+    ]
+  },
+  "buildJdkRelease": {
+    "sourcePath": "H:\\jdk-25.0.2\\release",
+    "sourceSha256": "b46bd33e096ab47bcbeeb5f8cff8f42278d78b9dc538a29851cb8b07baf0cc75",
+    "observedLines": [
+      "IMPLEMENTOR=\"Oracle Corporation\"",
+      "JAVA_RUNTIME_VERSION=\"25.0.2+10-LTS-69\"",
+      "JAVA_VERSION=\"25.0.2\"",
+      "OS_ARCH=\"x86_64\""
+    ]
+  },
+  "checks": {
+    "javaOnPath": "H:\\jdk-25.0.2\\bin\\java.exe",
+    "javaOnPathVersionCommand": "25.0.2+10-LTS-69",
+    "ideJbrVersionCommand": "25.0.4+1-b508.27",
+    "hostArchitectureFromRuntimeInformation": "X64",
+    "gradleCommandFoundOnPath": false,
+    "mavenCommand": "H:\\apache-maven-3.9.15\\bin\\mvn.cmd",
+    "mainPluginBuildPresent": false
+  },
+  "registryNote": "Uninstall entry still labels this directory IntelliJ IDEA 2026.1.1 / 261.23567.138; product-info.json reports the current files as 2026.2.3 / 262.10968.63.",
+  "limits": [
+    "File and java-version observations only, not an IDE plugin load test.",
+    "Current installed build does not replace the requested compatibility target.",
+    "No main plugin project, Gradle wrapper or production source was created."
+  ]
+}

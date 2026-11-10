@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-25",
+  "scope": "standalone one-request embedding diagnostic; no plugin code changes",
+  "script": "scripts\\diagnostics\\Test-EmbeddingEndpoint.ps1",
+  "sha256": "afac543ecb543f3e9fb88865e781256653d95f68f82fcd2c291fb4bd4cba2223",
+  "localTests": [
+    {
+      "shell": "powershell.exe",
+      "case": "denied",
+      "status": "PASS"
+    },
+    {
+      "shell": "powershell.exe",
+      "case": "success",
+      "status": "PASS"
+    },
+    {
+      "shell": "powershell.exe",
+      "case": "redirect",
+      "status": "PASS"
+    },
+    {
+      "shell": "powershell.exe",
+      "case": "empty-success",
+      "status": "PASS"
+    },
+    {
+      "shell": "pwsh.exe",
+      "case": "denied",
+      "status": "PASS"
+    },
+    {
+      "shell": "pwsh.exe",
+      "case": "success",
+      "status": "PASS"
+    },
+    {
+      "shell": "pwsh.exe",
+      "case": "redirect",
+      "status": "PASS"
+    },
+    {
+      "shell": "pwsh.exe",
+      "case": "empty-success",
+      "status": "PASS"
+    }
+  ],
+  "independentReview": {
+    "specOpen": 0,
+    "standardsOpen": 0
+  },
+  "realApi": {
+    "authorized": true,
+    "executedByAgent": false,
+    "pending": "User runs masked-input script because UI tools remain unavailable"
+  },
+  "notes": [
+    "First test harness depended on unavailable PS5 Security module autoload; replaced fixture-only SecureString construction, final 8 cases passed.",
+    "Plugin 143-test validation from feedback6 remains last plugin validation; not rerun for diagnostic script."
+  ]
+}

@@ -43,14 +43,21 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
                     {"status":"PASS","timestamp":"%s","ideBuild":"%s","javaRuntime":"%s",
                     "checks":["plugin-loaded","application-project-services","project-isolation-disposal",
                     "background-work","Swing-ToolWindow-content-release","Java-PSI-read",
-                    "H2-commit-reopen","JVector-build-query","SpringAI-local-chat-stream-embedding-no-retry",
+                    "production-configured-runtime-construction-no-network","H2-commit-reopen","JVector-build-query","SpringAI-local-chat-stream-embedding-no-retry",
                     "corpus-managed-PDF-H2-generation-physical-page","corpus-local-vector-recovery-fixed-attempt",
                     "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation",
                     "production-session-roots-dedup-typed-code-draft-tabs-restore-hard-delete",
                     "native-directory-identity-same-volume-move-copy-isolation",
                     "registered-PDF-reader-real-three-page-file","registered-editor-action-port",
                     "production-ToolWindow-controller-draft-save-reopen",
-                    "registered-editor-action-Java-PSI-durable-three-part-capture"],
+                    "registered-editor-action-Java-PSI-durable-three-part-capture",
+                    "F2-project-source-roots-ambiguous-overload-nested-class-unsaved-document-stale-selection",
+                    "F2-real-dumb-mode-and-bounded-incomplete-search",
+                    "F2-SpringAI-loopback-parent-child-protocol-guarded-H2-candidate",
+                    "F2-native-readonly-two-sided-Diff-exact-hashes-no-live-document-write",
+                    "F2-local-buttons-zero-model-embedding-draft-mutation",
+                    "F2-dirty-Document-exact-apply-named-Undo-redo-normal-save-observation-drift-rename-rejection",
+                    "F2-both-entries-real-capture-generation-Diff-local-buttons-Undo-next-draft-session-isolation"],
                     "limitations":["headless IDE command; no visual interaction", "synthetic loopback HTTP only",
                     "synthetic models/embeddings; no human visual acceptance or real provider validation"]}
                     """.formatted(Instant.now(), ApplicationInfo.getInstance().getBuild().asString(),
@@ -119,6 +126,7 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
             try { a.get().tasks().submit(() -> "late").join(); throw new IllegalStateException("Late work accepted"); }
             catch (CancellationException expected) { /* Lifecycle control flow, no retrieval fallback. */ }
             require(!application.tasks().isClosed(), "Project disposal preserves app resources");
+            ConfiguredEnableChecks.run();
             DependencyChecks.run(scratch.resolve("database"));
             CorpusRuntimeChecks.run(scratch.resolve("registered-pdf"), application.pdfReader());
             ReactRuntimeChecks.run(scratch.resolve("react"));
@@ -143,6 +151,10 @@ public final class RuntimeSmokeStarter implements ApplicationStarter {
             });
         }
         EditorIntegrationChecks.run(scratch.resolve("editor-integration"));
+        F2TargetChecks.run(scratch.resolve("f2-targets"));
+        F2GenerationChecks.run(scratch.resolve("f2-generation"));
+        F2ReviewApplyChecks.run(scratch.resolve("f2-review-apply"));
+        F2EndToEndChecks.run(scratch.resolve("f2-end-to-end"));
         // Explicitly verify the service's disposal boundary before normal IDE shutdown repeats it.
         application.dispose();
         application.shutdownCompletion().get(20,TimeUnit.SECONDS);

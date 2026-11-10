@@ -41,6 +41,12 @@ public final class CourseRepository {
             // No task resumes network work after restart. Old ready catalog/generation stays unchanged.
             update(c, "UPDATE ca_document SET status='FAILED' WHERE status='PREPARING' AND active_source IS NULL");
             update(c, "UPDATE ca_corpus_job SET state='INTERRUPTED' WHERE state='PREPARING'");
+            List<String> removed = new ArrayList<>();
+            try (var statement = c.createStatement(); var rows = statement.executeQuery("SELECT id FROM ca_document WHERE status='REMOVED'")) {
+                while (rows.next()) removed.add(rows.getString(1));
+            }
+            for (String document : removed) deleteDocument(c, document);
+            if (!removed.isEmpty()) update(c, "UPDATE ca_corpus_meta SET revision=revision+1 WHERE singleton=1");
             var base = base(c); Map<String,String> catalog = new HashMap<>(), generation = new HashMap<>();
             try (var s = c.createStatement(); var r = s.executeQuery("SELECT id,active_source FROM ca_document WHERE status='READY'")) {
                 while (r.next()) { if (r.getString(2) == null) throw new SQLException("Ready material has no source"); catalog.put(r.getString(1), r.getString(2)); }
@@ -73,6 +79,18 @@ public final class CourseRepository {
         var m = material(c, t.documentId());
         if (m.materialRevision() != t.expectedMaterialRevision() || !m.sourceVersionId().equals(t.expectedSourceVersionId()) || m.status() == MaterialStatus.REMOVED)
             throw new Conflict("Material version/revision changed or removed");
+    }
+    /** Remove an unpublished row without inventing or rebuilding a retrieval generation. */
+    public CorpusBase removeUnpublished(CorpusBase expected, MaterialTarget target) {
+        return tx(c -> {
+            expectBase(c, expected); expectTarget(c, target);
+            if (material(c, target.documentId()).sourceVersionId().isPresent())
+                throw new Conflict("Material is already published");
+            deleteDocument(c, target.documentId());
+            // Fence candidates prepared before this removal, including first-import jobs.
+            update(c, "UPDATE ca_corpus_meta SET revision=revision+1 WHERE singleton=1");
+            return base(c);
+        });
     }
     public List<MaterialView> materials() { return tx(CourseRepository::materials); }
     private static List<MaterialView> materials(Connection c) throws SQLException {
@@ -108,7 +126,7 @@ public final class CourseRepository {
             expectBase(c, expected);
             if (target.isPresent()) expectTarget(c, target.get());
             else {
-                try (var p = c.prepareStatement("SELECT s.document_id,s.id,d.status FROM ca_source s JOIN ca_document d ON s.document_id=d.id WHERE s.md5=? ORDER BY CASE WHEN d.active_source=s.id THEN 0 ELSE 1 END,s.id")) {
+                try (var p = c.prepareStatement("SELECT s.document_id,s.id,d.status FROM ca_source s JOIN ca_document d ON s.document_id=d.id WHERE s.md5=? AND d.status<>'REMOVED' ORDER BY CASE WHEN d.active_source=s.id THEN 0 ELSE 1 END,s.id")) {
                     p.setString(1, blob.md5());
                     try (var r = p.executeQuery()) {
                         if (r.next()) {
@@ -285,10 +303,55 @@ public final class CourseRepository {
             if (changed.isPresent()) {
                 Source s = changed.get(); update(c, "UPDATE ca_document SET active_source=?,name=?,status='READY',revision=revision+1,changed_at=? WHERE id=?", s.versionId(), s.name(), System.currentTimeMillis(), s.documentId());
             }
-            if (remove) update(c, "UPDATE ca_document SET active_source=NULL,status='REMOVED',revision=revision+1,changed_at=? WHERE id=?", System.currentTimeMillis(), target.orElseThrow().documentId());
+
             update(c, "UPDATE ca_corpus_meta SET revision=revision+1,generation_id=? WHERE singleton=1", g.id());
+            if (remove) deleteDocument(c, target.orElseThrow().documentId());
             if (job.isPresent()) update(c, "UPDATE ca_corpus_job SET state='PUBLISHED' WHERE id=?", job.get());
             return base(c);
+        });
+    }
+    /** Deletes every version and dependent payload; chat archives are deliberately separate. */
+    private static void deleteDocument(Connection c, String document) throws SQLException {
+        update(c, "DELETE FROM ca_generation WHERE id<>COALESCE((SELECT generation_id FROM ca_corpus_meta WHERE singleton=1),'') AND id IN (SELECT m.generation_id FROM ca_member m JOIN ca_derivation d ON d.id=m.derivation_id JOIN ca_source s ON s.id=d.source_id WHERE s.document_id=?)", document);
+        update(c, "DELETE FROM ca_source_ref WHERE source_id IN (SELECT id FROM ca_source WHERE document_id=?)", document);
+        update(c, "DELETE FROM ca_derivation WHERE source_id IN (SELECT id FROM ca_source WHERE document_id=?)", document);
+        update(c, "DELETE FROM ca_corpus_job WHERE document_id=?", document);
+        update(c, "UPDATE ca_blob SET deleting=TRUE WHERE md5 IN (SELECT md5 FROM ca_source WHERE document_id=?) AND md5 NOT IN (SELECT md5 FROM ca_source WHERE document_id<>?)", document, document);
+        update(c, "DELETE FROM ca_source WHERE document_id=?", document);
+        update(c, "DELETE FROM ca_document WHERE id=?", document);
+    }
+    public Set<String> generationSources(String generation) {
+        return tx(c -> {
+            Set<String> result=new HashSet<>();
+            try(var p=c.prepareStatement("SELECT d.source_id FROM ca_member m JOIN ca_derivation d ON d.id=m.derivation_id WHERE m.generation_id=?")) {
+                p.setString(1,generation); try(var r=p.executeQuery()) { while(r.next()) result.add(r.getString(1)); }
+            }
+            return Set.copyOf(result);
+        });
+    }
+    public Set<String> documentSources(String document) {
+        return tx(c -> {
+            Set<String> result = new HashSet<>();
+            try (var p = c.prepareStatement("SELECT id FROM ca_source WHERE document_id=?")) {
+                p.setString(1, document); try (var r = p.executeQuery()) { while(r.next()) result.add(r.getString(1)); }
+            }
+            return Set.copyOf(result);
+        });
+    }
+    public Set<String> deletingBlobs() {
+        return tx(c -> {
+            Set<String> result = new HashSet<>();
+            try (var statement=c.createStatement(); var r=statement.executeQuery("SELECT md5 FROM ca_blob WHERE deleting=TRUE")) {
+                while(r.next()) result.add(r.getString(1));
+            }
+            return Set.copyOf(result);
+        });
+    }
+    public boolean hasSource(String source) {
+        return tx(c -> {
+            try (var p=c.prepareStatement("SELECT 1 FROM ca_source WHERE id=?")) {
+                p.setString(1,source); try(var r=p.executeQuery()) { return r.next(); }
+            }
         });
     }
     public void fail(String job, String state) {

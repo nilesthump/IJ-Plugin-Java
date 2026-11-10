@@ -1,0 +1,33 @@
+@startuml
+title F0 有限 ReAct 问答流程
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 17
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam ArrowColor #536B85
+skinparam activityBackgroundColor #EDF5FC
+skinparam activityBorderColor #4A78A5
+skinparam activityDiamondBackgroundColor #FFF3DE
+skinparam activityDiamondBorderColor #C1974E
+
+start
+:用户提交问题和代码;
+:固定 session 输入与历史边界;
+:核心保证首次课程检索;
+:组装上下文并核算预算;
+:Spring AI 调用模型;
+while (完整模型输出请求课程工具？) is (结构化工具调用)
+  :校验并执行课程工具;
+  :配对结果与固定来源证据;
+  if (预算 / 次数 / 状态允许继续？) then (是)
+    :重新核算完整上下文预算;
+    :Spring AI 调用模型;
+  else (否)
+    :停止并说明\n保留已渲染内容;
+    stop
+  endif
+endwhile (最终回答)
+:流式显示最终步骤正文;
+:核对引用并提交保存;
+stop
+@enduml

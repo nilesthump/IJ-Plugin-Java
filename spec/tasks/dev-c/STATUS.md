@@ -32,3 +32,9 @@
 1. 在 [PR #10](https://github.com/nilesthump/IJ-Plugin-Java/pull/10) 完成独立检查，跟踪负责人公共接线与目标 IDE 验证。
 2. 负责人从其公共范围接 `BootstrapToolWindowFactory`，并协调目标 IDEA 2026.2.3 的实际运行验证；成员同步后复验和交接。
 3. 经独立检查、`main` 合入及核验后才能将任务标为完成；当前不把合成 fixture 当真实核心/API 成功。
+
+## 2026-10-25 F0 验收后分拆交付
+
+用户已通过 F0 并授权按既有分支分拆提交。F2 尚未开工。本次只复制该分支归属的已验收修复，不修改公共门禁。完整集成工作区 All + IdeSmoke：169 tests、0失败，本机IDEA PASS；该结果不是拆分分支独立通过证明。UI 依赖负责人本轮新增契约，需公共 PR 合入 main 后同步再验证。
+
+分拆分支独立 scripts/validate.ps1 -Scope All 退出1，编译明确缺少当前main中的ImportCoursePdfs、captureOffsets/captureOrder等公共契约；这是依赖未合入阻塞，不是通过。保持草稿，负责人公共PR合入main后同步重跑。

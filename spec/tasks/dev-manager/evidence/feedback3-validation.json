@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-25",
+  "branch": "dev-manager",
+  "head": "5ec16c494235e7fd6914e642728e03c17b858b79",
+  "status": "LOCAL_VERIFIED_AWAITING_USER",
+  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:/IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:/IJ-Plugin-Java/tmp/gradle-user-home'",
+  "exitCode": 0,
+  "junit": {
+    "suites": 26,
+    "tests": 132,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ideSmoke": {
+    "status": "PASS",
+    "timestamp": "2026-10-25T05:56:00.203236Z",
+    "ideBuild": "IU-262.10968.63",
+    "javaRuntime": "25.0.4+1-b508.27",
+    "checks": [
+      "plugin-loaded",
+      "application-project-services",
+      "project-isolation-disposal",
+      "background-work",
+      "Swing-ToolWindow-content-release",
+      "Java-PSI-read",
+      "production-configured-runtime-construction-no-network",
+      "H2-commit-reopen",
+      "JVector-build-query",
+      "SpringAI-local-chat-stream-embedding-no-retry",
+      "corpus-managed-PDF-H2-generation-physical-page",
+      "corpus-local-vector-recovery-fixed-attempt",
+      "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation",
+      "production-session-roots-dedup-typed-code-draft-tabs-restore-hard-delete",
+      "native-directory-identity-same-volume-move-copy-isolation",
+      "registered-PDF-reader-real-three-page-file",
+      "registered-editor-action-port",
+      "production-ToolWindow-controller-draft-save-reopen",
+      "registered-editor-action-Java-PSI-durable-three-part-capture"
+    ],
+    "limitations": [
+      "headless IDE command; no visual interaction",
+      "synthetic loopback HTTP only",
+      "synthetic models/embeddings; no human visual acceptance or real provider validation"
+    ]
+  },
+  "artifact": {
+    "path": "build/distributions/IJ-Plugin-Java-0.1.0-dev-feedback3.zip",
+    "bytes": 79837653,
+    "sha256": "f921327cf014bdce0e2dc3c1ad8f52c2909581defa1496a04dd007c668f2951f"
+  },
+  "review": {
+    "standardsOpen": 0,
+    "specOpen": 0
+  },
+  "logs": [
+    "tmp/feedback3-header-red.log",
+    "tmp/feedback3-targeted.log",
+    "tmp/feedback3-targeted2.log",
+    "tmp/feedback3-targeted3.log",
+    "tmp/feedback3-validation.log",
+    "tmp/feedback3-validation2.log",
+    "tmp/feedback3-validation3.log",
+    "tmp/feedback3-final-validation.log",
+    "tmp/feedback3-recovery.log",
+    "tmp/feedback3-delivery-validation.log"
+  ],
+  "limitations": [
+    "Actual PDF stack identified Headers.checkValue before network; actual failing header not disclosed or inspected",
+    "Synthetic non-ASCII key reproduced same failure; no real provider/key calls",
+    "Human mixed composer / continuous scroll / actual PDF acceptance pending",
+    "No commit, push or PR"
+  ]
+}

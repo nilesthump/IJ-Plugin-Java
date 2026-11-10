@@ -18,7 +18,9 @@ final class SessionRuntimeChecks {
             e.sessions.captureCompletion("runtime-code").toCompletableFuture().get();e.sessions.refreshAll().toCompletableFuture().get();
             var submit=e.submitEvent("runtime-a",session);var original=e.dispatch(submit);e.idle("runtime-a",session);
             require(e.dispatch(submit).operationId().equals(original.operationId()),"Runtime dedup returns original operation");
-            require(e.requests.size()==1,"Runtime exactly one model subscription");require(e.view("runtime-a",session).turns().getFirst().userMessage().parts().size()==4,"Typed original code survived H2");
+            require(e.requests.size()==1,"Runtime exactly one model subscription");require(e.view("runtime-a",session).turns().getFirst().userMessage().parts().size()==2,"User sees only text and selected capture");
+            require(e.repository.states(project,"runtime-a").getFirst().turns().getFirst().input().code().size()==3,"All original typed code remains durable in H2");
+            require(e.requests.getFirst().messages().stream().anyMatch(m->m.content().contains("CLASS_STRUCTURE")&&m.content().contains("METHOD")),"Implicit context still reaches model");
             e.dispatch(new CloseSessionTab(e.meta("runtime-a",session)));e.dispatch(new OpenSessionTab(e.meta("runtime-a",session)));
             require(e.requests.size()==1,"Tab reopen performs no model work");e.text("runtime-a",session,"durable next draft");
         }

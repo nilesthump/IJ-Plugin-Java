@@ -1,0 +1,71 @@
+{
+  "recordedDate": "2026-10-26",
+  "branch": "dev-manager",
+  "base": "4de5417ef81cd3e409c5721b1eb0a8d508ff3443",
+  "status": "LOCAL_VERIFIED",
+  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:\\IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:\\IJ-Plugin-Java\\tmp\\gradle-user-home'",
+  "exitCode": 0,
+  "log": "tmp/f2-g45-delivery-final.log",
+  "junit": {
+    "skipped": 0,
+    "tests": 209,
+    "suites": 35,
+    "errors": 0,
+    "failures": 0
+  },
+  "ide": {
+    "status": "PASS",
+    "timestamp": "2026-10-26T13:20:31.249229700Z",
+    "ideBuild": "IU-262.10968.63",
+    "javaRuntime": "25.0.4+1-b508.27",
+    "checks": [
+      "plugin-loaded",
+      "application-project-services",
+      "project-isolation-disposal",
+      "background-work",
+      "Swing-ToolWindow-content-release",
+      "Java-PSI-read",
+      "production-configured-runtime-construction-no-network",
+      "H2-commit-reopen",
+      "JVector-build-query",
+      "SpringAI-local-chat-stream-embedding-no-retry",
+      "corpus-managed-PDF-H2-generation-physical-page",
+      "corpus-local-vector-recovery-fixed-attempt",
+      "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation",
+      "production-session-roots-dedup-typed-code-draft-tabs-restore-hard-delete",
+      "native-directory-identity-same-volume-move-copy-isolation",
+      "registered-PDF-reader-real-three-page-file",
+      "registered-editor-action-port",
+      "production-ToolWindow-controller-draft-save-reopen",
+      "registered-editor-action-Java-PSI-durable-three-part-capture",
+      "F2-project-source-roots-ambiguous-overload-nested-class-unsaved-document-stale-selection",
+      "F2-real-dumb-mode-and-bounded-incomplete-search",
+      "F2-SpringAI-loopback-parent-child-protocol-guarded-H2-candidate",
+      "F2-native-readonly-two-sided-Diff-exact-hashes-no-live-document-write",
+      "F2-local-buttons-zero-model-embedding-draft-mutation",
+      "F2-dirty-Document-exact-apply-named-Undo-redo-normal-save-observation-drift-rename-rejection"
+    ],
+    "limitations": [
+      "headless IDE command; no visual interaction",
+      "synthetic loopback HTTP only",
+      "synthetic models/embeddings; no human visual acceptance or real provider validation"
+    ]
+  },
+  "package": {
+    "path": "build/distributions/IJ-Plugin-Java-0.1.0-dev.zip",
+    "bytes": 79967508,
+    "sha256": "17defe73bb9977fd576e16a4fcba64e1ae8adc86aeb3311051b397189b144772"
+  },
+  "reviews": {
+    "agentRetry": "prior final follow-up returned service403; replaced by independent g45_final_review",
+    "spec": "closed",
+    "standards": "closed",
+    "finalRecoveryIncrement": "closed"
+  },
+  "limitations": [
+    "Human F2 visual/window acceptance NOT_RUN",
+    "Real paid APIs NOT_RUN",
+    "G6 NOT_STARTED",
+    "Architecture not frozen"
+  ]
+}

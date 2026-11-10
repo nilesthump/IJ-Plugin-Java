@@ -1,0 +1,96 @@
+{
+  "date": "2026-10-25",
+  "branch": "dev-manager",
+  "head": "5ec16c494235e7fd6914e642728e03c17b858b79",
+  "status": "LOCAL_DIAGNOSTIC_FIX_VERIFIED_REAL_API_BLOCKED",
+  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:/IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:/IJ-Plugin-Java/tmp/gradle-user-home'",
+  "exitCode": 0,
+  "junit": {
+    "tests": 138,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 27
+  },
+  "ideSmoke": {
+    "status": "PASS",
+    "timestamp": "2026-10-25T06:40:50.320333400Z",
+    "ideBuild": "IU-262.10968.63",
+    "javaRuntime": "25.0.4+1-b508.27",
+    "checks": [
+      "plugin-loaded",
+      "application-project-services",
+      "project-isolation-disposal",
+      "background-work",
+      "Swing-ToolWindow-content-release",
+      "Java-PSI-read",
+      "production-configured-runtime-construction-no-network",
+      "H2-commit-reopen",
+      "JVector-build-query",
+      "SpringAI-local-chat-stream-embedding-no-retry",
+      "corpus-managed-PDF-H2-generation-physical-page",
+      "corpus-local-vector-recovery-fixed-attempt",
+      "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation",
+      "production-session-roots-dedup-typed-code-draft-tabs-restore-hard-delete",
+      "native-directory-identity-same-volume-move-copy-isolation",
+      "registered-PDF-reader-real-three-page-file",
+      "registered-editor-action-port",
+      "production-ToolWindow-controller-draft-save-reopen",
+      "registered-editor-action-Java-PSI-durable-three-part-capture"
+    ],
+    "limitations": [
+      "headless IDE command; no visual interaction",
+      "synthetic loopback HTTP only",
+      "synthetic models/embeddings; no human visual acceptance or real provider validation"
+    ]
+  },
+  "log": "tmp/feedback5-validation.log",
+  "memoryProfile": {
+    "gradleOptions": "-Dorg.gradle.jvmargs=-Xmx512m -Dorg.gradle.workers.max=1",
+    "temporaryInit": "tmp/feedback4-memory.init.gradle",
+    "testHeap": "64m..384m",
+    "javaExecHeap": "64m..512m",
+    "removedAfterValidation": true
+  },
+  "artifact": {
+    "path": "build/distributions/IJ-Plugin-Java-0.1.0-dev-feedback5.zip",
+    "bytes": 79838503,
+    "sha256": "80fb67a1637403e8bfaace96e623f06e3712b9c81efa598a0001f0f31b0d38d6"
+  },
+  "earlierRuns": [
+    {
+      "log": "tmp/feedback5-red.log",
+      "status": "2 failures: missing TLS classification plus initial TLS peer closed with unread bytes"
+    },
+    {
+      "log": "tmp/feedback5-targeted.log",
+      "status": "1 failure: TLS peer produced reset rather than handshake EOF; fixture corrected to consume ClientHello and half-close/drain"
+    },
+    {
+      "log": "tmp/feedback5-targeted-final.log",
+      "status": "PASS; real SDK chain SSLHandshakeException and unpublished PDF verified"
+    }
+  ],
+  "review": {
+    "standardsOpen": 0,
+    "specOpen": 0
+  },
+  "publicConnectivity": {
+    "systemHeadRootHttp": 200,
+    "jbrTlsHandshake": "PASS TLSv1.3",
+    "authenticationUsed": false,
+    "embeddingRequest": false
+  },
+  "realApi": {
+    "authorized": true,
+    "executed": false,
+    "status": "BLOCKED_BY_TOOL_STARTUP",
+    "error": "failed to write kernel assets: 系统找不到指定的路径。(os error 3)",
+    "attemptedTools": [
+      "node_repl + computer-use",
+      "node_repl reset + retry",
+      "cua_repl fallback"
+    ]
+  },
+  "noCommitPushOrPR": true
+}

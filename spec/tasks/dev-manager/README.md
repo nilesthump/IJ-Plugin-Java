@@ -65,3 +65,9 @@ Java25、单Gradle Groovy+Wrapper、edu.courseassist，Spring AI必须保留，H
 提供成员实际可调用的契约、fixtures、注入和注册，保证 `scripts/validate.ps1` 本地与 CI 共用。处理各任务依赖请求时说明公共变更、迁移和同步 `main` 的位置。
 
 负责人整个任务完成必须有核心实现、范围内场景证据、主线验证和已明确的真实能力边界；初始化完成只更新“骨架已提供”，不能把产品实现标 DONE。提交/合并均遵循实际仓库规则，PR `dev-manager → main`，保留分支。交接必须使下一位 agent 能区分候选设计、已实现能力与尚未执行的验收。
+
+## F2个人任务入口（2026-10-25）
+
+用户明确F2由本人全权负责；新增[F2/README](F2/README.md)、[STATUS](F2/STATUS.md)和[HANDOFF](F2/HANDOFF.md)，共G0–G6七组串行任务。此处仅接入规划入口，不把旧F0剩余状态或四人比例套给F2，也不将方案生成算成实现。
+
+先从G0建立精确F2路径与可信门禁，推荐由用户在既有dev-manager集中交付。现行editor/ui排除范围不自动放开，不把代码放入bootstrap规避归属，不分派其他成员或创建分支。实际方案与契约提案分别见F2入口链接；产品验证仍NOT_RUN。

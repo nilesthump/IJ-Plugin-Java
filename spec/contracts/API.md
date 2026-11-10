@@ -163,3 +163,115 @@ ApplicationCoordinator 与 CredentialUpdateSink 共用 OFF 门槛；stage复制�
 BootstrapToolWindowFactory 后台初始化后在 EDT 构造真实 CourseAssistantView，内容释放关闭观察/高亮资源，不停止 session 业务。身份不明时明确新建或关联未占用的旧归属；关联仍复验空目标及双方版本。初始化失败保留原始诊断且不显示成功空状态；应用存储失败须排障后重启，关联失败可重新选择。
 
 自动验证已区分真实 IDEA/注册 PDF/PSI/H2/界面与本地合成模型响应；真实服务、人工体验/PDF跳页与规模仍待证。详细证据及人工入口见 [第五组](../tasks/dev-manager/WORK_GROUP_5.md)。
+
+## 12. 人工反馈后的本地UI候选（2026-10-24）
+
+用户已更正为单聊天时间线、底部draft和右上新建/历史/搜索/设置。原始typed schema和中断输出资格不变；Markdown正文解析渲染，代码块在原位置高亮。自动保存和单击发送仍通过UpdateDraftText确认后以精确版本SubmitDraft，异常不自动发送。暂停后继续使用RetryAttempt新尝试，不续写中断前缀。项目级临时草稿恢复缓冲仅保留未确认文字，删除/消费清除；关闭视图不停止业务，未保存文字不冒充耐久成功。此项为待用户复测的本地候选，未创建PR。详见负责人FEEDBACK_FIX/FEEDBACK_RETEST。
+
+## 13. 混排草稿与紧凑用户消息（2026-10-25）
+
+DraftView新增captureOffsets（相对于原始文字的UTF-16偏移）和captureOrder（相同文字偏移下的明确捕获顺序）；位置与顺序和原文字共同保存。UpdateDraftText可显式携带两项，核心验证目标/修订/完整capture身份；未携带的旧调用保持旧顺序并将位置限制到合法文本范围。原五参DraftView、四参事件及缺字段旧JSON保持兼容。
+
+提交冻结Input中的原始question、完整typed code、位置及顺序；visibleParts按偏移/顺序呈现原始文字和SELECTION紧凑条，METHOD/CLASS_STRUCTURE只进入模型implicitContext，不在用户消息重复展开。模型输入同时包含有序messageParts和隐式上下文，原始归档与中断输出资格规则不变。显示渲染不回写正文。
+
+用户上翻时暂停更新当前阅读布局，保留最新累计快照，点击↓或主动回底后显示；切换会话立即失效旧缓存和回调。该候选尚待实际用户验收，不宣称PR/main集成完成。
+
+### 2026-10-25 失败资料移除与显式重导入
+
+未发布资料（无 active source）的移除只在短事务复验库基准、资料身份/修订/来源后标记 REMOVED，同时递增库修订；保持 generationId 不变，不要求已有索引或调用嵌入。库修订变化阻止旧导入/更换候选迟到发布。已有 READY 资料的移除仍发布匹配代次，旧 lease/历史引用规则不变。
+
+显式导入与已移除资料同 MD5 的文件时，保留旧资料/来源历史，复用托管 blob 并创建新资料身份进入完整准备流程；未移除的 FAILED/PREPARING 同 MD5 仍定位原条目、不伪装 READY，需对该条目执行更换以手动重试。更换 FAILED 资料保留原 documentId，仍须嵌入服务授权。HTTP 401 与 403 分开提示，不输出响应正文或推定 key 必然错误。
+
+## 2026-10-25 资料硬删除更正（优先于旧软删除/保留历史来源提案）
+
+用户明确要求：移除即彻底删除资料数据，保留聊天文字，旧引用提示“资料已删除”。移除复验库基准及目标修订，在同一事务删除文档全部来源版本、派生页/块/向量、旧代次关联与来源保留记录；READY移除先构造其余资料的新代次，未发布资料不生成索引。列表不保留REMOVED。共享PDF字节只在最后一个文档不再使用时清理，不删除用户原文件。历史聊天归档与引用标识保留，点击已不存在来源提示资料已删除，不阻塞后续发送；聊天归档不再建立已删除来源的保留记录。
+
+删除撤销受影响的固定检索租约及资料候选，迟到派生写入/发布不得复活资料。替换行为仍保留旧版本，只有明确移除覆盖原历史保留提案。旧REMOVED行在启动时按同一规则清理。数据库删除与文件系统不做伪原子事务：未完成文件删除保留deleting记录，失败明确上报，排除占用后重启继续；其余资料不受影响。架构未冻结，等待用户验收，不发PR。
+
+### 第八轮显示更正（2026-10-25，用户原文见本地user-turn-067）
+
+连续输入光标正常前移，刷新保留主动选区/中间编辑，切换打开草稿定位末尾；流式显示复用未变化消息，以聊天viewport布局同步跟底，上翻仍保持阅读快照。过程折叠▶、展开▼。回底按钮为聊天区独立小型悬浮按钮，不占draft或横贯底部遮罩。正文引用按已提供的证据显示文件名及物理页码；不完整/未知标记只显示待确认，代码示例和原始归档不改。非成功归档保留显示标签但不提升引用/未来上下文资格。人工视觉仍待用户验证。
+
+### 选区边缘空白（2026-10-25）
+自动方法/类归属仅按选区去除首尾空白后的端点判断；SelectionStart原始正文和坐标不trim。纯空白明确NOT_APPLICABLE，真实跨方法仍拒绝。
+
+## 第十一轮：启动状态与批量导入
+
+用户授权（原文在本地 evidence/user-turn-070.md，哈希登记于 sources.json；本段为代理转述）：持久保存最后一次成功启用/明确停用选择，IDE 退出不覆盖该选择。旧库默认停用，启动恢复仅构建运行资源，不恢复旧请求；恢复失败保持 OFF 并提供诊断及配置入口。资源管理器允许多选 PDF，按返回顺序逐个导入，使用最新资料库基线；失败或停用停止剩余队列，已完成项保留。批量任务期间拒绝其他资料变更。设置页移除整理历史、恢复未保存、关闭标签三个按钮。未冻结，等待用户验收，不创建 PR。
+
+## F2 G1 实际契约增量（2026-10-26）
+
+纯 Java 数据与端口已落地：EditContracts、EditTargetPort.resolveAndCapture、EditPreviewPort.open、EditApplyPort.apply。实际字段以源码为准，详见 [G1 实现记录](../tasks/dev-manager/F2/G1_IMPLEMENTATION.md)。Input 四字段及历史构造/JSON兼容保留。
+
+ViewEvent 新增 OpenEditPreview(meta, ProposalRef)、ApproveEditProposal(meta, PreviewToken)、RejectEditProposal(meta, PreviewToken)；OperationKind 新增 APPLY。前两项在 G1 无真实 adapter 时明确 NOT_SUPPORTED，拒绝走独立仓储本地命令；三者不进入 SubmitDraft/RetryAttempt/ManualCompact，不消费 draft 或创建用户轮次。
+
+ProposalRef 固定 proposalId/revision/beforeHash/afterHash，PreviewToken 再固定宿主展示 id 与 instance。哈希针对精确 UTF-16BE code units，不等于磁盘字节哈希。EditSnapshot 明确完整 before 和允许 offsets；format=1，未知格式拒绝，文本超过1,000,000 Java chars明确失败。该上限是实现防护，不是实际规模验收。
+
+EditRepository 由 SessionRepository 拥有，同一 H2 writer 上建立独立 schema。生成写入验证 LIVE/instance/operation/epoch；审核验证当前根/实例/准确展示和耐久父资格，不要求父生成槽存在。父有效终态、实际成功候选工具来源、资格提升和槽释放共同事务提交。终态 ReAct Snapshot 不回写。
+
+APPLY 意图/结果分开记录，独立 operation 和稳定 applyId 去重；回执区分 INTENT/APPLYING/APPLIED_TO_DOCUMENT/FAILED_NOT_APPLIED/OUTCOME_UNKNOWN/RECEIPT_PENDING 及 UNKNOWN/UNSAVED/SAVED 磁盘状态。重启/停用不自动重放；未知结果维持阻塞，普通恢复不得清除，实际核验适配留 G5。会话删除级联清全部 F2 私有记录，迟到写拒绝。
+
+ToolBoundary 固定课程/目标/候选能力，默认无 F2 adapter，不暴露应用工具。实际目标定位、候选子生成、Diff、Undo/写命令及真实服务均不在 G1 完成声明内。本地状态事实进入未来上下文与 checkpoint 指纹，但候选原文和未完成生成不会因此进入模型。
+
+## F2 G2/G3 实际接线（2026-10-26）
+
+生产 Project 服务为原项目/实例注入 JavaEditTargetPort，原始 SubmitDraft 的 ReAct 开放 resolveEditTarget(path,class,method,parameters) 和 proposeCodeEdit(ref)。`f()` 指明确零参数；`f` 与空参数列表指参数未知。选区取原提交冻结 CodePart，文字不能改绑其目标。源码仅来自项目内 source roots，明确返回 UNIQUE/AMBIGUOUS/NOT_FOUND/NOT_READY/INCOMPLETE/STALE/OUTSIDE_SOURCE_ROOT。Target 增加兼容可缺的 fileIdentity；生产快照保留独立 VFS id，旧缺失值不授权应用。
+
+完整同版 Document before 与范围先独立持久化到 ca_edit_snapshot。CodeEditTools 只允许 attempt 首次分支解析；课程降级不得重新采集/生成。ca_edit_generation 在子订阅前预留宿主逻辑请求，重复 callId 变化/并发/失败不触发重订阅；原始指令不可被工具参数替换。
+
+子生成由父唯一 ReAct 所有者驱动，tools=[]，共享超时/取消/步骤与累计输出限制，完整子输入先预算。严格精确替换只构造独立 after，零项目写入；子正文保留档案但不进入 branch.protocol。父有效耐久成功才提升候选。已使用 F2 的 attempt 不可重试；其余旧 F0 retry 不开放 F2，新 draft 才重新生成。Diff/审核 UI/实际应用仍留 G4/G5。实现参数、验证及限制见 [G2/G3 实现](../tasks/dev-manager/F2/G23_IMPLEMENTATION.md)。
+
+## F2 G4/G5 实际接线（2026-10-26）
+
+Project 服务装配 NativeEditPreviewPort / JavaEditApplyPort。`SessionViewState.editProposals` 为独立本地投影；旧十参构造保留。时间线只发送 OpenEditPreview 或新的 InspectEditApplication；宿主原生 Diff 的准确两个按钮发送 ApproveEditProposal / RejectEditProposal，不复用草稿提交或重试。
+
+EditPreviewPort.open 的完成值为 Display，只有实际只读双侧 viewer 确认后才完成；whenClosed 管生命周期，enable(token,decisions,dismissed) 启用本地按钮。PreviewToken 新增本次完整 before 验证的 documentStamp；ApplyRequest 携带该 stamp，保留历史构造。EditApplyPort.validate 返回当前准确 stamp，apply 接收仅本地内存 WritePermit，命名 IDE 写命令内最终校验后执行原 after。inspect 及带耐久回执的只读 inspect 不授权写入；forgetSession 清进程内私有观察。
+
+ApplyReceipt 新增兼容 DocumentState；历史 APPLIED_TO_DOCUMENT、当前观察和 DiskState 不合并，旧 JSON 缺字段按 UNKNOWN 处理。单个 applyId 的重复命令在 busy/epoch/当前源码校验之前返回原结果。意图失败不执行，未知或回执待保存阻塞；恢复只核对/补记且不得重放。重新打开项目时旧批准撤销，精确 before/身份重新验证并重新 Diff 后才发当前实例/stamp 的新 token；父成功、有效分支及实际成功候选工具来源仍须共同成立。
+
+所有 viewer（包括拒绝态归档）和未完成预览均绑定生命周期。停用/关闭/删除撤销迟到回调，删除清私有记录和诊断，不回滚用户文件。具体行为、真实验证与限制见 [G4/G5 实现](../tasks/dev-manager/F2/G45_IMPLEMENTATION.md)。旧文中“尚无Diff/apply adapter”仅为 G1/G3 时点状态。
+
+### B01 定位更正（2026-10-26）
+
+含目录的项目相对路径以单次VFS查找定位，随后仍复验原项目/canonical归属、Java源码根、完整Document/PSI和版本；不先枚举全工程，不受无关文件数量上限误拒绝。缺失精确路径不回退同名文件。仅文件名/类提示仍有界搜索，截断不冒称唯一。Windows分隔符规范化后同样拒绝绝对路径/盘符/遍历。
+
+`ResolutionStatus.OUTSIDE_SOURCE_ROOT` 表示精确目标存在但不属于原项目的Java源码根，没有snapshot或候选，不授予修改权限。定位失败观察提供status/candidates/reason，要求在正确Java工程的Sources Root内选择目标；诊断不会自动移动文件、修改项目配置或调用候选子生成。
+### 2026-10-27 自动应用事实观察（本地验证通过）
+
+EditApplyPort.observeChanges 提供只读变化通知，返回可释放 ViewSubscription。平台适配监听已应用目标Document编辑及保存事件，在IDE命令结束后通知；协调器在原项目/会话归属下读取已有耐久APPLIED_TO_DOCUMENT回执，事实发生变化才更新并发布。挂接项目时也核验已有回执，关闭项目/协调器释放订阅。无新的批准、源码写入、强制保存、Undo或模型请求；未知应用结果不能凭匹配文本升级成功，异常回执仍经本地恢复。
+
+完成成功回答后不提供RETRY；仅可重试的停止/中断/失败/超限F0末次尝试提供，使用过F2工具仍要求新draft。UI空草稿成功态显示禁用发送，有新输入才可发送。常规已应用卡片自动显示事实，没有“核对编辑器/保存/Undo”按钮；异常回执保留“重试状态恢复”。
+
+## 2026-10-27 项目目录与会话交互更正（优先于此前源码根限制）
+
+用户明确要求：F2范围扩大到当前打开项目文件夹内；重名无法唯一确定时请用户明确。现有单Java文件和完整Diff审核约束不变；定位/应用以项目canonical目录、VFS身份、同版完整Document为边界，不再要求IDE Sources Root标记。不修改工程标记或访问项目外目标；模糊检索有界，截断不得伪称唯一。
+
+无前台会话显示空新会话欢迎页与可输入区域，发送时核心创建会话并继续提交。历史/搜索默认显示首条用户消息的本地48码点短摘要（空纯代码问题用“Java 代码提问”），不调用模型；右键可重命名，手动名称优先持久保存且不被后续消息覆盖。原始消息不改写。用户整体通过后才统一PR合并，架构未冻结。
+
+`SubmitNewSession(meta,text)`仅用于没有前台会话的纯文字composer；不携带sessionId，核心串行检查前台身份，存在前台时拒绝STALE_REVISION而不重定向。新建后绑定准确session进行正常SubmitDraft，提交失败时保留已持久化草稿并发布新会话；未启用拒绝且不创建。UI提交中禁止重复发送，失败保留文字。
+
+`RenameSession(meta,title)`明确session身份，名称为1–80码点单行非空文字。存储State新增titleExplicit，旧JSON缺字段默认false；所有状态复制保留该标记。首条原始输入派生默认标题，不依赖成功模型输出或后续消息。OUTSIDE_SOURCE_ROOT枚举保留旧数据/工具兼容，当前Java项目目录适配不再返回该状态。
+
+## 2026-10-28 单选区定位表示兼容修复
+
+单个已绑定选区优先确定原VFS文件。定位path若为该文件的本机绝对路径或file URL表示，只做与原文件身份路径的精确比较及项目相对路径规范化，不据提示搜索另一文件；原canonical项目边界、原文/版本检查不变。无选区文字定位仍要求项目相对路径。类/方法包含判断与F0捕获对齐，仅裁去选区两端Character.isWhitespace参与比较；实际allowedRanges保留原始冻结选区，空白或方法外非空白内容不能借此扩大修改范围。公共Java签名未改。
+
+
+## 2026-10-28 同会话续改目标与指令上下文
+
+用户更正：未明确换文件时，不应因下一轮没有重新附选区而丢失已确认目标。宿主从同项目、同会话、耐久成功有效分支的配对resolveEditTarget观察保留文件线索；空path且class省略/匹配时使用前次路径，当前选区/明确路径/不同class优先，明确换目标失败不得回退旧目标。续改重新捕获Document/版本/允许范围并复核文件身份，不复活旧snapshotRef或选区坐标。全部线索省略时可恢复已知方法签名（泛型参数按类型层级拆分）；只知道文件、范围不明则INCOMPLETE，不扩大为整文件。
+
+候选子请求保留本轮原始instruction，并复用父ContextPlanner已经通过资格和预算规划的历史投影来解释数字选项等短回复，含已规划摘要/当前审核事实，不重展全档案、不传thinking或历史tool协议。当前allowedSource才是改动依据，历史代码只作为语义上下文；子请求继续受统一上下文预算/取消/作用域限制。新候选依然需要本地审核，不自动应用。验证与人工状态见任务R02_CONTINUATION_RETEST。
+
+
+## 2026-10-28 候选卡片来源与会话错误分类
+
+ProposalView新增turnId/attemptId/branchId，由EditRepository从持久候选origin及branch填充；旧构造器兼容。UI按三个字段将卡片固定在原Agent分支回答后，不从生成正文猜归属，不改变候选审批权限。历史artifact已含来源，无存储迁移。
+
+自动摘要失败可按既定预算/产品策略继续时，保留独立诊断并显示CONTEXT_FALLBACK WARNING，不标记生成失败。不能降级、真实生成或其他任务错误仍走原失败边界。新提交只移除其前次生成失败的对应通用提示，其他故障不清，旧attempt状态不变。现场异常栈尚未取得，实际读取结果与修复范围见DIFF_OWNER_RETEST。
+
+## 2026-10-28 过期提示与短弹窗
+
+EditApplyPort.SourceChanged表示应用前的完整源码或Diff展示版本变化；可包装在NotApplied内，明确区别于平台/存储故障。预览、批准复验和最终写命令拒绝均不自动重新生成。选区定位返回STALE时宿主直接发布EDIT_SELECTION_CHANGED；非选区漂移为EDIT_SOURCE_CHANGED，均为WARNING，不把保护性拒绝归为TASK_FAILED。真实异常保留诊断与失败状态；保存失败仍阻塞并可恢复。
+
+CourseAssistantView移除draft上方常驻通知文本框，通知以5秒非阻塞气泡展示，不请求焦点；相同code/message/session/operation持续状态不随刷新反复弹出，新的操作可再次提示。视图关闭释放弹窗；未展示时保留待提示，状态消失则撤掉待提示。聊天中的任务/审核状态保留。R05的Undo/Redo是IDE编辑器动作，不要求再次打开已应用候选的Diff，不新增重复批准入口。

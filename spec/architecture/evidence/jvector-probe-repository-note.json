@@ -1,0 +1,42 @@
+{
+  "observedDate": "2026-10-16",
+  "timezone": "Asia/Shanghai",
+  "kind": "repository-provenance-addendum",
+  "relatedEvidence": "spec/architecture/evidence/jvector-command-line-probe.json",
+  "observation": "Maven classpath resolution used an Aliyun mirror from inherited global settings; this probe does not prove Central-only dependency resolution.",
+  "upstreamUrlMeaning": "The source provenance URL identifies the declared official upstream artifact; it is not proof of this run download routing.",
+  "impact": "The recorded Java compilation and graph-query PASS remains an observation of the hashed artifacts; repository isolation is a separate unverified claim.",
+  "followup": "For later controlled resolution, pass the approved Central-only settings as both -s and -gs. No automatic rerun was performed.",
+  "references": [
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/classpath.log",
+      "sha256": "ba0cb1e5df7ec6f5dda2a92038c7afb64048de4aed5aa67b773045030c52111b",
+      "repositoryOrSettingsLines": [
+        "[INFO] Artifact io.github.jbellis:jvector:pom:4.0.1 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [aliyun-maven (https://maven.aliyun.com/repository/public, default, releases)]",
+        "[INFO] Artifact io.github.jbellis:jvector:pom:4.0.1 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [aliyun-maven (https://maven.aliyun.com/repository/public, default, releases)]",
+        "[INFO] Artifact org.apache.commons:commons-parent:pom:39 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [aliyun-maven (https://maven.aliyun.com/repository/public, default, releases)]",
+        "[INFO] Artifact org.apache.commons:commons-parent:pom:39 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [aliyun-maven (https://maven.aliyun.com/repository/public, default, releases)]",
+        "[INFO] Artifact org.apache:apache:pom:16 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [aliyun-maven (https://maven.aliyun.com/repository/public, default, releases)]",
+        "[INFO] Artifact org.apache:apache:pom:16 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [aliyun-maven (https://maven.aliyun.com/repository/public, default, releases)]",
+        "[INFO] Artifact org.slf4j:slf4j-api:pom:2.0.16 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [aliyun-maven (https://maven.aliyun.com/repository/public, default, releases)]",
+        "[INFO] Artifact org.slf4j:slf4j-api:pom:2.0.16 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [aliyun-maven (https://maven.aliyun.com/repository/public, default, releases)]",
+        "[INFO] Artifact org.slf4j:slf4j-parent:pom:2.0.16 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [aliyun-maven (https://maven.aliyun.com/repository/public, default, releases)]",
+        "[INFO] Artifact org.slf4j:slf4j-parent:pom:2.0.16 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [aliyun-maven (https://maven.aliyun.com/repository/public, default, releases)]",
+        "[INFO] Artifact org.slf4j:slf4j-bom:pom:2.0.16 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [aliyun-maven (https://maven.aliyun.com/repository/public, default, releases)]",
+        "[INFO] Artifact org.slf4j:slf4j-bom:pom:2.0.16 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [aliyun-maven (https://maven.aliyun.com/repository/public, default, releases)]"
+      ]
+    },
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/sources-download.log",
+      "sha256": "4b9d3009ec8d644c8d52331beaa91603ec11053766d47a892e3fcb5da98fe923",
+      "repositoryOrSettingsLines": []
+    },
+    {
+      "path": "tmp/architecture/probes/jvector-smoke/run.ps1",
+      "sha256": "2e82bc6ce18422d059261c2195878e603e4befa30d061c06f6986c348ab32b33",
+      "repositoryOrSettingsLines": [
+        "$settings = 'H:\\IJ-Plugin-Java\\tmp\\architecture\\probes\\spring-ai-dependencies\\settings.xml'"
+      ]
+    }
+  ]
+}

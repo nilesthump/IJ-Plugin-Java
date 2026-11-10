@@ -1,0 +1,130 @@
+{
+  "date": "2026-10-26",
+  "g0": {
+    "head": "7f77ab5e2bba235ab8c75a73068df0696df6dfa0",
+    "pr": 18,
+    "validation": "success",
+    "scope": "success",
+    "merge": "0eecc0efd60895e297a250291be04cc58cf25887"
+  },
+  "g1": {
+    "status": "LOCAL_VERIFIED",
+    "suites": 33,
+    "ideStatus": "PASS",
+    "skipped": 0,
+    "tests": 187,
+    "failures": 0,
+    "log": "tmp/f2-g1/delivery-validation.log",
+    "errors": 0,
+    "review": "two independent read-only reviews, zero unresolved findings",
+    "ide": "IU-262.10968.63"
+  },
+  "files": [
+    {
+      "sha256": "844c439755cde9eb6fcdf3bec64b0db038ac06f6a7f06a974bd836f74df649e8",
+      "path": "spec/architecture/BASELINE.md"
+    },
+    {
+      "sha256": "abfda3ecfc21a4eba6a8c9d710b0a33398634de000c960df4a9733bf0b24673d",
+      "path": "spec/contracts/API.md"
+    },
+    {
+      "sha256": "869dafb86c7ad43cb6a427d6fd9f06c586df97df7422093ab19860170aac173a",
+      "path": "spec/contracts/F2_API_PROPOSAL.md"
+    },
+    {
+      "sha256": "95a4cbcecbf46c9c9943a38637e7690d51ddbe3aa4c2b207d73a9d19107c1607",
+      "path": "spec/progress/CURRENT.md"
+    },
+    {
+      "sha256": "0bc5a45dd0efa17e2437af754abd51b4d9d6730f6472b08f49dd1fbe2a734b6d",
+      "path": "spec/tasks/dev-manager/STATUS.md"
+    },
+    {
+      "sha256": "7c7923b6143a3d4e50a296bd9506ef07e0195dd76de2501da08769c8cb63a477",
+      "path": "spec/tasks/dev-manager/HANDOFF.md"
+    },
+    {
+      "sha256": "8793e0738fc9d2d2df269a9f0e7e2da8d1c9f1b83978fa4c12869d087d72e315",
+      "path": "spec/tasks/dev-manager/F2/GROUP_0.md"
+    },
+    {
+      "sha256": "7a4a0fc00384326330cf21e1e08d5a1de787e20e49a521c230dcff86938eb115",
+      "path": "spec/tasks/dev-manager/F2/GROUP_1.md"
+    },
+    {
+      "sha256": "37ab1f251f2a9e4f2d2cc61bd6fd783b9590c31bfd7c90480fc64310b1ae62d7",
+      "path": "spec/tasks/dev-manager/F2/STATUS.md"
+    },
+    {
+      "sha256": "191a29b34ff63e1c70812adda519b0e27f98404964f7b1b6f4f8a239e459d60e",
+      "path": "spec/tasks/dev-manager/F2/HANDOFF.md"
+    },
+    {
+      "sha256": "87499253ca438291e1084f897ada4031a942b52fb009a7a14af7f0f9b127e276",
+      "path": "spec/tasks/dev-manager/F2/VALIDATION_MATRIX.md"
+    },
+    {
+      "sha256": "49495f2db07c6b5e6a5b1b2ef519e7a45348de145bfa00dbc55fed97bd2a5f07",
+      "path": "spec/tasks/dev-manager/F2/G1_IMPLEMENTATION.md"
+    },
+    {
+      "sha256": "e6e2fcc05ccd19ee6007d52ea93d068aa74829f3798c598e382f476e057f7bac",
+      "path": "src/main/java/edu/courseassist/contract/ChatContracts.java"
+    },
+    {
+      "sha256": "0d835b73b8ae4dae7c09fb87c5f3a551e30e31fe2c000c6098957b8f086c1b72",
+      "path": "src/main/java/edu/courseassist/contract/EditContracts.java"
+    },
+    {
+      "sha256": "3a20333e502aba1e1428da231927c96e6c3cf1735128663acf38346ec5088ec1",
+      "path": "src/main/java/edu/courseassist/contract/EditApplyPort.java"
+    },
+    {
+      "sha256": "d788237b25b197514e7b9d9e3b570f82f20fbd9a6d6318f638febe02a31085e0",
+      "path": "src/main/java/edu/courseassist/contract/EditPreviewPort.java"
+    },
+    {
+      "sha256": "c18cdbe2eaf23db89435dad5ceda0e29a779dc42805fd973b380e67066edd3cc",
+      "path": "src/main/java/edu/courseassist/contract/EditTargetPort.java"
+    },
+    {
+      "sha256": "d224363ed5a2395b67371cc2b613620e1751aece10c0d8069c4cd38eb80bcd80",
+      "path": "src/main/java/edu/courseassist/core/react/ReactEngine.java"
+    },
+    {
+      "sha256": "d91f5dc360a1a735b5af09f5492c2f8c641ef6bda124ac5e4ae223c9b755b666",
+      "path": "src/main/java/edu/courseassist/core/react/ToolBoundary.java"
+    },
+    {
+      "sha256": "d12e2ef40dcac39f7e10f96a66fce2d5447e710d108dee0013696ca83770628b",
+      "path": "src/main/java/edu/courseassist/core/session/ContextPlanner.java"
+    },
+    {
+      "sha256": "8c6a84eed689207b4a8d865b91e949bd068cfc147db07e10117716f531edb9a6",
+      "path": "src/main/java/edu/courseassist/core/session/SessionCoordinator.java"
+    },
+    {
+      "sha256": "fca3ba19c8a38c29b74c3c7d6013c0428b530b65b7e06e1edb0c99c3ab5769ed",
+      "path": "src/main/java/edu/courseassist/storage/SessionRepository.java"
+    },
+    {
+      "sha256": "53ed1062ec10e629582d0213abca035dbbfcac56bfac67b6c22fa46fa033064c",
+      "path": "src/main/java/edu/courseassist/storage/EditRepository.java"
+    },
+    {
+      "sha256": "bec51050c03febbaa5262f20fb07932aa966f0e27947aad4a398d2c78b02ea8d",
+      "path": "src/test/java/edu/courseassist/core/react/ToolBoundaryTest.java"
+    },
+    {
+      "sha256": "edd27b27907efbe0929c57d86843721387192b4ce09b0fd77553b5f9038e4cc9",
+      "path": "src/test/java/edu/courseassist/core/session/EditFoundationTest.java"
+    }
+  ],
+  "limits": [
+    "G2-G6 not implemented",
+    "No paid APIs",
+    "No native F2 Diff/Undo or actual source write",
+    "Synthetic apply receipts only"
+  ]
+}

@@ -35,6 +35,27 @@ class ReactEngineTest {
                 listener.frame(new Usage(new TokenUsage(7,3))); listener.complete(); return () -> {};
             });
             Snapshot result = h.done(job);
+            var streaming=h.views.stream().filter(v->v.status()==AttemptStatus.RUNNING)
+                    .filter(v->v.branches().stream().flatMap(b->b.steps().stream()).anyMatch(step->step.body().contains("[[course:"))).findFirst().orElseThrow();
+            var projection=ReactViews.attempt(streaming);
+            assertFalse(projection.branches().getFirst().basis().citations().isEmpty());
+            assertEquals(3,projection.branches().getFirst().basis().citations().getFirst().firstPhysicalPage());
+            assertEquals(ContextEligibility.INELIGIBLE,projection.contextEligibility());
+            for(var status:List.of(AttemptStatus.STOPPED,AttemptStatus.INTERRUPTED,AttemptStatus.LIMITED,AttemptStatus.FAILED)) {
+                var archived=new Snapshot(streaming.identity(),streaming.input(),streaming.revision()+1,streaming.throughSeq(),status,true,
+                        "","",streaming.branches(),List.of(),"stopped-fixture");
+                var archivedView=ReactViews.attempt(archived);
+                assertEquals(projection.branches().getFirst().basis().citations(),archivedView.branches().getFirst().basis().citations());
+                assertEquals(ContextEligibility.INELIGIBLE,archivedView.contextEligibility());
+            }
+
+
+            var originalBranch=streaming.branches().getFirst();
+            var invalid=new Branch(originalBranch.id()+"-invalid",BranchStatus.INVALIDATED,originalBranch.retrieval(),originalBranch.explanation(),originalBranch.steps(),originalBranch.protocol());
+            var archivedBranches=new ArrayList<Branch>();archivedBranches.add(invalid);archivedBranches.addAll(result.branches());
+            var laterSuccess=new Snapshot(result.identity(),result.input(),result.revision(),result.throughSeq(),result.status(),result.saved(),
+                    result.effectiveBranchId(),result.finalStepId(),archivedBranches,result.citations(),result.failureType());
+            assertEquals(projection.branches().getFirst().basis().citations(),ReactViews.attempt(laterSuccess).branches().getFirst().basis().citations());
             assertTrue(result.eligible()); assertEquals(1, subscriptions.get()); assertEquals(1, result.citations().size());
             assertEquals(3, result.citations().getFirst().firstPhysicalPage()); assertEquals(1, h.sourceRefs());
             assertEquals(result, h.journal.load(h.identity).orElseThrow());

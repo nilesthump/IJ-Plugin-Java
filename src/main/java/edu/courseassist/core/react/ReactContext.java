@@ -10,7 +10,12 @@ public final class ReactContext {
     private ReactContext() {}
     private static final JsonMapper JSON = JsonMapper.builder().build();
     public static final String POLICY = "f0-durable-effective-branch-v1";
-    public static String input(Input input) { return JSON.writeValueAsString(input); }
+    public static String input(Input input) {
+        var data=new LinkedHashMap<String,Object>();
+        data.put("messageParts",edu.courseassist.contract.ChatContracts.visibleParts(input.question(),input.code(),input.captureOffsets(),input.captureOrder()));
+        data.put("implicitContext",input.code().stream().filter(c->c.kind()!=edu.courseassist.contract.ChatContracts.PartKind.SELECTION).toList());
+        return JSON.writeValueAsString(data);
+    }
     public static List<Message> history(String projectId, String sessionId, List<HistoryTurn> turns) {
         List<Message> result = new ArrayList<>();
         for (var turn : turns) {

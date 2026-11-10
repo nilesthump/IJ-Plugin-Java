@@ -15,6 +15,11 @@ public interface CourseEmbeddings {
     float[] document(String exactChunkText) throws Exception;
     float[] query(String exactQuery) throws Exception;
 
+    final class InvalidResponse extends IllegalArgumentException {
+        private InvalidResponse(String message) { super(message); }
+        private InvalidResponse(String message, Throwable cause) { super(message, cause); }
+    }
+
     static CourseEmbeddings springAi(EmbeddingModel model, EmbeddingSpace space) {
         Objects.requireNonNull(model); Objects.requireNonNull(space);
         return new CourseEmbeddings() {
@@ -26,9 +31,13 @@ public interface CourseEmbeddings {
                     var response = model.call(new EmbeddingRequest(List.of(text), EmbeddingOptions.builder()
                             .model(space.model()).dimensions(space.dimensions()).build()));
                     if (response.getResults().size() != 1 || !Integer.valueOf(0).equals(response.getResult().getIndex()))
-                        throw new IllegalArgumentException("Embedding response count/index mismatch");
+                        throw new InvalidResponse("嵌入响应数量或索引不正确，预期单条且 index=0");
                     float[] vector = response.getResult().getOutput();
-                    validateVector(vector, space.dimensions()); return vector.clone();
+                    if (vector == null || vector.length != space.dimensions())
+                        throw new InvalidResponse("嵌入维度不匹配：配置 " + space.dimensions() + "，服务实际返回 " + (vector == null ? 0 : vector.length) + "；请核对模型支持的维度，原资料版本未改变");
+                    try { validateVector(vector, space.dimensions()); }
+                    catch (IllegalArgumentException invalid) { throw new InvalidResponse("嵌入服务返回零向量或非有限数值，无法建立课程索引", invalid); }
+                    return vector.clone();
                 });
             }
         };

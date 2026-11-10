@@ -1,0 +1,88 @@
+{
+  "date": "2026-10-25",
+  "branch": "dev-manager",
+  "head": "5ec16c494235e7fd6914e642728e03c17b858b79",
+  "status": "LOCAL_VERIFIED_AWAITING_REAL_PROVIDER_RETEST",
+  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath 'H:/IntelliJ IDEA 2026.1.1' -GradleUserHome 'H:/IJ-Plugin-Java/tmp/gradle-user-home'",
+  "exitCode": 0,
+  "junit": {
+    "tests": 143,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 28
+  },
+  "ideSmoke": {
+    "status": "PASS",
+    "timestamp": "2026-10-25T07:35:02.934170500Z",
+    "ideBuild": "IU-262.10968.63",
+    "javaRuntime": "25.0.4+1-b508.27",
+    "checks": [
+      "plugin-loaded",
+      "application-project-services",
+      "project-isolation-disposal",
+      "background-work",
+      "Swing-ToolWindow-content-release",
+      "Java-PSI-read",
+      "production-configured-runtime-construction-no-network",
+      "H2-commit-reopen",
+      "JVector-build-query",
+      "SpringAI-local-chat-stream-embedding-no-retry",
+      "corpus-managed-PDF-H2-generation-physical-page",
+      "corpus-local-vector-recovery-fixed-attempt",
+      "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation",
+      "production-session-roots-dedup-typed-code-draft-tabs-restore-hard-delete",
+      "native-directory-identity-same-volume-move-copy-isolation",
+      "registered-PDF-reader-real-three-page-file",
+      "registered-editor-action-port",
+      "production-ToolWindow-controller-draft-save-reopen",
+      "registered-editor-action-Java-PSI-durable-three-part-capture"
+    ],
+    "limitations": [
+      "headless IDE command; no visual interaction",
+      "synthetic loopback HTTP only",
+      "synthetic models/embeddings; no human visual acceptance or real provider validation"
+    ]
+  },
+  "log": "tmp/feedback6-validation.log",
+  "memoryProfile": {
+    "gradleOptions": "-Dorg.gradle.jvmargs=-Xmx512m -Dorg.gradle.workers.max=1",
+    "temporaryInit": "tmp/feedback4-memory.init.gradle",
+    "removedAfterValidation": true
+  },
+  "artifact": {
+    "path": "build/distributions/IJ-Plugin-Java-0.1.0-dev-feedback6.zip",
+    "bytes": 79841809,
+    "sha256": "01b34fae2ca8e1809bfa9949a542e22313193c35698b772ff395e7922ff7a75c"
+  },
+  "wireFormat": {
+    "before": "base64",
+    "after": "float",
+    "evidence": "Actual local HTTP request through configured SpringAI/SDK; endpoint, model and embedding credential slot asserted",
+    "dimensionsUnchanged": true
+  },
+  "earlierRuns": [
+    {
+      "log": "tmp/feedback6-red.log",
+      "status": "5 expected failures: base64 wire format and missing rejection categories"
+    },
+    {
+      "log": "tmp/feedback6-targeted.log",
+      "status": "Compile failure adapting raw SDK JsonField map API; corrected to typed JsonNode"
+    },
+    {
+      "log": "tmp/feedback6-targeted-final.log",
+      "status": "PASS"
+    }
+  ],
+  "review": {
+    "specOpen": 0,
+    "standardsOpen": 0
+  },
+  "realApi": {
+    "authorized": true,
+    "newRequestExecuted": false,
+    "reason": "Browser/desktop runtime unavailable; prior user request confirmed HTTP403; new FLOAT request not yet tested against real provider"
+  },
+  "noCommitPushOrPR": true
+}

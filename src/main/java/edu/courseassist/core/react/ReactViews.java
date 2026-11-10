@@ -13,6 +13,14 @@ public final class ReactViews {
         var branches = snapshot.branches().stream().map(b -> {
             boolean grounded = b.retrieval() == RetrievalStatus.EVIDENCE_FOUND;
             List<Citation> cited = b.id().equals(snapshot.effectiveBranchId()) ? snapshot.citations() : List.of();
+            if (snapshot.status()!=AttemptStatus.SUCCEEDED || !b.id().equals(snapshot.effectiveBranchId())) {
+                // Display labels only for actual supplied evidence mentioned by this displayed body.
+                // This does not change the archived raw response or durable citation eligibility.
+                Map<String,Citation> visible=new LinkedHashMap<>();
+                for(var step:b.steps()) for(var evidence:step.suppliedEvidence())
+                    if(step.body().contains("[[course:"+evidence.chunkId()+"]]")) visible.put(evidence.chunkId(),citation(evidence));
+                cited=List.copyOf(visible.values());
+            }
             var basis = new AnswerBasis(grounded ? AnswerMode.COURSE_GROUNDED : AnswerMode.GENERAL, b.retrieval(), b.explanation(), cited);
             var steps = b.steps().stream().map(s -> new ModelStepView(s.id(), snapshot.revision(), s.throughSeq(), s.status(), s.body(),
                     s.thinking().isEmpty() ? Optional.empty() : Optional.of(s.thinking()), s.tools().stream().map(t ->

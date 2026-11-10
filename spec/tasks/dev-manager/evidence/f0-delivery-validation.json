@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-25",
+  "base": "913d21d017e60fb1444f68a11fcff13e8d3cc68b",
+  "scope": "accepted F0 feedback plus PR12 integration and README",
+  "command": "scripts/validate.ps1 -Scope All -IdeSmoke -LocalIdePath H:/IntelliJ IDEA 2026.1.1 -GradleUserHome H:/IJ-Plugin-Java/tmp/gradle-user-home",
+  "exitCode": 0,
+  "junit": {
+    "tests": 169,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 30
+  },
+  "ideSmoke": {
+    "status": "PASS",
+    "timestamp": "2026-10-25T12:54:39.789450100Z",
+    "ideBuild": "IU-262.10968.63",
+    "javaRuntime": "25.0.4+1-b508.27",
+    "checks": [
+      "plugin-loaded",
+      "application-project-services",
+      "project-isolation-disposal",
+      "background-work",
+      "Swing-ToolWindow-content-release",
+      "Java-PSI-read",
+      "production-configured-runtime-construction-no-network",
+      "H2-commit-reopen",
+      "JVector-build-query",
+      "SpringAI-local-chat-stream-embedding-no-retry",
+      "corpus-managed-PDF-H2-generation-physical-page",
+      "corpus-local-vector-recovery-fixed-attempt",
+      "SpringAI-strict-SSE-finite-ReAct-H2-fixed-citation",
+      "production-session-roots-dedup-typed-code-draft-tabs-restore-hard-delete",
+      "native-directory-identity-same-volume-move-copy-isolation",
+      "registered-PDF-reader-real-three-page-file",
+      "registered-editor-action-port",
+      "production-ToolWindow-controller-draft-save-reopen",
+      "registered-editor-action-Java-PSI-durable-three-part-capture"
+    ],
+    "limitations": [
+      "headless IDE command; no visual interaction",
+      "synthetic loopback HTTP only",
+      "synthetic models/embeddings; no human visual acceptance or real provider validation"
+    ]
+  },
+  "log": "tmp/f0-delivery-validation.log",
+  "acceptance": "User accepted F0; F2 NOT_STARTED",
+  "pr12": {
+    "head": "f35ca6ce82f9ae24b19a43f25334c867c146ae7c",
+    "conflicts": false,
+    "ci": "validation and scope success",
+    "review": {
+      "spec": 0,
+      "standards": 0
+    },
+    "merged": true,
+    "mergeCommit": "913d21d017e60fb1444f68a11fcff13e8d3cc68b"
+  },
+  "packages": "12 previous plugin ZIPs removed; final validation ZIP removed afterward",
+  "newPullRequest": "NOT_CREATED: 10 accepted files outside dev-manager scope; no guard bypass",
+  "realApi": "NOT_RUN in final validation"
+}

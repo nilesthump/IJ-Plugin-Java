@@ -1,0 +1,955 @@
+{
+  "capturedDate": "2026-10-15",
+  "timezone": "Asia/Shanghai",
+  "sources": [
+    {
+      "path": "AY202627S1-CST3492-Assignment-A.pdf",
+      "sha256": "937554c1c74ec9cc66331edb558fbe373bf453f9e15eac79e0e95528e3ce2a10"
+    },
+    {
+      "path": "spec/architecture/evidence/reference-workflow.png",
+      "sha256": "2913133d5764c6e86a501b58e846ae9b0e14830dfeada1424c4b4ee3e328fd49"
+    },
+    {
+      "path": "spec/architecture/evidence/assignment-extracted.txt",
+      "sha256": "ae9d09d0f966b18ff4783cc4447bea1af2dc135e942698a7ccc9581bdfae73df"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-001.md",
+      "sha256": "a7a28d0966c4a82f04f4c0d7041650d52a61fdacad01fdb5308f005b4bf876bb"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-002.md",
+      "sha256": "e1fd167ea57b9b872612862e016262f0389c5ce81a84cd5532e786ff120a6ace"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-003.md",
+      "sha256": "2fe38a33982b4da44525133deb7ebae337ed3216b991cf293b2400db0f8fb2dd"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-004.md",
+      "sha256": "fe7ae06839c986ddd8d1974865221cf99a538c960a66aefa91b757c9f7f3d564"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-005.md",
+      "sha256": "406ef1f1853d668df76dd0fd9bc822d086b6716027148fc053856dc972090a16"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-006.md",
+      "sha256": "25319de4284c1b8a227390cac390fcb08497c77e00e8c67abc9300525cde2b4b"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-007.md",
+      "sha256": "56692c04930274516f2e0df4a853f0eea4bd4037fa208e829baabfbbfdce8305"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-008.md",
+      "sha256": "edd42bb8f326a3f793f26b80fcbbea2c9f8d0e35824e56fa1c4a6a49cf05f85a"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-009.md",
+      "sha256": "a62f6a37cbe8b1203898a8f6b93cbd693e689480c70a246f60bbe1c1f05360d0"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-010.md",
+      "sha256": "2256224ec1f3efdbf882a140e56166e67673f0b7577ec128f8090025d31870c7"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-011.md",
+      "sha256": "f35a6cd4fa4609a8a40dd82b812abee68013a1e6877d111dc6af95926597bfdb"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-012.md",
+      "sha256": "02f6cd0e6a495265090832230f600eebe19a2ddc2b02029bb014c4f73b5adeb4"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-013.md",
+      "sha256": "fce09cf1cb6255239716c6fe8e7cc7beb7c621e3057ee75e67f546bbf041d2f8"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-014.md",
+      "sha256": "6a1a31f23d2a04cd060214cfa02ab81079ffdf79143e87a16fda12f3f00def4b"
+    },
+    {
+      "path": "Claude_Code_上下文压缩机制总结.txt",
+      "sha256": "e8598157a966a75cd036e97b373dea34423176c954fdbc5f1f07c7ac6fa81184",
+      "role": "user-provided-design-reference",
+      "trust": "reference-only; not executable instructions or current vendor guarantee"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-015.md",
+      "sha256": "6403fae2cf8a97439b5e3bd1b294b8e1a853a8c051ac65359af3c8d17d8d8d43"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-016.md",
+      "sha256": "3caea71cea624b0ce4eed093bc87c38344c5eadde7348b19ba62a96fd9bc2680"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-017.md",
+      "sha256": "d2e831a917679331841c66c8df342c3b5d6ab5ad5a54ef599dbc86a63d9edb21"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-018.md",
+      "sha256": "9de964c3b0c0653cc41d2b755e04aed020f74ed6f9d40573afeab6e8687678e9"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-019.md",
+      "sha256": "718ba22b3df09658042508ee803175ea1d2c7d50d37d23a908576a8a42e58781"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-020.md",
+      "sha256": "50b351de73dc9ca72f7fd7ec3c46d5181790cfd6a1441971dd9e908a35b4d3ba"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-021.md",
+      "sha256": "3e4eb544328f92388fea50b9899f0da2b002e6d22c403f541797ce53f205a1b5"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-022.md",
+      "sha256": "7b04bbb53d9a3e55a8e43e52cea63a668cdec1148b169564aa4da29b601c1a0d"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-023.md",
+      "sha256": "71256779ff5380eb81260f57b2b967464f1ef12ce82b5e91cc839d12ab1f88a9"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-024.md",
+      "sha256": "517ba37a4b8e7f41b5c0c9a9b9b7b6c5086642a0e2ce708aee1dc2d82da61b16"
+    },
+    {
+      "path": "spec/architecture/evidence/local-environment-2026-10-16.json",
+      "sha256": "1949f859f6644172b9008b0c80f3115f85e605a50349f859a61ae1fbeb2cf98c"
+    },
+    {
+      "path": "spec/architecture/evidence/p0-dependency-probe.json",
+      "sha256": "fbb2e7579ad6c6ff85c542a4e36e4cbeff3ada0d0e1baee7d97e2149a6658b08"
+    },
+    {
+      "path": "spec/architecture/evidence/p0-deepseek-2.0.1-tree.txt",
+      "sha256": "b7df3478fbf7a9e62439edf5ba47265960d049a0d6a65ba4d21c8d2f38111264"
+    },
+    {
+      "path": "spec/architecture/evidence/p0-deepseek-openai-2.0.1-tree.txt",
+      "sha256": "99a48c3f4d4c4e504b2c9c4dd7e86b447cafe60238f9d1c10b4c23797d12259c"
+    },
+    {
+      "path": "spec/architecture/evidence/p0-deepseek-aligned-2.0.1-tree.txt",
+      "sha256": "019168b679c05ca2abce36859a354f62a4412d746394fb0dce1ae4ce02136818"
+    },
+    {
+      "path": "spec/architecture/evidence/p0-deepseek-openai-aligned-2.0.1-tree.txt",
+      "sha256": "de2d23c6cff7e2077f7ca0f7048e67c7c337a6ae77d09a5f16eca58326d1c939"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-025.md",
+      "sha256": "593ba770bc07179053d7c7032eebe4bdd080c3f151a9c46bb3d0c47a8a056524"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-026.md",
+      "sha256": "0f25f4a6d26230b0f172371bfee3dff8bab32a18da019db829d138e20fd036ae"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-027.md",
+      "sha256": "45dbfc3bd1b980dd254c6923d152edda11f9e53fa8253061c109dd2832e73619"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-028.md",
+      "sha256": "13f9a2132b6a72ad49e1112e3e912dbfdc643b5c0c8ef6523c0fff77565aeb5d"
+    },
+    {
+      "path": "spec/architecture/evidence/ui-sdk-inspection.json",
+      "sha256": "e2fa24a138d32e1c57c44b4ce03677254130e584a2eedb1a3054be90b01e52ba"
+    },
+    {
+      "path": "spec/architecture/evidence/ui-markdown-swing-probe.json",
+      "sha256": "7a921ebb88caa936ad364d1b9da6abd19a7fdf48457d64d8c38068b008b4058b"
+    },
+    {
+      "path": "spec/architecture/evidence/ui-markdown-swing-probe.png",
+      "sha256": "347c1be600e860c74cee4ff7b8ae50f083d7058a4139b9dd4e81abf912402bf0"
+    },
+    {
+      "path": "spec/architecture/evidence/ui-streaming-markdown-probe.json",
+      "sha256": "7d963b7e44bb0b813885dd988f1c34f50349ca07776220972bea6d1c0364b075"
+    },
+    {
+      "path": "spec/architecture/evidence/jvector-command-line-probe.json",
+      "sha256": "6e5b21f44fa403533540392e7fb93bd96b2b564106e8d96434675a844ec4d464"
+    },
+    {
+      "path": "spec/architecture/evidence/jvector-probe-repository-note.json",
+      "sha256": "d92cd57747d5a4117b3da341db46cdaf5d7a49e7929dd16e60324e5d329cee4e"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-029.md",
+      "sha256": "9b6e2b4de1ffa17632d77be86699f0127620423199baebf38118907621d5cad2"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-030.md",
+      "sha256": "a05bb6123fcaea74ac8e5a654ec89fb6d390c2ec72a5bc81f029d12738d27e58"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-031.md",
+      "sha256": "db666a317116c713b59daab62e8bcf1323e6365cb2b395e5fc5fd76c89c759fb"
+    },
+    {
+      "path": "spec/architecture/evidence/react-protocol-research.md",
+      "sha256": "04327cde4ba2f45f725f50a03267e91d8f41195d814c54fd410739282a3f18d3"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-032.md",
+      "sha256": "d63dc3a8fe84c2e78d7e5a2128c4d28f65566a8db577a6abc6f1d8f9491a865a"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-033.md",
+      "sha256": "82614bd2d92d70d54132f9fb0a7d50fb5b0daa850e9ecd4e79e7dde6e95026bc"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-034.md",
+      "sha256": "ffd15ef0507fc92c437847ec9e1513b98e225e93e95b2954c2659a668503e16e"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-035.md",
+      "sha256": "f1e5da1d243c346422881ce53aaad83579ddc3ef433ccb013fede937ba5dc33c"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-036.md",
+      "sha256": "6f2d66411b08256b715b9585f7994473127b2fdbc61c75f0b2e1cf1631cdb4a4"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-037.md",
+      "sha256": "a9526865d7c640e38edc3d49480fee497823b3b6e6a40f6812e8075289103a51"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-038.md",
+      "sha256": "92801ffad96522c90bd29e8dd3238655c5731d18e56d70c90209fe99ebb31b0b",
+      "kind": "explicit-user",
+      "recordedDate": "2026-10-20",
+      "captureMethod": "backfilled-from-visible-conversation"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-039.md",
+      "sha256": "69112e39ec9e5bb1227c1cf04f01648d3ab61d5464059ace76ba4b6f50dd4c8c",
+      "kind": "explicit-user",
+      "recordedDate": "2026-10-20",
+      "captureMethod": "backfilled-from-visible-conversation"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-040.md",
+      "sha256": "fee571e548c9e729025fd6170ca538749ae42885f03a1ad024dc7b9d305036a2",
+      "kind": "explicit-user",
+      "recordedDate": "2026-10-20",
+      "captureMethod": "backfilled-from-visible-conversation"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-041.md",
+      "sha256": "1eb25615a2a8223ca8c54006629e7f4fa0a5ac63496f01e56fee5ef6bb6c84e2",
+      "kind": "explicit-user",
+      "recordedDate": "2026-10-20",
+      "captureMethod": "backfilled-from-visible-conversation"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-042.md",
+      "sha256": "a64312dca496e9bd2ac10a127fc1e7df1a569a945a6fe690774a2b09d3beb12e",
+      "kind": "explicit-user",
+      "recordedDate": "2026-10-20",
+      "captureMethod": "backfilled-from-visible-conversation"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-043.md",
+      "sha256": "2c26c709f4aaef01e5db183e07a71e1943454e0d14a2d2073ee5fb859b7e841b",
+      "kind": "explicit-user",
+      "recordedDate": "2026-10-20",
+      "captureMethod": "backfilled-from-visible-conversation"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-044.md",
+      "sha256": "b53be3c49744cad07534b6872ea594b921f069e518a1b494a8124a53bf4b2a04",
+      "kind": "explicit-user",
+      "recordedDate": "2026-10-20",
+      "captureMethod": "backfilled-from-visible-conversation"
+    },
+    {
+      "path": "spec/architecture/evidence/f1-discussion-backfill-2026-10-20.md",
+      "sha256": "1d728536b265aa7f5facd4b78d66ef7df276b1269ab1ed2b568a8cafeb393982",
+      "kind": "agent-analysis-summary",
+      "recordedDate": "2026-10-20",
+      "captureMethod": "backfilled-from-visible-conversation"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-045.md",
+      "sha256": "6398f8711d47e98bf4b1e49dc5fcef0c20be6103169f6797aa23791b97e70106",
+      "kind": "explicit-user",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f1-junit-overview-2026-10-20.mmd",
+      "sha256": "c2c6cdd533178a77c1bf06ba3e9e8ee6f4826740729558888921afd5c21299c4",
+      "kind": "agent-discussion-diagram",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f1-junit-write-2026-10-20.mmd",
+      "sha256": "5c3562540b9c746e56f950fce5e2aed3cc3b41caa7b00182145b27e4b0f0bee3",
+      "kind": "agent-discussion-diagram",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f1-junit-flow-2026-10-20.md",
+      "sha256": "09ea9728e24000e47149eb2d1aaf1a91d8423590fa347fbca711b89fcc9d2016",
+      "kind": "agent-discussion-diagram-notes",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-046.md",
+      "sha256": "3830377b342644ea6d5ccc2713040a1dd8a7a3365ab7e752eadb059765960969",
+      "kind": "explicit-user",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f1-junit-react-classification-2026-10-20.mmd",
+      "sha256": "fe96567cebf5cfdf4ae6fe5aba751bfd285692be71b6674e20492dc5a2637240",
+      "kind": "agent-discussion-classification-diagram",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f1-junit-react-classification-2026-10-20.md",
+      "sha256": "efb6650b3258234e9c8e88013631005e26ad797beaa73b369a2eaa98ec7c7613",
+      "kind": "agent-analysis-code-mapping",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-047.md",
+      "sha256": "0977b59138ea76f84dece7ce65a9d5240700691e2c15e1dddde12a701b539337",
+      "kind": "explicit-user",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f1-junit-f0-node-mapping-2026-10-20.mmd",
+      "sha256": "f37d97c0bc633e127a615910733144445c927f5f109068a4efca5b8b52216bba",
+      "kind": "agent-f0-node-mapping-diagram",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f1-junit-f0-node-mapping-2026-10-20.md",
+      "sha256": "35b5e9e80b4bdcd0ad83dd099e34e0b4ce11fd92f9a8190817724a0cbd676fc9",
+      "kind": "agent-f0-node-mapping-analysis",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-048.md",
+      "sha256": "bb6ab1406ca9d86505348b5473b5c0180736f4a1c18cb6c1445f942ae6b661bb",
+      "kind": "explicit-user",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-junit-complete-2026-10-20.mmd",
+      "sha256": "31070d0b45c1e3d2520159f0eb480f164c50f65d662f52f25075359e3ba57f9e",
+      "kind": "agent-combined-flow-diagram",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-junit-complete-2026-10-20.md",
+      "sha256": "b854d4a092cf48bb38cb70b842afdea6cd5f16e3dddf07ec56f8f3a19a4e9cba",
+      "kind": "agent-combined-flow-notes",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-049.md",
+      "sha256": "d9a631a31dc78ac1e4cebd31bf79f61a04215265a6d984326dc46c533c39628a",
+      "kind": "explicit-user",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-junit-main-2026-10-20.md",
+      "sha256": "fa329866cec261d73407f2d6a90453e1468af279ee38bba1eb4f45ee41869798",
+      "kind": "agent-proposal-diagram",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-junit-main-2026-10-20.mmd",
+      "sha256": "2cc773b4e2e6acebcd1280b578b669662d7992f7c8795690e8e2ef4c079006e0",
+      "kind": "agent-proposal-diagram-source",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-junit-internal-intent-2026-10-20.md",
+      "sha256": "ac59a82d89ba85ca343fd193c9c49831e7b7a1811c9bb25b64b55620233efb67",
+      "kind": "agent-proposal-diagram",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-junit-internal-intent-2026-10-20.mmd",
+      "sha256": "fe7751b594369d5226c42acbe6a1a880f82c4eb54c968a8962433f4b00ee3b9f",
+      "kind": "agent-proposal-diagram-source",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-junit-internal-tools-2026-10-20.md",
+      "sha256": "f8b1b80796aea0a115cbc2a81032fef66c1e7b9d375caeb5b304e252f8f4f592",
+      "kind": "agent-proposal-diagram",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-junit-internal-tools-2026-10-20.mmd",
+      "sha256": "073b9b67933bfd9797cae8953fd24ff1cd376bbda52fb8ac9f2b13566fd05de1",
+      "kind": "agent-proposal-diagram-source",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-junit-internal-write-2026-10-20.md",
+      "sha256": "b7a928ae841e4d29bece216000f7c3d9f90a3d604b82d0c0241b0c06f76bc122",
+      "kind": "agent-proposal-diagram",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-junit-internal-write-2026-10-20.mmd",
+      "sha256": "844b4998a2cce9f624b5049e1263489b1df607d886c10f8d62c8adadfe7adbd2",
+      "kind": "agent-proposal-diagram-source",
+      "recordedDate": "2026-10-20"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-050.md",
+      "sha256": "88205605479d85b998993d801288d3a835ef4bbb5b5119b7d92449b786a8582a",
+      "kind": "user-verbatim-and-agent-scope-interpretation",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-051.md",
+      "sha256": "80ce33adc21fb1852ff2f74574216717c18a9495011f41351d65d2924196ffde",
+      "kind": "user-verbatim-and-agent-scope-interpretation",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-code-edit-main-2026-10-24.md",
+      "sha256": "56a9b2741037430606973c683565a88d6cd2814f63b5f32ec50bb54b4a651c12",
+      "kind": "agent-proposal-diagram",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-code-edit-main-2026-10-24.mmd",
+      "sha256": "8282773aed75c44a93749daec50cadd28f26ab5ba114494f16fbb3f6159cdd49",
+      "kind": "agent-proposal-diagram-source",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-code-edit-internal-generation-2026-10-24.md",
+      "sha256": "3b18199f4e2445a32c1017e5facddbc7ddb6f858ef214200c31ebe248f0dd1c7",
+      "kind": "agent-proposal-diagram",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-code-edit-internal-generation-2026-10-24.mmd",
+      "sha256": "7e9e53891785b3259b9d6b1d0ff5a5d11bcca1a67a7093d3b1556b9e4108c53c",
+      "kind": "agent-proposal-diagram-source",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-code-edit-internal-apply-2026-10-24.md",
+      "sha256": "400e5669959a6c019dd52447732866d44fe315902e925b6c35fc34d8182b3172",
+      "kind": "agent-proposal-diagram",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-code-edit-internal-apply-2026-10-24.mmd",
+      "sha256": "aa538ae66328a60dffc7c97515843dfe2a73f7ce81e0869af5de3bfd455bb3e0",
+      "kind": "agent-proposal-diagram-source",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-052.md",
+      "sha256": "c9671106e5c48b99903d9137767541deb589290614ca911d5f07b629bf4ad4a5",
+      "kind": "user-verbatim-with-agent-interpretation",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-053.md",
+      "sha256": "baa54af5efe285147e08d35f7b840e477c2ebf991bcaa32fa6faea5203959d11",
+      "kind": "user-verbatim-with-agent-analysis",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-054.md",
+      "sha256": "088400c8e40eb1ef61c274533c578c5651b4b842c712ef58cbc70d2de5794ed6",
+      "kind": "user-verbatim-with-agent-interpretation",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-ui-reference-1.png",
+      "sha256": "b05231609e266fb7aea1882ffba0468daa231ac52185f7cd2ab28d5f0e5ba88e",
+      "kind": "user-reference-image-not-instructions",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-ui-reference-2.png",
+      "sha256": "f3f7bc09d4a4ad309c8ed19ef5459318a472352f1887a3fea46f812de6d5da31",
+      "kind": "user-reference-image-not-instructions",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-ui-reference-3.png",
+      "sha256": "c963f27e57bca85b87286fca699d34c63901abdf3009fbf1688b5673a9dc5e3f",
+      "kind": "user-reference-image-not-instructions",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-ui-reference-4.png",
+      "sha256": "a945bc16db4e7fa151a5743a6e6d2464fb073eb025c859d8c9927d648a92b9c6",
+      "kind": "user-reference-image-not-instructions",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-ui-reference-5.png",
+      "sha256": "d836cf525e45a9d899cf9170ee079bd7c5ef9db8ded7bffcf36c471dd7ef8886",
+      "kind": "user-reference-image-not-instructions",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-ui-reference-6.png",
+      "sha256": "647ad14f711dd58e3c7004da1917d46e66eccdddd62272e1a7c92a1d106acb07",
+      "kind": "user-reference-image-not-instructions",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-ui-reference-7.png",
+      "sha256": "a4db0933412b8245e63e5f92faba75184ae4e671c4f4f460e4ea342e0aa5a1d3",
+      "kind": "user-reference-image-not-instructions",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-055.md",
+      "sha256": "4c8fd0e0fc22fe7c2e3197e2adeb1de044cd831344304570d77bf74ff9ef2330",
+      "kind": "user-verbatim-with-agent-analysis",
+      "recordedDate": "2026-10-24"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-056.md",
+      "sha256": "affa6c18b296c1bfe0dfe293a8996b947c82abc7c4e6133a49a8113ef4509bf7",
+      "kind": "user-feedback-evidence",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-ui-feedback-20261025.png",
+      "sha256": "3c52d91f57661c2db7b4823ed0eb7235cb0e335f46e8756a1ce099b285775403",
+      "kind": "user-feedback-evidence",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-057.md",
+      "sha256": "03ae2df21d0fc5144fc2509e9ab7b3227bac07264717973aadcd748909da1402",
+      "kind": "user-feedback-evidence",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-ui-feedback3.png",
+      "sha256": "5b5f6e8f0c2a9bac75c0a423e4ae0e8864d60c015d63cacdaa6f8c7db4c6d51d",
+      "kind": "user-feedback-evidence",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/pdf-task-88452951-safe-stack.txt",
+      "sha256": "7aeecdc8524d03bd3272a980500edc02fdee78676234a1822222458e5aa00ff2",
+      "kind": "safe-stack-no-exception-messages",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-058.md",
+      "sha256": "6bf6147360addf32f38b9d86807fc71b635827dec931b3d58b478e03e0b6b095",
+      "kind": "user-feedback-evidence",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/pdf-feedback4-safe-stacks.txt",
+      "sha256": "18b9d30418f02ff4b704d827b466f498f11f619f078092febb5c49cce4e69a16",
+      "kind": "safe-stack-no-exception-messages",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-059.md",
+      "sha256": "498d3d9704722bc0c40531aacf1f79c886d2a40d2ad407ad66ee00071c6b6f91",
+      "kind": "user-feedback-and-explicit-real-api-authorization",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/pdf-task-cd38a9a6-safe-stack.txt",
+      "sha256": "188ddf82f9d28739bf4ebf6acbba86aebd17dfc35d8a9bf2e78f034c29fa37f0",
+      "kind": "safe-stack-no-exception-messages",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-060.md",
+      "sha256": "57ce687238c4f7859734df0c56ee8be96335e9a8182563c572ea551d03acff19",
+      "kind": "user-continuation-and-tool-block-evidence",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-061.md",
+      "sha256": "8b76e148d10933fc20b59824d10670a6e086f2879ad172a860e31a26e618e200",
+      "kind": "user-real-api-result-and-log-correlation",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-062.md",
+      "sha256": "3655cc8fa2be81da26ed8e07cc580bdb4038b9056bbb4830942243e294d87648",
+      "kind": "explicit-edge-authorization-and-tool-failure",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-063.md",
+      "sha256": "b13e53533ba0ada31ca3b44aa476c8f0598ed7ec55a99a90467800933b057308",
+      "kind": "user-confirmation-and-platform-reference",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/platform-model-hub.png",
+      "sha256": "4e31bf4af74e54309d3acc86e7f9839432e5404c58ba78867997499f588cf214",
+      "kind": "user-confirmation-and-platform-reference",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/platform-embedding-model.png",
+      "sha256": "6b8487abbddfc20caf8349c743f0122ae59694476bcd777c5e7b4bccfef803d4",
+      "kind": "user-confirmation-and-platform-reference",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/platform-embedding-api.png",
+      "sha256": "326af6dc9a286630114847bf4c84e30f684227e53df7bcdeb7db98cd7eafaf3e",
+      "kind": "user-confirmation-and-platform-reference",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-064.md",
+      "sha256": "48b765e3ebbb6762a303d1960446eed86657dfd99fa15f7ce2fff66c12b5c7ac",
+      "kind": "user-feedback-and-safe-network-diagnostic",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/pdf-task-61eff901-safe-stack.txt",
+      "sha256": "188ddf82f9d28739bf4ebf6acbba86aebd17dfc35d8a9bf2e78f034c29fa37f0",
+      "kind": "user-feedback-and-safe-network-diagnostic",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-065.md",
+      "sha256": "ba7ac2384318438e90e8adf3f14be6119e6507a1dfe4062254ece19e7df6e389",
+      "kind": "user-real-api-result-and-diagnostic-plan",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-066.md",
+      "sha256": "0d699aa56d8ffeac35d91d3fbe8cb027c731311efbd8a2a31d3cecdcaa6e66e4",
+      "kind": "user-hard-delete-confirmation",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-067.md",
+      "sha256": "87997b80e59ddd672256ef14378c0e49fa1dada99dbf21a1ba12c82b8b49dbd6",
+      "kind": "user-streaming-ui-feedback",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-068.md",
+      "sha256": "ea6283afb72004e2f173522427d3dbc210c4b73697cfd6bfb4db50b5668edbd5",
+      "kind": "user-selection-boundary-feedback",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-069.md",
+      "sha256": "a50f2a54d02e12f70b7f5e5b9e903c124672922142dbec9a3043dee64a22119b",
+      "kind": "user-inline-ime-feedback",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-070.md",
+      "sha256": "921b0613f3a3475de9538316bb64a5173c04a0683086278eda7abfc4e898c78b",
+      "kind": "user-startup-batch-settings-feedback",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-071.md",
+      "sha256": "7ba6721a0d6def6754611cf121b418b48f0bfc4aa35b7e4154aaa8eef5cc3477",
+      "kind": "user-f0-acceptance-delivery-authorization",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-072.md",
+      "sha256": "7780a1e207f7a2bdf4f0a41ad308308ef9d6222bc002f4dbd9152d7317a99053",
+      "kind": "user-split-publication-approval",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-073.md",
+      "sha256": "1ec833504b607dc786a97bb7177f1870b3358031cb901184678d0e3840ae219e",
+      "kind": "user-ordered-merge-authorization",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-074.md",
+      "sha256": "1f3d12300e76c8411f664ece15bda73a62ea84959dcf7a358f7481154db4c90f",
+      "kind": "user-verbatim-and-agent-scope-interpretation",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-code-edit-main-2026-10-25.md",
+      "sha256": "ef1390998e5501b897f461f46a0b8856fa5f35bf4d9a34df7f36745ace959424",
+      "kind": "agent-proposal-diagram",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-code-edit-main-2026-10-25.mmd",
+      "sha256": "fe6bf578cb81a3718d58392b755a35ddad113ea1efdee0d108f0984b1e5d39c1",
+      "kind": "agent-proposal-diagram-source",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-code-edit-internal-target-2026-10-25.md",
+      "sha256": "bf7828191ec59e319275c7f7f5263a20b1f1d7acc24ca5bd8fe9a20e3d45f0dc",
+      "kind": "agent-proposal-diagram",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-code-edit-internal-target-2026-10-25.mmd",
+      "sha256": "ffe9b35e286cc79af6f6a76cd31abb53b757e0593f6e2fc7f1be58b3cf5fd57a",
+      "kind": "agent-proposal-diagram-source",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-code-edit-internal-generation-2026-10-25.md",
+      "sha256": "1ed541175668dc06fc8c132816c8ee862d29e20cb5d1fb5e7f47a915211ecd44",
+      "kind": "agent-proposal-diagram",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-code-edit-internal-generation-2026-10-25.mmd",
+      "sha256": "79cb464046d53258e9a948a6cc10c7abd8facbe34cd8381214d9b580d26fbd24",
+      "kind": "agent-proposal-diagram-source",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-075.md",
+      "sha256": "5e2f66f967bfca168f52df258ae6097068d2d49b41e6192187f1957e66fdd53f",
+      "kind": "user-verbatim-with-labeled-assistant-reference-and-agent-scope",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-review-buttons-2026-10-25.md",
+      "sha256": "3c85fbb90da00c54c7e46c5d58bb22a16080f2fd813f4d98662ba9b1232c8fe7",
+      "kind": "confirmed-user-constraints-and-agent-flow",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-review-buttons-2026-10-25.mmd",
+      "sha256": "18f3d76f672a84afe640f7400618d1226783fdcd3af43d9b7ac3deda92b6d57a",
+      "kind": "agent-diagram-of-confirmed-user-boundary",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f0-merge-receipt-2026-10-25.json",
+      "sha256": "dd6b70e67ad602ad8a391bcea7635a05125f1df8c320fe2bc4a535404e7aa573",
+      "kind": "agent-merge-verification",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-076.md",
+      "sha256": "7642fd47f3c433ba93588a1164147bf62e750cc290393fe37d1e32db1ef1c718",
+      "kind": "user-verbatim-and-agent-scope-interpretation",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-plan-package-2026-10-25.json",
+      "sha256": "68d71d8c743cd3200fac0b09d73d85962052a27eae78e13f13883dde52815371",
+      "kind": "documentation-package-snapshot",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-plan-generation-2026-10-25.md",
+      "sha256": "7576ddb2c58fd8221c2395fd41ae43b89c1f7e4c0d988014aec90544812d8582",
+      "kind": "agent-generation-and-verification-summary",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-077.md",
+      "sha256": "f8be6c33295713be59dc1bb364136ffc28f3e7cd47c7d34141f781b0e004b7d3",
+      "kind": "user-verbatim-and-agent-publication-scope",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-plan-pr-publication-2026-10-25.json",
+      "sha256": "3661b1a455af6bc8005b387cf11da2ea7bbd2a7156fb1fe52e973f3e3f6524f5",
+      "kind": "git-pr-publication-and-validation-receipt",
+      "recordedDate": "2026-10-25"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-078.md",
+      "sha256": "7d4f5436121d2fc238b0e002e69a14d03929f941ef39e7c603dfb452c4695449",
+      "kind": "user-verbatim-and-explicit-governance-authorization",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-g0-g1-local-validation-2026-10-26.json",
+      "sha256": "92e224b926cd5cd071e3c9d17b0016f0948ee20c07de6013bba956f3508bda49",
+      "kind": "agent-implementation-validation-receipt",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-g1-publication-blocked-2026-10-26.json",
+      "sha256": "5b1a421a549f52cb4e2ebc5b0aa3d40ea90edc98d03b963676c8d7b776f07933",
+      "kind": "agent-observed-publication-blocker",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-g1-merge-2026-10-26.json",
+      "sha256": "a18d0a75516110a800a198295464783cf7e0a724d15ab7e1198e549b7985a797",
+      "kind": "agent-verified-merge-receipt",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-079.md",
+      "sha256": "6abaf234826a70a29aaab1f68b695e84872f957362efd6581e810aba24073972",
+      "kind": "user-verbatim-and-agent-scope-interpretation",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-g23-local-validation-2026-10-26.json",
+      "sha256": "aa2cc4674ff786aca4a72af988e5534d48f9d9670189caa540b09b8e2e4e4b70",
+      "kind": "agent-local-implementation-validation",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-g23-pr-publication-2026-10-26.json",
+      "sha256": "3cd3728b63017b9f02d8c02ef480734c563cc33292d860a0b8654b756e61020e",
+      "kind": "agent-verified-pr-publication",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/user-merge-pr20-2026-10-26.md",
+      "sha256": "a715889a563405201cf821a4921bb98ed16a8c1c7234290eaf257b7aca4ce966",
+      "kind": "user-verbatim-merge-authorization",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-g23-cancel-ci-fix-2026-10-26.json",
+      "sha256": "22e5b8787b721e2fe89b96fdb77b7a6d66e8870969cc3973a9f082a42f2dc3c5",
+      "kind": "agent-ci-failure-test-isolation",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-g23-merge-2026-10-26.json",
+      "sha256": "83764e8857b7518ebf57a4c70c07eb58f98aee06b570a57cb71f2b1ffeb81dea",
+      "kind": "agent-verified-merge-receipt",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-080.md",
+      "sha256": "0d4c694a25fa82e8ea19133eed744768d808dfd0358899dad5f892b839af9273",
+      "kind": "user-verbatim-g45-authorization",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-g45-local-validation-2026-10-26.json",
+      "sha256": "6ead3a3272b5605dbe3111bb9587962b4e16979182b1ce2174566d6cdc48760e",
+      "kind": "agent-local-implementation-validation",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-g45-pr-publication-2026-10-26.json",
+      "sha256": "eefbfe52e52146286b05be9f5ec2fd68fbc0cc72c0d87416d6ffcd4b2a4533d2",
+      "kind": "agent-verified-single-pr-publication",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-g45-merge-2026-10-26.json",
+      "sha256": "fadee64dbbf03a370be4d366793e8773455421b0f598b5cb50156600d35b47f4",
+      "kind": "agent-verified-single-pr-main-merge",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-081.md",
+      "sha256": "584ac50666fb8f99a37bcb78ca66c2e00355c852ca3742f3b5501cbabf5cc540",
+      "kind": "user-verbatim-final-local-work-and-human-acceptance-gate",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-g6-local-validation-2026-10-26.json",
+      "sha256": "fd64e8f07b791aaab86f618880cd5d8195cc612240ef5120d15743510547cba9",
+      "kind": "agent-local-g6-validation-human-pending",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-082.md",
+      "sha256": "027be5be727dcb45eca919ec957c6d787a384701a972b20cb43ed282b6443d1e",
+      "kind": "user-b01-failure-evidence",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-b01-user-feedback-2026-10-26.md",
+      "sha256": "ad87e91f211526ea58a348cea122477e253f46a543d05dde4938d9d7d222ec5e",
+      "kind": "user-b01-failure-evidence",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-b01-fix-validation-2026-10-26.json",
+      "sha256": "003976c8f5d16918959703bcc10030bd6b40b233e8dc16d751b5a615b04bbdd4",
+      "kind": "agent-b01-red-green-local-validation",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-b01-notfound-diagnosis-2026-10-26.md",
+      "sha256": "46b9fc8b56548888ed7afa98b1ef58170341c0f0c9f332d15c5eb7e8f85dac22",
+      "kind": "user-feedback-and-readonly-live-diagnosis",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/f2-b01-maven-sample-2026-10-26.md",
+      "sha256": "f198c5e48e0199621d8a0eeb0c499c2a88b31dafd85f250670e0357fb17904de",
+      "kind": "agent-verified-user-test-project-sample-placement",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/user-feedback-auto-observation-2026-10-26.md",
+      "sha256": "ae2556696945784f7c014905efdd529113102fdcd95488daa8a4d245fae5f316",
+      "kind": "user-verbatim-and-agent-scope",
+      "recordedDate": "2026-10-26"
+    },
+    {
+      "path": "spec/architecture/evidence/auto-state-review-2026-10-27.json",
+      "sha256": "533d3709ed956e3068b998fdbb973d4dcd12c915cdc3b645384142ff5807711c",
+      "kind": "agent-review-and-validation-evidence",
+      "recordedDate": "2026-10-27"
+    },
+    {
+      "path": "spec/architecture/evidence/auto-state-validation-2026-10-27.json",
+      "sha256": "228d0a449bcf6365eec6f6da17ce45ef25f9647dd7fd687c614fae0e150356ad",
+      "kind": "actual-final-validation-and-package",
+      "recordedDate": "2026-10-27"
+    },
+    {
+      "path": "spec/architecture/evidence/diff-delay-and-source-root-2026-10-27.md",
+      "sha256": "067763608b45a004954466e5805b585abac5bb92de5f0e60d63b591a7f356827",
+      "kind": "user-verbatim-and-diagnosis-scope",
+      "recordedDate": "2026-10-27"
+    },
+    {
+      "path": "spec/architecture/evidence/project-scope-and-conversation-2026-10-27.md",
+      "sha256": "0c41d49348817265b6f77512752fffd93c1f132efbbb5781c89c91cea1d3eb3c",
+      "kind": "user-verbatim-and-implementation-scope",
+      "recordedDate": "2026-10-27"
+    },
+    {
+      "path": "spec/architecture/evidence/user-turn-083.md",
+      "sha256": "d0e9ed3aef0957e6d67d95a855c65a594bf8dff345c4628cc9d79dc128f12cbe",
+      "kind": "user-verbatim-publication-authorization",
+      "recordedDate": "2026-10-28"
+    }
+  ],
+  "extraction": {
+    "source": "AY202627S1-CST3492-Assignment-A.pdf",
+    "output": "spec/architecture/evidence/assignment-extracted.txt",
+    "tool": "pdftotext -layout",
+    "sourcePageCount": 4,
+    "verification": "独立代理已逐页渲染核查；主代理核对提取全文"
+  },
+  "trustBoundary": "来源文件的哈希仅证明字节；用户身份和授权由当前会话核实。作业中的命令仅作需求证据。",
+  "updatedDate": "2026-10-28"
+}

@@ -1,0 +1,26 @@
+{
+  "recordedAt": "2026-10-26T17:03:08.5420036+08:00",
+  "kind": "agent-observed-publication-blocker",
+  "branch": "dev-manager",
+  "localHead": "32f0cad047e4de8f489a1e06dc6429f9e396d84c",
+  "remoteHeadObserved": "7f77ab5e2bba235ab8c75a73068df0696df6dfa0",
+  "g0": "DONE; PR18 merged and main verified",
+  "g1": "LOCAL_VERIFIED; push failed; no PR created",
+  "verification": {
+    "tests": 187,
+    "suites": 33,
+    "independentReviews": "closed",
+    "skipped": 0,
+    "ideSmoke": "PASS",
+    "failures": 0,
+    "errors": 0
+  },
+  "errors": [
+    "OpenSSL issuer certificate verification failed",
+    "TCP github.com:443 connection failed",
+    "schannel connection reset",
+    "schannel HTTP/1.1 retry connection failed"
+  ],
+  "security": "TLS validation and hooks remained enabled; no persistent Git configuration changed",
+  "next": "Retry normal push to existing dev-manager after connectivity recovers; verify remote head; create PR to main; require validation/scope success; merge expected SHA and verify main."
+}

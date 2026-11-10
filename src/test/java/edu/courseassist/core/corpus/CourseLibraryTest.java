@@ -110,7 +110,9 @@ class CourseLibraryTest {
                 assertEquals(same.base(), h.snapshot().base());
                 var removed = h.snapshot(); done(h.library.remove(removed.base(), target(removed, first.documentId()), () -> true));
                 try (var next = h.library.openAttempt()) { assertFalse(await(next.hasMaterials())); }
-                assertEquals("A1", await(old.search("A1", e, SEARCH, () -> true)).getFirst().text());
+                assertThrows(CancellationException.class, () -> old.search("A1", e, SEARCH, () -> true));
+                assertInstanceOf(CourseLibrary.MaterialDeleted.class, root(assertThrows(CompletionException.class,
+                        () -> await(h.library.sourcePath(first.sourceId().orElseThrow())))));
                 assertFalse(await(h.library.previewCleanup()).sourceIds().contains(first.sourceId().orElseThrow()));
             }
         }
@@ -125,9 +127,9 @@ class CourseLibraryTest {
             var s1 = h.snapshot(); done(h.library.remove(s1.base(), target(s1, a.documentId()), () -> true));
             var preview = await(h.library.previewCleanup()); await(h.library.cleanup(preview)); assertTrue(Files.exists(shared));
             var s2 = h.snapshot(); done(h.library.remove(s2.base(), target(s2, b.documentId()), () -> true));
-            await(h.library.cleanup(await(h.library.previewCleanup()))); assertTrue(Files.exists(shared), "Durable history pin keeps shared bytes");
+            await(h.library.cleanup(await(h.library.previewCleanup()))); assertFalse(Files.exists(shared), "Explicit removal overrides history pins");
             await(h.library.releaseReferences("answer-owner")); var finalPreview = await(h.library.previewCleanup());
-            assertTrue(finalPreview.sourceIds().contains(a.sourceId().orElseThrow())); await(h.library.cleanup(finalPreview)); assertFalse(Files.exists(shared));
+            assertFalse(finalPreview.sourceIds().contains(a.sourceId().orElseThrow())); await(h.library.cleanup(finalPreview)); assertFalse(Files.exists(shared));
         }
     }
     @Test void failedAndCancelledEmbeddingNeverPublishOrOverwriteOldReadyVersion() throws Exception {
@@ -145,6 +147,135 @@ class CourseLibraryTest {
             assertEquals("CANCELLED", h.snapshot().jobs().stream().filter(j -> j.id().equals(cancelled.id())).findFirst().orElseThrow().state());
             assertEquals(MaterialStatus.READY, h.snapshot().materials().getFirst().status());
         }
+    }
+    @Test void failedFirstImportCanBeRemovedWithoutAnIndexAndStaysRemovedAfterReopen() throws Exception {
+        Path directory = temp.resolve("failed-first");
+        try (var h = new Harness(directory)) {
+            failedImport(h, pdf("denied.pdf", "A1"));
+            var before = h.snapshot(); var material = before.materials().getFirst();
+            assertEquals(MaterialStatus.FAILED, material.status());
+            assertTrue(before.base().generationId().isEmpty());
+            var frozen = target(before, material.documentId());
+            var removed = done(h.library.remove(before.base(), frozen, () -> true));
+            assertTrue(removed.base().generationId().isEmpty(), "Removing an unpublished row must not fabricate an index");
+            assertEquals(before.base().revision() + 1, removed.base().revision());
+            assertTrue(h.snapshot().materials().isEmpty());
+            assertErased(h);
+            assertThrows(CompletionException.class, () -> done(h.library.remove(removed.base(), frozen, () -> true)));
+        }
+        try (var h = new Harness(directory)) {
+            assertTrue(h.snapshot().materials().isEmpty());
+            assertTrue(h.snapshot().base().generationId().isEmpty());
+        }
+    }
+    @Test void failedRowCanBeReplacedDirectlyAndRemovalPreservesOtherReadyIndex() throws Exception {
+        try (var h = new Harness(temp.resolve("failed-replace"))) {
+            failedImport(h, pdf("denied.pdf", "A1"));
+            var failed = h.snapshot(); String doc = failed.materials().getFirst().documentId();
+            var fixed = done(h.library.replacePdf(pdf("fixed.pdf", "A2"), "fixed", failed.base(), target(failed, doc), SETTINGS, new Embeddings(), () -> true));
+            assertEquals(doc, fixed.documentId());
+            assertEquals(MaterialStatus.READY, h.snapshot().materials().getFirst().status());
+            failedImport(h, pdf("another-denied.pdf", "B1"));
+            var before = h.snapshot(); var failedRow = before.materials().stream().filter(m -> m.status() == MaterialStatus.FAILED).findFirst().orElseThrow();
+            var removed = done(h.library.remove(before.base(), target(before, failedRow.documentId()), () -> true));
+            assertEquals(before.base().generationId(), removed.base().generationId(), "An unrelated failed row does not need a new index");
+            try (var lease = h.library.openAttempt()) {
+                assertEquals("A2", await(lease.search("A2", new Embeddings(), SEARCH, () -> true)).getFirst().text());
+            }
+        }
+    }
+    @Test void removingUnpublishedRowFencesLateFirstImportAndAllowsExplicitReimport() throws Exception {
+        try (var h = new Harness(temp.resolve("pending-remove"))) {
+            CountDownLatch entered = new CountDownLatch(1), release = new CountDownLatch(1);
+            Path file = pdf("pending.pdf", "A1");
+            var delayed = new Embeddings() { @Override public float[] document(String text) throws Exception {
+                entered.countDown(); waitFor(release); return super.document(text);
+            } };
+            var pending = h.library.importPdf(file, "pending", h.snapshot().base(), SETTINGS, delayed, () -> true);
+            try {
+                waitFor(entered); var before = h.snapshot(); var row = before.materials().getFirst();
+                assertEquals(MaterialStatus.PREPARING, row.status());
+                var removal = h.library.remove(before.base(), target(before, row.documentId()), () -> true);
+                done(removal); release.countDown();
+                assertInstanceOf(Conflict.class, root(assertThrows(CompletionException.class, () -> await(pending.completion()))));
+                await(pending.settled());
+                assertTrue(h.snapshot().materials().isEmpty());
+                assertTrue(h.snapshot().base().generationId().isEmpty());
+                var restored = h.add(file, new Embeddings());
+                assertEquals(Disposition.PUBLISHED, restored.disposition());
+                assertNotEquals(row.documentId(), restored.documentId(), "Explicit import preserves the removed historical identity");
+                assertEquals(1, h.snapshot().materials().stream().filter(m -> m.status() == MaterialStatus.READY).count());
+            } finally { release.countDown(); }
+        }
+    }
+    private void assertErased(Harness h) {
+        for (String table : List.of("ca_document", "ca_source", "ca_derivation", "ca_page", "ca_chunk", "ca_corpus_job", "ca_source_ref", "ca_blob")) {
+            int rows = await(h.store.transaction(c -> {
+                try (var statement = c.createStatement(); var r = statement.executeQuery("SELECT COUNT(*) FROM " + table)) { r.next(); return r.getInt(1); }
+            }));
+            assertEquals(0, rows, table);
+        }
+    }
+    @Test void hardRemovalErasesAllVersionsAndDurableHistoryPins() throws Exception {
+        Path directory = temp.resolve("hard-removal");
+        String source;
+        try (var h = new Harness(directory)) {
+            var e = new Embeddings(); var first = h.add(pdf("first.pdf", "A1"), e); source=first.sourceId().orElseThrow();
+            Path firstPath=await(h.library.sourcePath(source));
+            try(var lease=h.library.openAttempt()) { await(lease.retainSources("old-answer", Set.of(source))); }
+            var before=h.snapshot();
+            var replacement=done(h.library.replacePdf(pdf("second.pdf", "A2"), "second", before.base(), target(before,first.documentId()), SETTINGS,e,()->true));
+            Path secondPath=await(h.library.sourcePath(replacement.sourceId().orElseThrow()));
+            before=h.snapshot(); done(h.library.remove(before.base(),target(before,first.documentId()),()->true));
+            assertErased(h); assertFalse(Files.exists(firstPath)); assertFalse(Files.exists(secondPath));
+        }
+        try(var h=new Harness(directory)) {
+            assertErased(h); assertTrue(h.snapshot().materials().isEmpty());
+            assertInstanceOf(CourseLibrary.MaterialDeleted.class, root(assertThrows(CompletionException.class,()->await(h.library.sourcePath(source)))));
+        }
+    }
+    @Test void legacyRemovedRowsArePurgedOnReopen() throws Exception {
+        Path directory=temp.resolve("legacy-removal");
+        try(var h=new Harness(directory)) {
+            failedImport(h,pdf("legacy.pdf","A1"));
+            await(h.store.transaction(c->{try(var st=c.createStatement()){st.executeUpdate("UPDATE ca_document SET status='REMOVED'");}return null;}));
+        }
+        try(var h=new Harness(directory)) { assertErased(h);assertTrue(h.snapshot().materials().isEmpty()); }
+    }
+    @Test void removalFileFailureIsReportedAndDurableCleanupResumesOnReopen() throws Exception {
+        Path directory=temp.resolve("removal-file-failure"); Path path,backup,blocker;
+        try(var h=new Harness(directory)) {
+            var first=h.add(pdf("to-remove.pdf","A1"),new Embeddings());path=await(h.library.sourcePath(first.sourceId().orElseThrow()));
+            backup=path.resolveSibling("backup");Files.move(path,backup);Files.createDirectory(path);blocker=Files.writeString(path.resolve("blocker"),"fixture");
+            var before=h.snapshot();var job=h.library.remove(before.base(),target(before,first.documentId()),()->true);
+            assertThrows(CompletionException.class,()->done(job));await(job.settled());assertTrue(h.snapshot().materials().isEmpty());
+            assertEquals(1,h.repo.deletingBlobs().size());Files.delete(blocker);Files.delete(path);Files.move(backup,path);
+        }
+        try(var h=new Harness(directory)) { assertErased(h);assertFalse(Files.exists(path)); }
+    }
+    @Test void deletionRevokesInFlightRetrievalWithoutDeliveringDeletedEvidence() throws Exception {
+        try(var h=new Harness(temp.resolve("pending-query"))) {
+            var first=h.add(pdf("query.pdf","A1"),new Embeddings());
+            CountDownLatch entered=new CountDownLatch(1),release=new CountDownLatch(1);
+            try(var lease=h.library.openAttempt()) {
+                var delayed=new Embeddings() { @Override public float[] query(String query) {
+                    entered.countDown();try { waitFor(release); } catch(InterruptedException ex) { Thread.currentThread().interrupt();throw new CompletionException(ex); }
+                    return vector(query);
+                }};
+                var result=lease.search("A1",delayed,SEARCH,()->true);
+                try {
+                    waitFor(entered);var before=h.snapshot();done(h.library.remove(before.base(),target(before,first.documentId()),()->true));
+                    assertTrue(result.isCompletedExceptionally());release.countDown();
+                    assertInstanceOf(CancellationException.class,root(assertThrows(CompletionException.class,()->await(result))));
+                    assertErased(h);
+                } finally { release.countDown(); }
+            }
+        }
+    }
+    private void failedImport(Harness h, Path file) {
+        var job = h.library.importPdf(file, file.getFileName().toString(), h.snapshot().base(), SETTINGS,
+                new Embeddings() { @Override public float[] document(String text) throws IOException { throw new IOException("synthetic denied"); } }, () -> true);
+        assertThrows(CompletionException.class, () -> await(job.completion())); await(job.settled());
     }
     @Test void platformCancellationIsNotAnEmbeddingFaultAndFailedImportIsNotDuplicateReady() throws Exception {
         try (var h = new Harness(temp.resolve("corpus"))) {
@@ -285,7 +416,7 @@ class CourseLibraryTest {
             var replacement = h.library.replacePdf(pdf("a2.pdf", "A2"), "A2", base.base(), target, SETTINGS, e, () -> true);
             waitFor(prepared); var removal = done(h.library.remove(base.base(), target, () -> true)); release.countDown();
             assertThrows(CompletionException.class, () -> done(replacement)); await(replacement.settled());
-            assertEquals(removal.base(), h.snapshot().base()); assertEquals(MaterialStatus.REMOVED, h.snapshot().materials().getFirst().status());
+            assertEquals(removal.base(), h.snapshot().base()); assertTrue(h.snapshot().materials().isEmpty());
             try (var lease = h.library.openAttempt()) { assertFalse(await(lease.hasMaterials())); }
         }
     }

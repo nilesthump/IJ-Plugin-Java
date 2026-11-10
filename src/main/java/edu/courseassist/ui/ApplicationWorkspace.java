@@ -9,7 +9,7 @@ import edu.courseassist.contract.ApplicationContracts.ApplicationViewState;
 import edu.courseassist.contract.ApplicationContracts.CorpusBase;
 import edu.courseassist.contract.ApplicationContracts.DisablePlugin;
 import edu.courseassist.contract.ApplicationContracts.EnablePlugin;
-import edu.courseassist.contract.ApplicationContracts.ImportCoursePdf;
+import edu.courseassist.contract.ApplicationContracts.ImportCoursePdfs;
 import edu.courseassist.contract.ApplicationContracts.MaterialTarget;
 import edu.courseassist.contract.ApplicationContracts.MaterialView;
 import edu.courseassist.contract.ApplicationContracts.RemoveCourseMaterial;
@@ -53,6 +53,7 @@ final class ApplicationWorkspace {
     private final Consumer<String> feedback;
     private final BooleanSupplier active;
     private final JPanel root = new JPanel(new BorderLayout(4, 4));
+    private final JLabel credentialsState = new JLabel("凭据状态待恢复");
     private final JLabel workState = new JLabel("等待应用状态");
     private final DefaultListModel<MaterialView> materialModel = new DefaultListModel<>();
     private final JList<MaterialView> materials = new JList<>(materialModel);
@@ -100,7 +101,9 @@ final class ApplicationWorkspace {
         actions.add(replace);
         actions.add(remove);
         actions.add(configure);
-        root.add(workState, BorderLayout.NORTH);
+        JPanel header = new JPanel(new GridLayout(0, 1));
+        header.add(workState); header.add(credentialsState);
+        root.add(header, BorderLayout.NORTH);
         root.add(new JScrollPane(materials), BorderLayout.CENTER);
         root.add(actions, BorderLayout.SOUTH);
         root.setName("applicationWorkspace");
@@ -116,6 +119,7 @@ final class ApplicationWorkspace {
         state = next;
         workState.setText("工作状态：" + next.workState() + " · 课程库：" + next.corpusState()
                 + (next.hasUnsavedState() ? " · 有未保存状态" : ""));
+        credentialsState.setText("生成凭据：" + credentialLabel(next.generationProfile()) + " · 嵌入凭据：" + credentialLabel(next.embeddingProfile()) + "（已保存不代表远端认证通过）");
         materialModel.clear();
         next.materials().forEach(materialModel::addElement);
         if (selectedId != null) {
@@ -129,12 +133,18 @@ final class ApplicationWorkspace {
         updateActions();
     }
 
+    private static String credentialLabel(Optional<ProfileView> profile) {
+        return profile.filter(p -> p.credentialStatus() == edu.courseassist.contract.ApplicationContracts.CredentialStatus.CONFIGURED).isPresent()
+                ? "已保存" : "未保存";
+    }
+
     private void updateActions() {
         boolean ready = state != null;
         workSwitch.setEnabled(ready && (state.workState() == WorkState.OFF || state.workState() == WorkState.ON));
         workSwitch.setText(ready && state.workState() == WorkState.ON ? "停用" : "启用");
-        importPdf.setEnabled(ready);
-        boolean chosen = ready && materials.getSelectedValue() != null;
+        importPdf.setEnabled(ready && state.workState() == WorkState.ON);
+        boolean chosen = ready && state.workState() == WorkState.ON && materials.getSelectedValue() != null
+                && materials.getSelectedValue().status() != edu.courseassist.contract.ApplicationContracts.MaterialStatus.REMOVED;
         replace.setEnabled(chosen);
         remove.setEnabled(chosen);
         configure.setEnabled(ready && state.workState() == WorkState.OFF);
@@ -151,8 +161,8 @@ final class ApplicationWorkspace {
         if (state == null) return;
         long revision = state.revision();
         CorpusBase base = state.corpusBase();
-        Path file = choosePdf();
-        if (file != null) dispatch(new ImportCoursePdf(meta(revision), file, base));
+        var files = choosePdfs(true);
+        if (!files.isEmpty()) dispatch(new ImportCoursePdfs(meta(revision), files, base));
     }
 
     private void chooseReplacement() {
@@ -160,8 +170,8 @@ final class ApplicationWorkspace {
         MaterialTarget target = target(materials.getSelectedValue());
         long revision = state.revision();
         CorpusBase base = state.corpusBase();
-        Path file = choosePdf();
-        if (file != null) dispatch(new ReplaceCourseMaterial(meta(revision), target, file, base));
+        var files = choosePdfs(false);
+        if (!files.isEmpty()) dispatch(new ReplaceCourseMaterial(meta(revision), target, files.getFirst(), base));
     }
 
     private void removeSelected() {
@@ -179,6 +189,7 @@ final class ApplicationWorkspace {
         JPanel form = new JPanel(new GridLayout(1, 2, 8, 8));
         form.add(generation.panel);
         form.add(embedding.panel);
+        embedding.panel.add(new JLabel("<html>必须是 embedding 模型，不能填写聊天模型。<br>维度来自该嵌入模型文档，不能任意填写。<br>生成与嵌入可使用不同服务和 key。</html>"));
         int choice = JOptionPane.showConfirmDialog(root, form, "服务配置（仅停用时可修改）",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (choice != JOptionPane.OK_OPTION) {
@@ -265,10 +276,20 @@ final class ApplicationWorkspace {
         return new ApplicationEventMeta(UUID.randomUUID().toString(), revision);
     }
 
-    private Path choosePdf() {
-        JFileChooser chooser = new JFileChooser();
-        return chooser.showOpenDialog(root) == JFileChooser.APPROVE_OPTION
-                ? chooser.getSelectedFile().toPath().toAbsolutePath() : null;
+    private java.util.List<Path> choosePdfs(boolean multiple) {
+        // AWT delegates to the Windows native file picker (Explorer navigation/search).
+        java.awt.Window owner = SwingUtilities.getWindowAncestor(root);
+        java.awt.FileDialog chooser = owner instanceof java.awt.Dialog dialog
+                ? new java.awt.FileDialog(dialog, "选择 PDF", java.awt.FileDialog.LOAD)
+                : new java.awt.FileDialog(owner instanceof java.awt.Frame frame ? frame : null, "选择 PDF", java.awt.FileDialog.LOAD);
+        try {
+            chooser.setMultipleMode(multiple); chooser.setFile("*.pdf"); chooser.setVisible(true);
+            var selected = Arrays.stream(chooser.getFiles()).map(file -> file.toPath().toAbsolutePath()).toList();
+            if (selected.stream().anyMatch(file -> !file.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".pdf"))) {
+                feedback.accept("请选择 PDF 文件"); return java.util.List.of();
+            }
+            return selected;
+        } finally { chooser.dispose(); }
     }
 
     private void dispatch(ApplicationEvent event) {
@@ -290,7 +311,7 @@ final class ApplicationWorkspace {
         final JTextField model = new JTextField();
         final JTextField dimensions = new JTextField();
         final JPasswordField key = new JPasswordField();
-        final JCheckBox removeKey = new JCheckBox("移除现有凭据");
+        final JCheckBox removeKey = new JCheckBox("删除已保存的 key（删除后无法启用）");
 
         ProviderFields(String title, Optional<ProfileView> current) {
             panel.add(new JLabel(title));
@@ -304,11 +325,23 @@ final class ApplicationWorkspace {
             });
             add("配置 ID", id);
             add("提供方", provider);
-            add("地址", endpoint);
+            add("Base URL（不含 /chat/completions 或 /embeddings）", endpoint);
             add("模型 ID", model);
             add("嵌入维度（生成服务可空）", dimensions);
             add("新 API key（留空则保持）", key);
             panel.add(removeKey);
+            removeKey.addItemListener(event -> key.setEnabled(!removeKey.isSelected()));
+            key.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+                private void update() {
+                    boolean empty = key.getDocument().getLength() == 0;
+                    if (!empty) removeKey.setSelected(false);
+                    removeKey.setEnabled(empty);
+                }
+                public void insertUpdate(javax.swing.event.DocumentEvent e) { update(); }
+                public void removeUpdate(javax.swing.event.DocumentEvent e) { update(); }
+                public void changedUpdate(javax.swing.event.DocumentEvent e) { update(); }
+            });
+            panel.add(new JLabel("<html>更换 key：直接填写新值，无需先删除。<br>留空且不勾选删除：保留现有凭据。</html>"));
         }
 
         private void add(String label, javax.swing.JComponent field) {

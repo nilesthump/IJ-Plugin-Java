@@ -23,7 +23,7 @@ import static edu.courseassist.bootstrap.ide.DependencyChecks.require;
 final class EditorIntegrationChecks {
     static void run(Path root) throws Exception {
         Path directory = Files.createDirectories(root.resolve("project-" + UUID.randomUUID()));
-        String source = "class CaptureSample { int field; int twice(int x) { return x * 2; } void unrelated() { System.out.println(99); } }";
+        String source = "class CaptureSample {\n    int field;\n    int twice(int x) { return x * 2; }\n    void unrelated() { System.out.println(99); }\n}\n";
         Path file = Files.writeString(directory.resolve("CaptureSample.java"), source);
         var projects = ProjectManagerEx.getInstanceEx();
         var project = projects.openProject(directory, OpenProjectTask.build().asNewProject().withForceOpenInNewFrame(true));
@@ -72,8 +72,41 @@ final class EditorIntegrationChecks {
             String structure = group.automaticContexts().stream().filter(c -> c.kind() == ContextKind.CLASS_STRUCTURE)
                     .findFirst().orElseThrow().text().orElseThrow();
             require(structure.contains("int field;") && !structure.contains("println"), "Class fields without unrelated method body");
+            int methodStart=source.indexOf("int twice"), methodEnd=source.indexOf(" }",methodStart)+2;
+            int nextMethod=source.indexOf("void unrelated");
+            for(int[] range:new int[][]{{methodStart-4,methodEnd},{methodStart,methodEnd+1},{methodStart-4,nextMethod},{source.indexOf(" return"),source.indexOf(";",source.indexOf("return"))+2}}) {
+                var frozen=frozenSelection(service,virtualFile,source,range[0],range[1]);
+                var captured=service.codeCapture().capture(frozen).toCompletableFuture().get(15,TimeUnit.SECONDS);
+                require(captured.start().equals(frozen),"Whitespace-inclusive original selection retained exactly");
+                require(captured.automaticContexts().stream().filter(c->c.kind()==ContextKind.METHOD).findFirst().orElseThrow().text().orElseThrow()
+                        .equals("int twice(int x) { return x * 2; }"),"Whitespace outside method is not a cross-method selection");
+            }
+
+            var cross=frozenSelection(service,virtualFile,source,methodStart-4,source.indexOf("println")+7);
+            try {
+                service.codeCapture().capture(cross).toCompletableFuture().get(15,TimeUnit.SECONDS);
+                throw new AssertionError("Actual cross-method selection must still be rejected");
+            } catch(java.util.concurrent.ExecutionException expected) {
+                require(edu.courseassist.core.react.ReactEngine.unwrap(expected) instanceof IllegalArgumentException,"Actual cross-method boundary remains explicit");
+            }
+            var whitespace=frozenSelection(service,virtualFile,source,methodStart-4,methodStart);
+            var empty=service.codeCapture().capture(whitespace).toCompletableFuture().get(15,TimeUnit.SECONDS);
+            require(empty.start().equals(whitespace) && empty.automaticContexts().stream().allMatch(c->c.status()==edu.courseassist.contract.CaptureContracts.ContextStatus.NOT_APPLICABLE),"Whitespace-only capture has no invented context");
         } finally {
             ApplicationManager.getApplication().invokeAndWait(() -> projects.forceCloseProject(project, true));
         }
     }
+    private static edu.courseassist.contract.CaptureContracts.SelectionStart frozenSelection(CourseAssistantProject service,
+            com.intellij.openapi.vfs.VirtualFile file,String source,int start,int end) {
+        var frozen=new java.util.concurrent.atomic.AtomicReference<edu.courseassist.contract.CaptureContracts.SelectionStart>();
+        ApplicationManager.getApplication().invokeAndWait(()->{
+            var document=FileDocumentManager.getInstance().getDocument(file);
+            int firstLine=document.getLineNumber(start),lastLine=document.getLineNumber(end);
+            frozen.set(new edu.courseassist.contract.CaptureContracts.SelectionStart(UUID.randomUUID().toString(),service.projectInstanceId(),
+                    new edu.courseassist.contract.CaptureContracts.FileSnapshotRef(file.getUrl(),document.getModificationStamp(),"JAVA"),source.substring(start,end),
+                    new edu.courseassist.contract.CaptureContracts.SourceRange(firstLine+1,start-document.getLineStartOffset(firstLine)+1,lastLine+1,end-document.getLineStartOffset(lastLine)+1)));
+        });
+        return frozen.get();
+    }
+
 }

@@ -1,0 +1,31 @@
+{
+  "recordedDate": "2026-10-26",
+  "implementationCommit": "1578f232554f60adf5d427b235bdad1fc5aedd6b",
+  "head": "053aa37ce06049694f98dd513af45e86d0f0caf4",
+  "pr": {
+    "baseRefName": "main",
+    "headRefName": "dev-manager",
+    "headRefOid": "053aa37ce06049694f98dd513af45e86d0f0caf4",
+    "mergeStateStatus": "BLOCKED",
+    "mergeable": "MERGEABLE",
+    "number": 21,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "0001-01-01T00:00:00Z",
+        "conclusion": "",
+        "detailsUrl": "https://github.com/nilesthump/IJ-Plugin-Java/actions/runs/40330796236/job/121599739795",
+        "name": "validation",
+        "startedAt": "2026-10-26T13:28:43Z",
+        "status": "IN_PROGRESS",
+        "workflowName": "F0 validation"
+      }
+    ],
+    "url": "https://github.com/nilesthump/IJ-Plugin-Java/pull/21"
+  },
+  "creation": "GitHub connector403; authenticated gh CLI succeeded",
+  "singlePullRequest": true,
+  "mergeStatus": "NOT_MERGED_AWAITING_LATEST_HEAD_CHECKS",
+  "validation": "209 tests, 35 suites, All+IdeSmoke PASS; final docs-only Repository and scope PASS"
+}

@@ -20,7 +20,7 @@ public final class ChatContracts {
 
     public enum Lifecycle { LIVE, DELETING, DELETE_FAILED }
     public enum CaptureState { PENDING, READY, FAILED, RECAPTURE_REQUIRED }
-    public enum OperationKind { GENERATE, COMPACT }
+    public enum OperationKind { GENERATE, COMPACT, APPLY }
     public enum AttemptStatus { RUNNING, SAVING, SUCCEEDED, STOPPED, INTERRUPTED, LIMITED, FAILED }
     public enum BranchStatus { ACTIVE, COMPLETED, INVALIDATED }
     public enum StepStatus { STREAMING, TOOL_CALLS_READY, TOOLS_RUNNING, FINISHED, INCOMPLETE }
@@ -49,6 +49,27 @@ public final class ChatContracts {
         }
     }
 
+    public static List<MessagePart> visibleParts(String text,List<CodePart> code,java.util.Map<String,Integer> offsets) { return visibleParts(text,code,offsets,code.stream().filter(c->c.kind()==PartKind.SELECTION).map(CodePart::captureId).toList()); }
+    public static List<MessagePart> visibleParts(String text, List<CodePart> code, java.util.Map<String,Integer> offsets,List<String> order) {
+        java.util.ArrayList<MessagePart> result=new java.util.ArrayList<>();
+        var selections=code.stream().filter(c->c.kind()==PartKind.SELECTION)
+                .sorted(java.util.Comparator.<CodePart>comparingInt(c->offsets.getOrDefault(c.captureId(),text.length())).thenComparingInt(c->order.indexOf(c.captureId()))).toList();
+        int cursor=0,index=0;
+        for(var selection:selections) {
+            int offset=Math.max(cursor,Math.min(text.length(),offsets.getOrDefault(selection.captureId(),text.length())));
+            if(offset>cursor)result.add(new TextPart("text-"+(index++),text.substring(cursor,offset)));
+            result.add(selection);cursor=offset;
+        }
+        if(cursor<text.length())result.add(new TextPart("text-"+index,text.substring(cursor)));
+        return List.copyOf(result);
+    }
+
+    public static List<String> orderedCaptures(List<String> available,List<String> requested) {
+        java.util.LinkedHashSet<String> result=new java.util.LinkedHashSet<>();
+        if(requested!=null)for(String id:requested)if(available.contains(id))result.add(id);
+        result.addAll(available);return List.copyOf(result);
+    }
+
     public record MessageView(String messageId, Role role, List<MessagePart> parts, Instant createdAt) {
         public MessageView {
             requireId(messageId, "messageId"); Objects.requireNonNull(role, "role");
@@ -75,10 +96,15 @@ public final class ChatContracts {
     }
 
     public record DraftView(String draftId, long revision, String text, List<DraftCapture> captures,
-                            SaveState saveState) {
+                            SaveState saveState, java.util.Map<String,Integer> captureOffsets,List<String> captureOrder) {
+        public DraftView(String id,long rev,String text,List<DraftCapture> captures,SaveState state,java.util.Map<String,Integer> offsets) { this(id,rev,text,captures,state,offsets,null); }
+        public DraftView(String draftId,long revision,String text,List<DraftCapture> captures,SaveState saveState) { this(draftId,revision,text,captures,saveState,java.util.Map.of()); }
         public DraftView {
             requireId(draftId, "draftId"); requireRevision(revision); Objects.requireNonNull(text, "text");
             captures = List.copyOf(captures); Objects.requireNonNull(saveState, "saveState");
+            captureOrder=orderedCaptures(captures.stream().map(DraftCapture::captureId).toList(),captureOrder);
+            captureOffsets = captureOffsets == null ? java.util.Map.of() : java.util.Map.copyOf(captureOffsets);
+            for (var entry : captureOffsets.entrySet()) if (entry.getValue()<0 || entry.getValue()>text.length()) throw new IllegalArgumentException("Capture offset outside text");
         }
     }
 
@@ -176,12 +202,18 @@ public final class ChatContracts {
 
     public record SessionViewState(String sessionId, String title, long revision, Lifecycle lifecycle,
                                    DraftView draft, List<TurnView> turns, Optional<ActiveOperation> activeOperation,
-                                   boolean writesBlocked, Set<SessionAction> allowedActions, List<Notice> notices) {
+                                   boolean writesBlocked, Set<SessionAction> allowedActions, List<Notice> notices,
+                                   List<EditContracts.ProposalView> editProposals) {
+        public SessionViewState(String sessionId,String title,long revision,Lifecycle lifecycle,DraftView draft,List<TurnView> turns,
+                                Optional<ActiveOperation> activeOperation,boolean writesBlocked,Set<SessionAction> allowedActions,List<Notice> notices) {
+            this(sessionId,title,revision,lifecycle,draft,turns,activeOperation,writesBlocked,allowedActions,notices,List.of());
+        }
         public SessionViewState {
             requireId(sessionId, "sessionId"); Objects.requireNonNull(title, "title"); requireRevision(revision);
             Objects.requireNonNull(lifecycle, "lifecycle"); Objects.requireNonNull(draft, "draft"); turns = List.copyOf(turns);
             activeOperation = Objects.requireNonNull(activeOperation, "activeOperation");
             allowedActions = Set.copyOf(allowedActions); notices = List.copyOf(notices);
+            editProposals=List.copyOf(editProposals);
         }
     }
 
@@ -207,9 +239,12 @@ public final class ChatContracts {
         }
     }
 
-    public sealed interface ViewEvent permits CreateSession, SelectSession, UpdateDraftText, SubmitDraft,
+    public sealed interface ViewEvent permits CreateSession, SubmitNewSession, RenameSession, SelectSession, UpdateDraftText, SubmitDraft,
             CloseSessionTab, OpenSessionTab, DeleteSession, RemoveDraftCapture, StopOperation, RetryAttempt,
-            ManualCompact, ReorderTabs, OpenCitation, RecoverSession { EventMeta meta(); }
+            ManualCompact, ReorderTabs, OpenCitation, RecoverSession, OpenEditPreview, ApproveEditProposal, RejectEditProposal, InspectEditApplication { EventMeta meta(); }
+    public record InspectEditApplication(EventMeta meta,EditContracts.ProposalRef proposal) implements ViewEvent {
+        public InspectEditApplication { target(meta);Objects.requireNonNull(proposal); }
+    }
 
     private static void target(EventMeta meta) {
         if (Objects.requireNonNull(meta, "meta").sessionId().isEmpty()) {
@@ -217,11 +252,29 @@ public final class ChatContracts {
         }
     }
 
+    public record OpenEditPreview(EventMeta meta, EditContracts.ProposalRef proposal) implements ViewEvent {
+        public OpenEditPreview { target(meta); Objects.requireNonNull(proposal); }
+    }
+    public record ApproveEditProposal(EventMeta meta, EditContracts.PreviewToken preview) implements ViewEvent {
+        public ApproveEditProposal { target(meta); Objects.requireNonNull(preview); }
+    }
+    public record RejectEditProposal(EventMeta meta, EditContracts.PreviewToken preview) implements ViewEvent {
+        public RejectEditProposal { target(meta); Objects.requireNonNull(preview); }
+    }
     public record CreateSession(EventMeta meta, String title) implements ViewEvent {
         public CreateSession {
             Objects.requireNonNull(meta, "meta"); Objects.requireNonNull(title, "title");
             if (meta.sessionId().isPresent()) throw new IllegalArgumentException("Core assigns the new session identity");
         }
+    }
+    /** Submit the empty-foreground composer; core assigns and binds the new session. */
+    public record SubmitNewSession(EventMeta meta,String text) implements ViewEvent {
+        public SubmitNewSession { Objects.requireNonNull(meta);Objects.requireNonNull(text);
+            if(meta.sessionId().isPresent()||text.isBlank())throw new IllegalArgumentException("Untargeted nonblank message required"); }
+    }
+    public record RenameSession(EventMeta meta,String title) implements ViewEvent {
+        public RenameSession { target(meta);Objects.requireNonNull(title);title=title.strip();
+            if(title.isBlank()||title.codePointCount(0,title.length())>80||title.contains("\n")||title.contains("\r"))throw new IllegalArgumentException("Title must be 1–80 characters on one line"); }
     }
     public record SelectSession(EventMeta meta) implements ViewEvent { public SelectSession { target(meta); } }
     public record OpenSessionTab(EventMeta meta) implements ViewEvent { public OpenSessionTab { target(meta); } }
@@ -231,8 +284,11 @@ public final class ChatContracts {
     /** Retry local storage coordination only; never resends a model request. */
     public record RecoverSession(EventMeta meta) implements ViewEvent { public RecoverSession { target(meta); } }
 
-    public record UpdateDraftText(EventMeta meta, String draftId, long expectedDraftRevision, String text) implements ViewEvent {
-        public UpdateDraftText { target(meta); requireId(draftId, "draftId"); requireRevision(expectedDraftRevision); Objects.requireNonNull(text, "text"); }
+    public record UpdateDraftText(EventMeta meta, String draftId, long expectedDraftRevision, String text,
+                                  Optional<java.util.Map<String,Integer>> captureOffsets,Optional<List<String>> captureOrder) implements ViewEvent {
+        public UpdateDraftText(EventMeta meta,String id,long rev,String text,Optional<java.util.Map<String,Integer>> offsets) { this(meta,id,rev,text,offsets,Optional.empty()); }
+        public UpdateDraftText(EventMeta meta,String draftId,long revision,String text) { this(meta,draftId,revision,text,Optional.empty()); }
+        public UpdateDraftText { target(meta); requireId(draftId, "draftId"); requireRevision(expectedDraftRevision); Objects.requireNonNull(text, "text"); captureOffsets = Objects.requireNonNull(captureOffsets).map(java.util.Map::copyOf); captureOrder=Objects.requireNonNull(captureOrder).map(List::copyOf); }
     }
     public record SubmitDraft(EventMeta meta, String draftId, long expectedDraftRevision) implements ViewEvent {
         public SubmitDraft { target(meta); requireId(draftId, "draftId"); requireRevision(expectedDraftRevision); }
